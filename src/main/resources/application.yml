@@ -1,7 +1,9 @@
 spring:
   application:
     name: what2eat
-
+  web:
+    resources:
+      add-mappings: false
   datasource:
     driver-class-name: ${DB_DRIVER}
     url: ${DB_URL}
@@ -10,7 +12,7 @@ spring:
   jpa:
     show-sql: true
     hibernate:
-      ddl-auto: create
+      ddl-auto: update
     properties:
       hibernate:
         dialect: org.hibernate.dialect.MySQLDialect
