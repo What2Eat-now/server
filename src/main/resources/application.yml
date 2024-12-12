@@ -12,12 +12,17 @@ spring:
   jpa:
     show-sql: true
     hibernate:
-      ddl-auto: update
+      ddl-auto: create
     properties:
       hibernate:
         dialect: org.hibernate.dialect.MySQLDialect
         format_sql: true
 
+kakao:
+  rest:
+    api:
+      key: ${KAKAO_REST_API_KEY}
+      url: ${KAKAO_STORE_API_URL}
 logging:
   level:
     org:

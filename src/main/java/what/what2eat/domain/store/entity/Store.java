@@ -10,9 +10,7 @@ import what.what2eat.domain.meeting.entity.Meeting;
 import what.what2eat.domain.review.entity.Review;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 @Entity
 @Table(name = "store")
@@ -27,19 +25,22 @@ public class Store {
     private Long storeId;
 
     @Column(name = "store_api_id", nullable = false)
-    private Integer storeApiId;
+    private String storeApiId;
 
     @Column(name = "store_name", nullable = false, length = 30)
     private String storeName;
+
+    @Column(name = "category_group_name", nullable = false, length = 20)
+    private String categoryGroupName;
+
+    @Column(name = "category_name", nullable = false, length = 30)
+    private String categoryName;
 
     @Column(name = "store_address", nullable = false, length = 50)
     private String storeAddress;
 
     @Column(name = "store_road_address", nullable = false, length = 50)
     private String storeRoadAddress;
-
-    @Column(name = "store_number", nullable = false, length = 20)
-    private String storeNumber;
 
     @Column(name = "store_latitude", nullable = false, length = 30)
     private String storeLatitude;
