@@ -1,6 +1,7 @@
 package what.what2eat.domain.store.controller.dto;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -11,11 +12,12 @@ public class StoreRequestDTO {
     @Builder
     public static class StoreGetDTO {
 
-        @NotBlank
-        private String latitude;
+        @NotNull
+        private Double latitude;
 
-        @NotBlank
-        private String longitude;
+        @NotNull
+        private Double longitude;
 
+        private Integer distance;
     }
 }

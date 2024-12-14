@@ -2,6 +2,9 @@ package what.what2eat.domain.store.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.Point;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -16,6 +19,8 @@ import what.what2eat.domain.store.repository.StoreRepository;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.Random;
 import java.util.stream.Collectors;
 
 
@@ -36,6 +41,10 @@ public class StoreService {
 
     private final StoreConverter storeConverter;
 
+    private final GeometryFactory geometryFactory;
+
+
+    // 주변 음식점 데이터 조회
     public StoreResponseDTO.StoreApiResultDTO getNearbyPlaces(StoreRequestDTO.StoreGetDTO request) throws URISyntaxException {
 
         // URI 설정
@@ -52,14 +61,49 @@ public class StoreService {
                 StoreResponseDTO.StoreApiResultDTO.class
         ).getBody();
 
+        // 중복 제거한 가게 리스트 조회
+        List<Store> storeList = convertAndFilterStores(storeApiResultDTO);
+
+        if (!storeList.isEmpty()) {
+            storeRepository.saveAll(storeList);
+        }else{
+            throw new NoSuchElementException("음식점 데이터가 없습니다.");
+        }
+
+        return storeApiResultDTO;
+    }
+
+    // 위치 기반 랜덤 음식점 반환
+    public StoreResponseDTO.StoreInfoDTO getRandomStore(StoreRequestDTO.StoreGetDTO request) {
+        Double longitude = request.getLongitude();
+        Double latitude = request.getLatitude();
+        Integer distance = request.getDistance() != null ? request.getDistance() : 300;
+
+        // 거리 기반 음식점 리스트 추출
+        List<Store> stores = storeRepository.findByLocationBased(geometryFactory.createPoint(new Coordinate(longitude, latitude)), distance);
+
+        if(stores.isEmpty()){
+            throw new NoSuchElementException("해당 위치에서 조회된 음식점이 없습니다.");
+        }
+
+        // 랜덤 음식점 추출
+        return  stores.stream()
+                .skip((int) (Math.random() * stores.size()))
+                .findFirst()
+                .map(storeConverter::toDTO)
+                .orElseThrow(() -> new NoSuchElementException("음식점 데이터가 없습니다."));
+    }
+
+    // DTO -> ENTITY 변환 및 중복 제거
+    private List<Store> convertAndFilterStores(StoreResponseDTO.StoreApiResultDTO storeApiResultDTO) {
+        List<String> existingIdList = storeRepository.findAllStoreApiIdList();
+
         // 데이터 변환후 저장
         List<Store> storeList = storeApiResultDTO.getDocuments().stream()
                 .map(storeConverter::toStoreEntity)
+                .filter(store -> !existingIdList.contains(store.getStoreApiId()))
                 .collect(Collectors.toList());
-
-        storeRepository.saveAll(storeList);
-
-        return storeApiResultDTO;
+        return storeList;
     }
 
     // uri 빌드
@@ -85,4 +129,5 @@ public class StoreService {
         headers.setContentType(MediaType.APPLICATION_JSON);
         return new HttpEntity<>(headers);
     }
+
 }

@@ -28,6 +28,7 @@ public class StoreResponseDTO {
     @Builder
     public static class StoreInfoDTO {
 
+
         @NotBlank
         @JsonProperty("address_name")
         private String address;
@@ -57,10 +58,10 @@ public class StoreResponseDTO {
         private String storeRoadAddress;
 
         @JsonProperty("x")
-        private String longitude;
+        private Double longitude;
 
         @JsonProperty("y")
-        private String latitude;
+        private Double latitude;
     }
 
     @Getter

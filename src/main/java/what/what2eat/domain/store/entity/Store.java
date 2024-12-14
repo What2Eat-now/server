@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.locationtech.jts.geom.Point;
 import what.what2eat.domain.category.entity.Category;
 import what.what2eat.domain.meeting.entity.Meeting;
 import what.what2eat.domain.review.entity.Review;
@@ -24,7 +25,7 @@ public class Store {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long storeId;
 
-    @Column(name = "store_api_id", nullable = false)
+    @Column(name = "store_api_id", nullable = false, unique = true)
     private String storeApiId;
 
     @Column(name = "store_name", nullable = false, length = 30)
@@ -42,11 +43,11 @@ public class Store {
     @Column(name = "store_road_address", nullable = false, length = 50)
     private String storeRoadAddress;
 
-    @Column(name = "store_latitude", nullable = false, length = 30)
-    private String storeLatitude;
+    @Column(name = "store_number", nullable = false, length = 20)
+    private String storeNumber;
 
-    @Column(name = "store_longitude", nullable = false, length = 30)
-    private String storeLongitude;
+    @Column(name = "location", nullable = false,  columnDefinition = "POINT SRID 4326")
+    private Point location;
 
     @Column(name = "store_url", nullable = false, length = 50)
     private String storeUrl;

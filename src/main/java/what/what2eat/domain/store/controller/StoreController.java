@@ -15,6 +15,7 @@ import what.what2eat.domain.store.service.StoreService;
 import what.what2eat.global.response.ApiResponse;
 
 import java.net.URISyntaxException;
+import java.util.List;
 
 @Controller
 @Slf4j
@@ -30,4 +31,9 @@ public class StoreController {
                 .body(ApiResponse.ok(storeService.getNearbyPlaces(request)));
     }
 
+    @GetMapping("/random")
+    public ResponseEntity<ApiResponse<StoreResponseDTO.StoreInfoDTO>> getRandomStore(@RequestBody StoreRequestDTO.StoreGetDTO request) {
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ApiResponse.ok(storeService.getRandomStore(request)));
+    }
 }
