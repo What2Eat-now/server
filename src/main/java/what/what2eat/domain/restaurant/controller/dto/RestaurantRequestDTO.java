@@ -1,16 +1,15 @@
-package what.what2eat.domain.store.controller.dto;
+package what.what2eat.domain.restaurant.controller.dto;
 
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
 import lombok.Getter;
 
 
-public class StoreRequestDTO {
+public class RestaurantRequestDTO {
 
     @Getter
     @Builder
-    public static class StoreGetDTO {
+    public static class RestaurantGetDTO {
 
         @NotNull
         private Double latitude;
