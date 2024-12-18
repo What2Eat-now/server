@@ -7,7 +7,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import what.what2eat.domain.usergroup.entity.UserGroup;
 import what.what2eat.domain.location.entity.LocationTracking;
-import what.what2eat.domain.store.entity.Store;
+import what.what2eat.domain.restaurant.entity.Restaurant;
 import what.what2eat.global.common.entity.BaseEntity;
 
 import java.time.LocalDate;
@@ -39,7 +39,7 @@ public class Meeting extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "store_id")
-    private Store store;
+    private Restaurant restaurant;
 
     @OneToMany(mappedBy = "meeting", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Participant> participants = new ArrayList<>();
