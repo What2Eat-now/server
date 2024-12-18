@@ -1,6 +1,8 @@
-package what.what2eat.domain.store.controller.dto;
+package what.what2eat.domain.restaurant.controller.dto;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Builder;
@@ -9,14 +11,14 @@ import lombok.Setter;
 
 import java.util.List;
 
-public class StoreResponseDTO {
+public class RestaurantResponseDTO {
 
     @Getter
     @Setter
     @Builder
-    public static class StoreApiResultDTO{
+    public static class RestaurantApiResultDTO{
         @JsonProperty("documents")
-        private List<StoreInfoDTO> documents;
+        private List<RestaurantInfoDTO> documents;
 
         @JsonProperty("meta")
         private MetaDTO meta;
@@ -26,41 +28,34 @@ public class StoreResponseDTO {
     @Getter
     @Setter
     @Builder
-    public static class StoreInfoDTO {
+    public static class RestaurantInfoDTO {
+
 
         @NotBlank
         @JsonProperty("address_name")
         private String address;
 
-        @JsonProperty("category_group_name")
-        private String categoryGroupName;
-
         @JsonProperty("category_name")
         private String categoryName;
 
-        @JsonProperty("distance")
-        private String distance;
-
         @JsonProperty("id")
-        private String storeId;
+        @JsonInclude(JsonInclude.Include.NON_NULL)
+        private String restaurantId;
 
         @JsonProperty("phone")
-        private String storePhoneNumber;
+        private String restaurantPhoneNumber;
 
         @JsonProperty("place_name")
-        private String storeName;
+        private String restaurantName;
 
         @JsonProperty("place_url")
-        private String storeUrl;
-
-        @JsonProperty("road_address_name")
-        private String storeRoadAddress;
+        private String restaurantUrl;
 
         @JsonProperty("x")
-        private String longitude;
+        private Double longitude;
 
         @JsonProperty("y")
-        private String latitude;
+        private Double latitude;
     }
 
     @Getter

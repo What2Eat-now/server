@@ -5,7 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import what.what2eat.domain.store.entity.Store;
+import what.what2eat.domain.restaurant.entity.Restaurant;
 import what.what2eat.global.common.entity.BaseEntity;
 
 import java.util.HashSet;
@@ -31,6 +31,6 @@ public class Category extends BaseEntity {
     private String categoryCode;
 
     @OneToMany(mappedBy = "category", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<Store> stores = new HashSet<>();
+    private Set<Restaurant> restaurants = new HashSet<>();
 
 }

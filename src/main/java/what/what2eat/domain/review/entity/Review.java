@@ -5,7 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import what.what2eat.domain.store.entity.Store;
+import what.what2eat.domain.restaurant.entity.Restaurant;
 import what.what2eat.global.common.entity.BaseEntity;
 
 @Entity
@@ -32,5 +32,5 @@ public class Review extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "store_id")
-    private Store store;
+    private Restaurant restaurant;
 }
