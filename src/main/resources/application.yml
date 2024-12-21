@@ -23,6 +23,8 @@ kakao:
     api:
       key: ${KAKAO_REST_API_KEY}
       url: ${KAKAO_STORE_API_URL}
+  redirect_url: ${KAKAO_REDIRECT_URL}
+
 logging:
   level:
     org:

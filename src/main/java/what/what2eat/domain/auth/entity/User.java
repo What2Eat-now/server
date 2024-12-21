@@ -26,15 +26,24 @@ public class User extends BaseEntity {
     @Column(name = "user_id")
     private Long userId;
 
-
-    @Column(name = "user_name", unique = true, nullable = false, length = 20)
-    private String userName;
+    @Column(name = "user_email", unique = true, nullable = false, length = 20)
+    private String userEmail;
 
     @Column(name = "nick_name", nullable = false, length = 20)
     private String nickName;
 
-    @Column(name = "password", nullable = false, length = 40)
+    @Column(name = "user_img", length = 100)
+    private String userImg;
+
+    @Column(name = "password", length = 40)
     private String password;
+
+    @Column(name = "social_type", nullable = false)
+    @Enumerated(EnumType.STRING)
+    private SocialType socialType;
+
+    @Column(name = "social_id", length = 20)
+    private Long socialId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_group_id")
