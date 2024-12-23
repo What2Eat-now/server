@@ -13,7 +13,7 @@ public class AuthConverter {
                 .userEmail(userInfoDTO.getKakaoAccount().getKakaoEmail())
                 .userImg(userInfoDTO.getProperties().get("profile_image"))
                 .nickName(userInfoDTO.getProperties().get("nickname"))
-                .socialType(SocialType.KAKAO)
+                .provider(SocialType.KAKAO)
                 .socialId(userInfoDTO.getUserId())
                 .build();
     }
