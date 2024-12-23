@@ -38,9 +38,9 @@ public class User extends BaseEntity {
     @Column(name = "password", length = 40)
     private String password;
 
-    @Column(name = "social_type", nullable = false)
+    @Column(name = "provider", nullable = false)
     @Enumerated(EnumType.STRING)
-    private SocialType socialType;
+    private SocialType provider;
 
     @Column(name = "social_id", length = 20)
     private Long socialId;

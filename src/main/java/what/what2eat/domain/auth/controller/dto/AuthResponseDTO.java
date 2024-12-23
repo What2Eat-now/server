@@ -17,16 +17,16 @@ public class AuthResponseDTO {
     @AllArgsConstructor
     public static class LoginInfoDTO {
 
-        private TokenDTO token;
+        private KakaoTokenDTO token;
 
-        private UserInfoDTO userInfo;
+        private KakaoUserInfoDTO userInfo;
     }
 
     @Getter
     @Builder
     @RequiredArgsConstructor
     @AllArgsConstructor
-    public static class TokenDTO{
+    public static class KakaoTokenDTO{
 
         @JsonProperty("access_token")
         private String accessToken;
@@ -42,7 +42,6 @@ public class AuthResponseDTO {
 
         @JsonProperty("refresh_token_expires_in")
         private String refreshTokenExpires;
-
     }
 
     @Getter
@@ -50,7 +49,7 @@ public class AuthResponseDTO {
     @AllArgsConstructor
     @RequiredArgsConstructor
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    public static class UserInfoDTO {
+    public static class KakaoUserInfoDTO {
 
         @JsonProperty("id")
         private Long userId;

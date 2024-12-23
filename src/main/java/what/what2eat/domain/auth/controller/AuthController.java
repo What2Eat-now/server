@@ -20,14 +20,6 @@ public class AuthController {
 
     private final AuthService authService;
 
-    // 카카오 로그인 페이지로 리다이렉트
-    @GetMapping("/login/kakao/url")
-    public ResponseEntity<Void> getKakaoLoginPage() {
-        return ResponseEntity.status(HttpStatus.FOUND)
-                .header(HttpHeaders.LOCATION, authService.buildKakaoAuthUrl())
-                .build();
-    }
-
     // 카카오 로그인 후 토큰과 사용자 정보 반환받음
     @PostMapping("/login/kakao")
     public ResponseEntity<ApiResponse<AuthResponseDTO.LoginInfoDTO>> getAccessToken(@RequestParam String code) {
