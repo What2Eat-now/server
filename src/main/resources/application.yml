@@ -17,7 +17,10 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.MySQLDialect
         format_sql: true
-
+jwt:
+  secret: ${JWT_SECRET}
+  access-token-expiration: ${JWT_ACCESS_EXPIRATION}
+  refresh-token-expiration: ${JWT_REFRESH_EXPIRATION}
 kakao:
   rest:
     api:
@@ -29,3 +32,11 @@ logging:
   level:
     org:
       springframework: DEBUG
+
+springdoc:
+  default-consumes-media-type: application/json;charset=UTF-8
+  default-produces-media-type: application/json;charset=UTF-8
+  swagger-ui:
+    path: index.html # Swagger UI 경로 => localhost:8000/demo-ui.html
+  tags-sorter: alpha # alpha: 알파벳 순 태그 정렬, method: HTTP Method 순 정렬*
+  operations-sorter: alpha # alpha: 알파벳 순 태그 정렬, method: HTTP Method 순 정렬*

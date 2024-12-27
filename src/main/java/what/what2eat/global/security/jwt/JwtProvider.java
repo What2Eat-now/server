@@ -1,0 +1,89 @@
+package what.what2eat.global.security.jwt;
+
+import io.jsonwebtoken.JwtException;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.io.Decoders;
+import io.jsonwebtoken.security.Keys;
+import jakarta.annotation.PostConstruct;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
+import what.what2eat.domain.auth.entity.Role;
+
+import javax.crypto.SecretKey;
+import java.time.Instant;
+import java.util.Date;
+
+@Component
+@Slf4j
+public class JwtProvider {
+
+    @Value("${jwt.secret}")
+    private String secretKey;
+
+    @Value("${jwt.access-token-expiration}")
+    private long accessTokenValidity; // 1시간
+
+    @Value("${jwt.refresh-token-expiration}")
+    private long refreshTokenValidity; // 7일
+
+
+    // Access Token 생성
+    public String createAccessToken(String userEmail, Role role) {
+        Instant now = Instant.now();
+        Instant expirationTime = now.plusSeconds(accessTokenValidity);
+
+        return Jwts.builder()
+                .subject(userEmail.toString())
+                .claim("role", role)
+                .issuedAt(Date.from(now))
+                .expiration(Date.from(expirationTime))
+                .signWith(extractSecretKey())
+                .compact();
+    }
+
+    // Refresh Token 생성
+    public String createRefreshToken(String userEmail) {
+        Instant now = Instant.now();
+        Instant expirationTime = now.plusSeconds(refreshTokenValidity);
+
+        return Jwts.builder()
+                .subject(userEmail.toString())
+                .issuedAt(Date.from(now))
+                .expiration(Date.from(expirationTime))
+                .signWith(extractSecretKey())
+                .compact();
+    }
+
+    public boolean validateToken(String token) {
+        try {
+            Jwts.parser()
+                    .verifyWith(extractSecretKey())
+                    .build()
+                    .parseClaimsJws(token);
+            return true;
+        } catch (JwtException | IllegalArgumentException e) {
+            log.error("Invalid JWT token : {}", e.getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * 토큰에서 username 추출
+     */
+    public String getUsername(String token) {
+        return Jwts.parser()
+                .setSigningKey(extractSecretKey())
+                .build()
+                .parseClaimsJws(token)
+                .getBody()
+                .getSubject();
+    }
+
+    /**
+     * SecretKey 추출
+     */
+    private SecretKey extractSecretKey() {
+        return Keys.hmacShaKeyFor(Decoders.BASE64.decode(secretKey));
+    }
+}
