@@ -1,7 +1,5 @@
-package what.what2eat.domain.auth.controller.dto;
+package what.what2eat.domain.auth.social.controller.dto;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
@@ -9,7 +7,7 @@ import lombok.*;
 import java.util.Date;
 import java.util.Map;
 
-public class AuthResponseDTO {
+public class KakaoAuthResponseDTO {
 
     @Getter
     @Builder

@@ -1,23 +1,24 @@
-package what.what2eat.domain.auth.service;
+package what.what2eat.domain.auth.social.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
-import what.what2eat.domain.auth.controller.dto.AuthResponseDTO;
-import what.what2eat.domain.auth.converter.AuthConverter;
-import what.what2eat.domain.auth.entity.SocialType;
+import what.what2eat.domain.auth.social.controller.dto.KakaoAuthResponseDTO;
+import what.what2eat.domain.auth.social.converter.KakaoAuthConverter;
+import what.what2eat.domain.auth.entity.Provider;
 import what.what2eat.domain.auth.entity.User;
 import what.what2eat.domain.auth.repository.AuthRepository;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class AuthService {
+public class KakaoAuthService {
 
     @Value("${kakao.rest.api.key}")
     private String kakaoClientId;
@@ -26,7 +27,7 @@ public class AuthService {
     private String kakaoRedirectUrl;
 
     private final RestTemplate restTemplate;
-    private final AuthConverter authConverter;
+    private final KakaoAuthConverter kakaoAuthConverter;
     private final AuthRepository authRepository;
 
     // 토큰 요청을 위한 Http 요청 객체 생성
@@ -46,22 +47,22 @@ public class AuthService {
     }
 
     // 인가 코드 정보로 사용자 정보 저장하고있는 access, refresh token 조회
-    public AuthResponseDTO.KakaoTokenDTO getAccessToken(String code) {
-        AuthResponseDTO.KakaoTokenDTO tokenDTO = restTemplate.exchange(
+    public KakaoAuthResponseDTO.KakaoTokenDTO getAccessToken(String code) {
+        KakaoAuthResponseDTO.KakaoTokenDTO tokenDTO = restTemplate.exchange(
                         "https://kauth.kakao.com/oauth/token",
                         HttpMethod.POST,
                         createTokenRequest(code),
-                        AuthResponseDTO.KakaoTokenDTO.class)
+                        KakaoAuthResponseDTO.KakaoTokenDTO.class)
                 .getBody();
 
         return tokenDTO;
     }
 
     // 토큰으로 사용자 정보 조회
-    public AuthResponseDTO.LoginInfoDTO getKakaoUserInfo(String code) {
+    public KakaoAuthResponseDTO.LoginInfoDTO getKakaoUserInfo(String code) {
 
         // 토큰 조회
-        AuthResponseDTO.KakaoTokenDTO tokenDTO = getAccessToken(code);
+        KakaoAuthResponseDTO.KakaoTokenDTO tokenDTO = getAccessToken(code);
         String accessToken = tokenDTO.getAccessToken();
 
         // 인증을 위한 헤더 설정
@@ -72,22 +73,22 @@ public class AuthService {
         HttpEntity<MultiValueMap<String, String>> httpEntity = new HttpEntity<>(headers);
 
         // 사용자 정보 조회
-        AuthResponseDTO.KakaoUserInfoDTO userInfo = restTemplate.exchange(
+        KakaoAuthResponseDTO.KakaoUserInfoDTO userInfo = restTemplate.exchange(
                 "https://kapi.kakao.com/v2/user/me",
                 HttpMethod.POST,
                 httpEntity,
-                AuthResponseDTO.KakaoUserInfoDTO.class).getBody();
+                KakaoAuthResponseDTO.KakaoUserInfoDTO.class).getBody();
 
         // 사용자 정보 DB 존재 저장 유무 확인
         if(!validateKakaoAuth(userInfo)){
             // 저장을 위해 DTO -> Entity로 convert
-            User user = authConverter.kakaoToUserEntity(userInfo);
+            User user = kakaoAuthConverter.kakaoToUserEntity(userInfo);
 
             // 데이터 저장
             authRepository.save(user);
         }
 
-        return AuthResponseDTO.LoginInfoDTO.builder()
+        return KakaoAuthResponseDTO.LoginInfoDTO.builder()
                 .token(tokenDTO)
                 .userInfo(userInfo)
                 .build();
@@ -95,10 +96,10 @@ public class AuthService {
 
 
     // 카카오 로그인 정보 DB 저장 유무 확인
-    public boolean validateKakaoAuth(AuthResponseDTO.KakaoUserInfoDTO userInfo) {
-        User findEmail = authRepository.findByUserEmail(userInfo.getKakaoAccount().getKakaoEmail());
+    public boolean validateKakaoAuth(KakaoAuthResponseDTO.KakaoUserInfoDTO userInfo) {
+        User findEmail = authRepository.findByUserEmail(userInfo.getKakaoAccount().getKakaoEmail()).get();
 
-        if (findEmail != null && findEmail.getProvider() == SocialType.KAKAO) {
+        if (findEmail != null && findEmail.getProvider() == Provider.KAKAO) {
             return true;
         }
 
