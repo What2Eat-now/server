@@ -12,6 +12,7 @@ import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import what.what2eat.domain.auth.entity.Role;
 import what.what2eat.global.security.jwt.JwtAuthenticationFilter;
 import what.what2eat.global.security.jwt.JwtProvider;
 import what.what2eat.global.security.service.CustomUserDetailsService;
@@ -33,6 +34,7 @@ public class SecurityConfig {
         //    (로그인, 회원가입, 토큰 재발급 등은 permitAll)
         http.authorizeHttpRequests(authorize -> authorize
                 .requestMatchers("/api/v1/auth/**").permitAll()
+                .requestMatchers("/api/v1/restaurants/**").hasAuthority(Role.USER.name())
                 .anyRequest().authenticated());
 
         // 3. 커스텀 필터 추가
