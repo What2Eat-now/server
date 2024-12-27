@@ -4,13 +4,14 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 import what.what2eat.domain.auth.social.controller.dto.KakaoAuthResponseDTO;
 import what.what2eat.domain.auth.social.converter.KakaoAuthConverter;
-import what.what2eat.domain.auth.entity.SocialType;
+import what.what2eat.domain.auth.entity.Provider;
 import what.what2eat.domain.auth.entity.User;
 import what.what2eat.domain.auth.repository.AuthRepository;
 
@@ -96,9 +97,9 @@ public class KakaoAuthService {
 
     // 카카오 로그인 정보 DB 저장 유무 확인
     public boolean validateKakaoAuth(KakaoAuthResponseDTO.KakaoUserInfoDTO userInfo) {
-        User findEmail = authRepository.findByUserEmail(userInfo.getKakaoAccount().getKakaoEmail());
+        User findEmail = authRepository.findByUserEmail(userInfo.getKakaoAccount().getKakaoEmail()).get();
 
-        if (findEmail != null && findEmail.getProvider() == SocialType.KAKAO) {
+        if (findEmail != null && findEmail.getProvider() == Provider.KAKAO) {
             return true;
         }
 

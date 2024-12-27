@@ -35,15 +35,19 @@ public class User extends BaseEntity {
     @Column(name = "user_img", length = 100)
     private String userImg;
 
-    @Column(name = "password", length = 40)
+    @Column(name = "password", length = 100)
     private String password;
 
     @Column(name = "provider", nullable = false)
     @Enumerated(EnumType.STRING)
-    private SocialType provider;
+    private Provider provider;
 
     @Column(name = "social_id", length = 20)
     private Long socialId;
+
+    @Column(name = "role")
+    @Enumerated(EnumType.STRING)
+    private Role role;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_group_id")
