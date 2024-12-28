@@ -7,6 +7,7 @@ import what.what2eat.domain.auth.entity.User;
 
 import java.util.Optional;
 
+
 @Repository
 public interface AuthRepository extends JpaRepository<User, Long> {
 
