@@ -14,6 +14,7 @@ import what.what2eat.domain.auth.entity.User;
 import what.what2eat.domain.auth.local.controller.dto.LocalAuthRequestDTO;
 import what.what2eat.domain.auth.local.controller.dto.LocalAuthResponseDTO;
 import what.what2eat.domain.auth.repository.AuthRepository;
+import what.what2eat.global.security.domain.CustomUserDetails;
 import what.what2eat.global.security.jwt.JwtProvider;
 
 @Service
@@ -27,9 +28,9 @@ public class LocalAuthService {
     private final JwtProvider jwtProvider;
 
     public void signUp(LocalAuthRequestDTO.SignUpRequestDTO request) {
-        if(!authRepository.existsByUserEmailAndProvider(request.getUsername(), Provider.LOCAL)){
+        if(!authRepository.existsByUserEmailAndProvider(request.getUserEmail(), Provider.LOCAL)){
             authRepository.save(User.builder()
-                    .userEmail(request.getUsername())
+                    .userEmail(request.getUserEmail())
                     .password(passwordEncoder.encode(request.getPassword()))
                     .nickName(request.getNickName())
                     .role(Role.USER)
@@ -48,20 +49,23 @@ public class LocalAuthService {
             // 인증 시도
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
-                            request.getUsername(),
+                            request.getUserEmail(),
                             request.getPassword()
                     )
             );
 
-            // 인증 토큰 생성
-            String role = authentication.getAuthorities().stream()
+            // 인증 객체에서 role 추출
+            Role role = Role.valueOf(authentication.getAuthorities().stream()
                     .findFirst()
                     .map(auth -> auth.getAuthority())
-                    .orElse(Role.USER.name());
+                    .orElse(Role.USER.name()));
 
-            String accessToken = jwtProvider.createAccessToken(request.getUsername(), Role.valueOf(role));
+            // 인증 객체에서 사용자 정보 추출(Provider 추출 위해 작성)
+            CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
 
-            String refreshToken = jwtProvider.createRefreshToken(request.getUsername());
+            String accessToken = jwtProvider.createAccessToken(request.getUserEmail(), role, userDetails.getProvider());
+
+            String refreshToken = jwtProvider.createRefreshToken(request.getUserEmail());
 
 
             return LocalAuthResponseDTO.LoginResponseDTO.builder()
@@ -77,6 +81,6 @@ public class LocalAuthService {
     }
 
     private void validateMember(LocalAuthRequestDTO.LoginRequestDTO request) {
-        authRepository.existsByUserEmailAndProvider(request.getUsername(), Provider.LOCAL);
+        authRepository.existsByUserEmailAndProvider(request.getUserEmail(), Provider.LOCAL);
     }
 }

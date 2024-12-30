@@ -9,7 +9,7 @@ public class LocalAuthRequestDTO {
     @Getter
     @Builder
     public static class SignUpRequestDTO{
-        private String username;
+        private String userEmail;
 
         private String password;
 
@@ -22,7 +22,7 @@ public class LocalAuthRequestDTO {
     @Getter
     @Builder
     public static class LoginRequestDTO{
-        private String username;
+        private String userEmail;
 
         private String password;
     }

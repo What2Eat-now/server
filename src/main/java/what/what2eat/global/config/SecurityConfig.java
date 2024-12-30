@@ -3,19 +3,28 @@ package what.what2eat.global.config;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.util.matcher.RequestMatcher;
 import what.what2eat.domain.auth.entity.Role;
 import what.what2eat.global.security.jwt.JwtAuthenticationFilter;
 import what.what2eat.global.security.jwt.JwtProvider;
 import what.what2eat.global.security.service.CustomUserDetailsService;
+
+import java.util.List;
+
+import static org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher;
 
 @Configuration
 @EnableWebSecurity
@@ -24,25 +33,66 @@ public class SecurityConfig {
 
     private final JwtProvider jwtProvider;
     private final CustomUserDetailsService userDetailsService;
+
+    /**
+     * permitAll 권한을 가진 엔드포인트에 적용되는 Security FilterChain
+     * @param http
+     * @return
+     * @throws Exception
+     */
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        // 1. CSRF 비활성 / 폼 로그인 비활성 등
-        http.csrf(csrf -> csrf.disable());
-        http.formLogin(formLogin -> formLogin.disable());
+    @Order(1)
+    public SecurityFilterChain securityFilterChainPermitAll(HttpSecurity http) throws Exception {
+        configureCommonSecuritySettings(http);
 
-        // 2. 인증이 필요없는 URL 설정
-        //    (로그인, 회원가입, 토큰 재발급 등은 permitAll)
-        http.authorizeHttpRequests(authorize -> authorize
-                .requestMatchers("/api/v1/auth/**").permitAll()
-                .requestMatchers("/api/v1/restaurants/**").hasAuthority(Role.USER.name())
-                .anyRequest().authenticated());
+        http.securityMatchers(matchers -> matchers.requestMatchers(requestPermitAll()))
+                .authorizeHttpRequests(auth -> auth
+                        .anyRequest()
+                        .permitAll());
 
-        // 3. 커스텀 필터 추가
+        return http.build();
+    }
+
+    @Bean
+    @Order(2)
+    public SecurityFilterChain securityFilterChainAuthorized(HttpSecurity http) throws Exception {
+
+        // http 객체 셋팅
+        configureCommonSecuritySettings(http);
+
+        // 인증이 필요한 URL 설정
+        http.securityMatchers(matchers -> matchers.requestMatchers(requestHasRoleUser()))
+                .authorizeHttpRequests(auth -> auth
+                .anyRequest()
+                .hasAuthority(Role.USER.name()));
+
+        // 커스텀 필터 추가
         //    UsernamePasswordAuthenticationFilter 앞에 JWT 필터를 두어, 토큰 검증이 먼저 수행되도록
         http.addFilterBefore(new JwtAuthenticationFilter(jwtProvider, userDetailsService)
                 , UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
+    }
+
+    // 인증 및 인가가 필요한 엔드포인트에 적용되는 RequestMatcher
+    private RequestMatcher[] requestHasRoleUser() {
+        List<RequestMatcher> requestMatchers = List.of(
+                antMatcher("/api/v1/restaurants/**")
+        );
+        return requestMatchers.toArray(RequestMatcher[]::new);
+    }
+
+    // permitAll 권한을 가진 엔드포인트에 적용되는 RequestMatcher
+    private RequestMatcher[] requestPermitAll() {
+        List<RequestMatcher> requestMatchers = List.of(
+                antMatcher("/"),
+                antMatcher("/swagger-ui/**"),
+                antMatcher("/v3/api-docs/**"),
+                antMatcher("/api/v1/auth/login/**"),
+                antMatcher("/api/v1/auth/signup/**")
+        );
+
+        return requestMatchers.toArray(RequestMatcher[]::new);
     }
 
     /**
@@ -57,5 +107,19 @@ public class SecurityConfig {
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
         return configuration.getAuthenticationManager();
+    }
+
+    // Security 기본 셋팅
+    private void configureCommonSecuritySettings(HttpSecurity http) throws Exception {
+        http
+                .csrf(AbstractHttpConfigurer::disable)  // csrf disable
+                .anonymous(AbstractHttpConfigurer::disable)
+                .formLogin(AbstractHttpConfigurer::disable) // form login disable
+                .httpBasic(AbstractHttpConfigurer::disable)  // http basic 인증 방식 disable
+                .rememberMe(AbstractHttpConfigurer::disable)
+                .headers(headers -> headers
+                        .frameOptions(HeadersConfigurer.FrameOptionsConfig::disable)
+                )
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
     }
 }
