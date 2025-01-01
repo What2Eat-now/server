@@ -1,6 +1,7 @@
 package what.what2eat.domain.auth.social.converter;
 
 import org.springframework.stereotype.Component;
+import what.what2eat.domain.auth.entity.Role;
 import what.what2eat.domain.auth.social.controller.dto.KakaoAuthResponseDTO;
 import what.what2eat.domain.auth.entity.Provider;
 import what.what2eat.domain.auth.entity.User;
@@ -15,6 +16,8 @@ public class KakaoAuthConverter {
                 .nickName(userInfoDTO.getProperties().get("nickname"))
                 .provider(Provider.KAKAO)
                 .socialId(userInfoDTO.getUserId())
+                .role(Role.USER)
                 .build();
     }
+
 }

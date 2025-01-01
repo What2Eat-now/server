@@ -92,7 +92,7 @@ public class KakaoAuthService {
         }
 
         // accessToken 생성
-        String accessToken = jwtProvider.createAccessToken(userInfo.getKakaoAccount().getKakaoEmail(), Role.USER);
+        String accessToken = jwtProvider.createAccessToken(userInfo.getKakaoAccount().getKakaoEmail(), Role.USER, Provider.KAKAO);
 
         // refreshToken 생성
         String refreshToken = jwtProvider.createRefreshToken(userInfo.getKakaoAccount().getKakaoEmail());
@@ -108,12 +108,14 @@ public class KakaoAuthService {
 
     // 카카오 로그인 정보 DB 저장 유무 확인
     public boolean validateKakaoAuth(KakaoAuthResponseDTO.KakaoUserInfoDTO userInfo) {
-        User findEmail = authRepository.findByUserEmail(userInfo.getKakaoAccount().getKakaoEmail()).get();
+        String kakaoUserEmail = userInfo.getKakaoAccount().getKakaoEmail();
 
-        if (findEmail != null && findEmail.getProvider() == Provider.KAKAO) {
+        // 계정이 존재할 경우
+        if (authRepository.existsByUserEmailAndProvider(kakaoUserEmail,Provider.KAKAO)) {
             return true;
         }
 
+        // 존재하지 않을 경우
         return false;
     }
 
