@@ -4,10 +4,10 @@ import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
-import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import what.what2eat.domain.auth.entity.Provider;
 import what.what2eat.domain.auth.entity.Role;
 
 import javax.crypto.SecretKey;
@@ -29,12 +29,13 @@ public class JwtProvider {
 
 
     // Access Token 생성
-    public String createAccessToken(String userEmail, Role role) {
+    public String createAccessToken(String userEmail, Role role, Provider provider) {
         Instant now = Instant.now();
         Instant expirationTime = now.plusSeconds(accessTokenValidity);
 
         return Jwts.builder()
                 .subject(userEmail.toString())
+                .subject(provider.name())
                 .claim("role", role)
                 .issuedAt(Date.from(now))
                 .expiration(Date.from(expirationTime))
