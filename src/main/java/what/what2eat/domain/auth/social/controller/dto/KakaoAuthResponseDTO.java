@@ -15,7 +15,9 @@ public class KakaoAuthResponseDTO {
     @AllArgsConstructor
     public static class LoginInfoDTO {
 
-        private KakaoTokenDTO token;
+        private String accessToken;
+
+        private String refreshToken;
 
         private KakaoUserInfoDTO userInfo;
     }
