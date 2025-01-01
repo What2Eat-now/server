@@ -9,6 +9,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import what.what2eat.domain.auth.entity.User;
 import what.what2eat.domain.auth.repository.AuthRepository;
+import what.what2eat.global.security.domain.CustomUserDetails;
 
 import java.util.Collections;
 
@@ -26,11 +27,11 @@ public class CustomUserDetailsService implements UserDetailsService {
 
         log.info("유저 정보 조회 완료");
 
-        return new org.springframework.security.core.userdetails.User(
-                user.getUserEmail(),
-                user.getPassword(),
-                Collections.singletonList(new SimpleGrantedAuthority(user.getRole().name()))
-        );
-
+        return CustomUserDetails.builder()
+                .email(user.getUserEmail())
+                .password(user.getPassword())
+                .provider(user.getProvider())
+                .authorities(Collections.singletonList(new SimpleGrantedAuthority(user.getRole().name())))
+                .build();
     }
 }
