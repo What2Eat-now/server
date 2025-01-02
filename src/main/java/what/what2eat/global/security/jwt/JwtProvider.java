@@ -34,7 +34,7 @@ public class JwtProvider {
         Instant expirationTime = now.plusSeconds(accessTokenValidity);
 
         return Jwts.builder()
-                .subject(userEmail.toString())
+                .subject(userEmail)
                 .subject(provider.name())
                 .claim("role", role)
                 .issuedAt(Date.from(now))
@@ -49,7 +49,7 @@ public class JwtProvider {
         Instant expirationTime = now.plusSeconds(refreshTokenValidity);
 
         return Jwts.builder()
-                .subject(userEmail.toString())
+                .subject(userEmail)
                 .issuedAt(Date.from(now))
                 .expiration(Date.from(expirationTime))
                 .signWith(extractSecretKey())
@@ -61,7 +61,7 @@ public class JwtProvider {
             Jwts.parser()
                     .verifyWith(extractSecretKey())
                     .build()
-                    .parseClaimsJws(token);
+                    .parseSignedClaims(token);
             return true;
         } catch (JwtException | IllegalArgumentException e) {
             log.error("Invalid JWT token : {}", e.getMessage());
@@ -74,10 +74,10 @@ public class JwtProvider {
      */
     public String getUsername(String token) {
         return Jwts.parser()
-                .setSigningKey(extractSecretKey())
+                .verifyWith(extractSecretKey())
                 .build()
-                .parseClaimsJws(token)
-                .getBody()
+                .parseSignedClaims(token)
+                .getPayload()
                 .getSubject();
     }
 
