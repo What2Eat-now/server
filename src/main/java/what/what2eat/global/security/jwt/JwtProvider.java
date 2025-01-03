@@ -13,6 +13,8 @@ import what.what2eat.domain.auth.entity.Role;
 import javax.crypto.SecretKey;
 import java.time.Instant;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 
 @Component
 @Slf4j
@@ -27,6 +29,7 @@ public class JwtProvider {
     @Value("${jwt.refresh-token-expiration}")
     private long refreshTokenValidity; // 7일
 
+    private Set<String> blackList = new HashSet<>();
 
     // Access Token 생성
     public String createAccessToken(String userEmail, Role role, Provider provider) {
@@ -35,7 +38,7 @@ public class JwtProvider {
 
         return Jwts.builder()
                 .subject(userEmail)
-                .subject(provider.name())
+                .claim("provider",provider.name())
                 .claim("role", role)
                 .issuedAt(Date.from(now))
                 .expiration(Date.from(expirationTime))
@@ -57,6 +60,10 @@ public class JwtProvider {
     }
 
     public boolean validateToken(String token) {
+        if (isTokenBlackListed(token)) {
+            return false;
+        }
+
         try {
             Jwts.parser()
                     .verifyWith(extractSecretKey())
@@ -86,5 +93,16 @@ public class JwtProvider {
      */
     private SecretKey extractSecretKey() {
         return Keys.hmacShaKeyFor(Decoders.BASE64.decode(secretKey));
+    }
+
+    // token blackList 추가
+    public void addTokenToBlackList(String token) {
+        blackList.add(token);
+    }
+
+
+    // blackList에 토큰 있는지 검사
+    public boolean isTokenBlackListed(String token) {
+        return blackList.contains(token);
     }
 }

@@ -1,5 +1,7 @@
 package what.what2eat.domain.auth.social.service;
 
+import io.jsonwebtoken.Claims;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -118,6 +120,21 @@ public class KakaoAuthService {
         return false;
     }
 
+    public void logout(HttpServletRequest request) {
+        String token = resolveToken(request);
 
+        if (!jwtProvider.validateToken(token)) {
+            throw new RuntimeException("이미 블랙리스트에 존재합니다.");
+        }
+        jwtProvider.addTokenToBlackList(token);
+    }
 
+    // Authorization 헤더에서 실제 JWT 토큰 문자열만 추출
+    private String resolveToken(HttpServletRequest request) {
+        String bearerToken = request.getHeader("Authorization");
+        if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
+            return bearerToken.substring(7);
+        }
+        return null;
+    }
 }
