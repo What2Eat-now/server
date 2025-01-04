@@ -28,13 +28,26 @@ public class UserGroup extends BaseEntity {
     @Column(name = "user_group_name", nullable = false, length = 20)
     private String userGroupName;
 
-    @Column(name = "user_group_code", nullable = false, length = 50)
+    @Column(name = "user_group_code", nullable = false, length = 50, unique = true)
     private String userGroupCode;
 
+    @Builder.Default
     @OneToMany(mappedBy = "userGroup", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<User> users = new ArrayList<>();
 
     @OneToMany(mappedBy = "userGroup", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Meeting> meetings = new ArrayList<>();
+
+    // 그룹 구성원 추가 (양방향 관계 연결)
+    public void addUser(User user) {
+        users.add(user);
+        user.assignGroup(this);
+    }
+
+    //그룹 구성원 삭제
+    public void removeUser(User user) {
+        users.remove(user);
+        user.removeGroup();
+    }
 }
 

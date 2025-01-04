@@ -58,4 +58,14 @@ public class User extends BaseEntity {
 
     @OneToMany(mappedBy = "user")
     private List<LocationTracking> locationTrackings = new ArrayList<>();
+
+    // 그룹 할당 (명시적 양방향 관계 설정)
+    public void assignGroup(UserGroup userGroup) {
+        this.userGroup = userGroup;
+    }
+
+    // 그룹 삭제 (명시적 양방향 관계 설정)
+    public void removeGroup() {
+        this.userGroup = null;
+    }
 }
