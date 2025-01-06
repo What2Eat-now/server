@@ -1,5 +1,6 @@
 package what.what2eat.domain.auth.local.service;
 
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -8,6 +9,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import what.what2eat.domain.auth.entity.Provider;
 import what.what2eat.domain.auth.entity.Role;
 import what.what2eat.domain.auth.entity.User;
@@ -27,8 +29,9 @@ public class LocalAuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtProvider jwtProvider;
 
+    @Transactional
     public void signUp(LocalAuthRequestDTO.SignUpRequestDTO request) {
-        if(!authRepository.existsByUserEmailAndProvider(request.getUserEmail(), Provider.LOCAL)){
+        if (!authRepository.existsByUserEmailAndProvider(request.getUserEmail(), Provider.LOCAL)) {
             authRepository.save(User.builder()
                     .userEmail(request.getUserEmail())
                     .password(passwordEncoder.encode(request.getPassword()))
@@ -36,12 +39,14 @@ public class LocalAuthService {
                     .role(Role.USER)
                     .provider(Provider.LOCAL)
                     .build());
-        }else{
+        } else {
             throw new IllegalArgumentException("이미 존재하는 아이디입니다.");
         }
     }
 
+    @Transactional
     public LocalAuthResponseDTO.LoginResponseDTO login(LocalAuthRequestDTO.LoginRequestDTO request) throws Exception {
+
         // 유효성 검사
         validateMember(request);
 
@@ -67,7 +72,6 @@ public class LocalAuthService {
 
             String refreshToken = jwtProvider.createRefreshToken(request.getUserEmail());
 
-
             return LocalAuthResponseDTO.LoginResponseDTO.builder()
                     .accessToken(accessToken)
                     .refreshToken(refreshToken)
@@ -82,5 +86,23 @@ public class LocalAuthService {
 
     private void validateMember(LocalAuthRequestDTO.LoginRequestDTO request) {
         authRepository.existsByUserEmailAndProvider(request.getUserEmail(), Provider.LOCAL);
+    }
+
+    // Authorization 헤더에서 실제 JWT 토큰 문자열만 추출
+    private String resolveToken(HttpServletRequest request) {
+        String bearerToken = request.getHeader("Authorization");
+        if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
+            return bearerToken.substring(7);
+        }
+        return null;
+    }
+
+    public void logout(HttpServletRequest request) {
+        String token = resolveToken(request);
+
+        if (!jwtProvider.validateToken(token)) {
+            throw new RuntimeException("이미 블랙리스트에 존재합니다.");
+        }
+        jwtProvider.addTokenToBlackList(token);
     }
 }
