@@ -25,7 +25,7 @@ public class KakaoAuthController {
     // 카카오 로그인 후 토큰과 사용자 정보 반환받음
     @PostMapping("/login/kakao")
     @Operation(summary = "카카오 소셜 로그인")
-    public ResponseEntity<ApiResponse<KakaoAuthResponseDTO.LoginInfoDTO>> getAccessToken(@RequestParam String code) {
+    public ResponseEntity<ApiResponse<KakaoAuthResponseDTO.LoginInfoDTO>> login(@RequestParam String code) {
         return ResponseEntity.ok(ApiResponse.ok(kakaoAuthService.getKakaoUserInfo(code)));
     }
 
