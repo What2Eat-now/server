@@ -34,44 +34,13 @@ public class KakaoAuthService {
     private final AuthRepository authRepository;
     private final JwtProvider jwtProvider;
 
-    // 토큰 요청을 위한 Http 요청 객체 생성
-    public HttpEntity<MultiValueMap<String, String>> createTokenRequest(String code) {
-        // 헤더 설정
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-
-        // 파라미터 설정
-        MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
-        params.add("grant_type", "authorization_code");
-        params.add("client_id", kakaoClientId);
-        params.add("redirect_url", kakaoRedirectUrl);
-        params.add("code", code);
-
-        return new HttpEntity<>(params, headers);
-    }
-
-    // 인가 코드 정보로 사용자 정보 저장하고있는 access, refresh token 조회
-    public KakaoAuthResponseDTO.KakaoTokenDTO getAccessToken(String code) {
-        KakaoAuthResponseDTO.KakaoTokenDTO tokenDTO = restTemplate.exchange(
-                        "https://kauth.kakao.com/oauth/token",
-                        HttpMethod.POST,
-                        createTokenRequest(code),
-                        KakaoAuthResponseDTO.KakaoTokenDTO.class)
-                .getBody();
-
-        return tokenDTO;
-    }
 
     // 토큰으로 사용자 정보 조회
-    public KakaoAuthResponseDTO.LoginInfoDTO getKakaoUserInfo(String code) {
-
-        // 토큰 조회
-        KakaoAuthResponseDTO.KakaoTokenDTO tokenDTO = getAccessToken(code);
-        String kakaoToken = tokenDTO.getAccessToken();
+    public KakaoAuthResponseDTO.LoginInfoDTO getKakaoUserInfo(String kakaoAccessToken) {
 
         // 인증을 위한 헤더 설정
         HttpHeaders headers = new HttpHeaders();
-        headers.add("Authorization", "Bearer " + kakaoToken);
+        headers.add("Authorization", "Bearer " + kakaoAccessToken);
         headers.add("Content-type", "application/x-www-form-urlencoded;charset=utf-8");
 
         HttpEntity<MultiValueMap<String, String>> httpEntity = new HttpEntity<>(headers);
