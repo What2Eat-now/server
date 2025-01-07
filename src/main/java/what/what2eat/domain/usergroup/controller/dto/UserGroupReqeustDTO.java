@@ -7,10 +7,21 @@ public class UserGroupReqeustDTO {
 
     @Builder
     @Getter
-    public static class CreateGroupDTO {
+    public static class CreateUserGroupDTO {
 
         private String groupName;
 
         private String userEmail;
+
+        private String groupPassword;
+    }
+
+    @Builder
+    @Getter
+    public static class JoinUserGroupDTO {
+
+        private String userEmail;
+
+        private String groupPassword;
     }
 }

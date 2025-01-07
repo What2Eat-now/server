@@ -28,11 +28,14 @@ public class UserGroup extends BaseEntity {
     @Column(name = "user_group_name", nullable = false, length = 20)
     private String userGroupName;
 
-    @Column(name = "user_group_code", nullable = false, length = 50, unique = true)
-    private String userGroupCode;
+    @Column(name = "user_group_password", nullable = false, length = 100)
+    private String userGroupPassword;
+
+    @Column(name = "user_group_owner", nullable = false)
+    private String owner;
 
     @Builder.Default
-    @OneToMany(mappedBy = "userGroup", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "userGroup", cascade = CascadeType.ALL)
     private List<User> users = new ArrayList<>();
 
     @OneToMany(mappedBy = "userGroup", cascade = CascadeType.ALL, orphanRemoval = true)

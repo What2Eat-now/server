@@ -8,5 +8,4 @@ import what.what2eat.domain.usergroup.entity.UserGroup;
 public interface UserGroupRepository extends JpaRepository<UserGroup, Long> {
     boolean existsByUserGroupName(String groupName);
 
-
 }
