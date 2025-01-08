@@ -2,6 +2,7 @@ package what.what2eat.domain.auth.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -24,16 +25,16 @@ public class LocalAuthController {
     private final LocalAuthService localAuthService;
 
     @PostMapping("/signup/local")
-    @Operation(summary = "로컬 회원가입")
-    public ResponseEntity<ApiResponse<Void>> signUp(@RequestBody LocalAuthRequestDTO.SignUpRequestDTO request) {
+    @Operation(summary = "로컬 회원가입", description = "로컬 회원가입을 처리합니다. 이메일, 비밀번호, 닉네임을 제공해야 합니다. \n 응답코드에 따른 결과값은 포스트맨 API 명세서를 참고 부탁드립니다.")
+    public ResponseEntity<ApiResponse<Void>> signUp(@Valid @RequestBody LocalAuthRequestDTO.SignUpRequestDTO request) {
         localAuthService.signUp(request);
 
         return ResponseEntity.ok(ApiResponse.ok(null));
     }
 
     @PostMapping("/login/local")
-    @Operation(summary = "로컬 로그인")
-    public ResponseEntity<ApiResponse<LocalAuthResponseDTO.LoginResponseDTO>> login(@RequestBody LocalAuthRequestDTO.LoginRequestDTO request) throws Exception {
+    @Operation(summary = "로컬 로그인", description = "로컬 로그인을 처리합니다. 이메일, 비밀번호를 제공해야 합니다. \n 응답코드에 따른 결과값은 포스트맨 API 명세서를 참고 부탁드립니다.")
+    public ResponseEntity<ApiResponse<LocalAuthResponseDTO.LoginResponseDTO>> login(@Valid @RequestBody LocalAuthRequestDTO.LoginRequestDTO request) throws Exception {
         LocalAuthResponseDTO.LoginResponseDTO login = localAuthService.login(request);
 
         return ResponseEntity.ok(ApiResponse.ok(login));
