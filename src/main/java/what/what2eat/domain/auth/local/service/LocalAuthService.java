@@ -31,7 +31,7 @@ public class LocalAuthService {
 
     @Transactional
     public void signUp(LocalAuthRequestDTO.SignUpRequestDTO request) {
-        if (!authRepository.existsByUserEmailAndProvider(request.getUserEmail(), Provider.LOCAL)) {
+        if (!authRepository.existsByUserEmail(request.getUserEmail())) {
             authRepository.save(User.builder()
                     .userEmail(request.getUserEmail())
                     .password(passwordEncoder.encode(request.getPassword()))
@@ -85,7 +85,7 @@ public class LocalAuthService {
     }
 
     private void validateMember(LocalAuthRequestDTO.LoginRequestDTO request) {
-        authRepository.existsByUserEmailAndProvider(request.getUserEmail(), Provider.LOCAL);
+        authRepository.existsByUserEmail(request.getUserEmail());
     }
 
     // Authorization 헤더에서 실제 JWT 토큰 문자열만 추출
