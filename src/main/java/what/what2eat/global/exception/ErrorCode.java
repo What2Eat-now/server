@@ -21,7 +21,7 @@ public enum ErrorCode {
     /**
      * auth 예외 처리
      */
-    SIGNUP_REQUIRED("307", HttpStatus.TEMPORARY_REDIRECT, "회원 가입이 필요합니다."),
+
     USER_NOT_FOUND("404", HttpStatus.NOT_FOUND, "사용자를 찾을 수 없습니다."),
     EMAIL_ALREADY_EXISTS("409", HttpStatus.CONFLICT, "이미 존재하는 이메일입니다."),
     INVALID_USER_ROLE("403", HttpStatus.FORBIDDEN, "유효하지 않은 사용자 권한입니다."),
