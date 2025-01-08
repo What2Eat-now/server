@@ -1,4 +1,4 @@
-package what.what2eat.domain.auth.local.controller.dto;
+package what.what2eat.domain.auth.controller.dto;
 
 import lombok.Builder;
 import lombok.Getter;
@@ -12,6 +12,7 @@ public class LocalAuthRequestDTO {
         private String userEmail;
 
         private String password;
+
 
         private String nickName;
 

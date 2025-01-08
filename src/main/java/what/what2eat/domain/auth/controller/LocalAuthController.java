@@ -1,19 +1,17 @@
-package what.what2eat.domain.auth.local.controller;
+package what.what2eat.domain.auth.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
-import what.what2eat.domain.auth.local.controller.dto.LocalAuthRequestDTO;
-import what.what2eat.domain.auth.local.controller.dto.LocalAuthResponseDTO;
-import what.what2eat.domain.auth.local.service.LocalAuthService;
+import what.what2eat.domain.auth.controller.dto.LocalAuthRequestDTO;
+import what.what2eat.domain.auth.controller.dto.LocalAuthResponseDTO;
+import what.what2eat.domain.auth.service.LocalAuthService;
 import what.what2eat.global.response.ApiResponse;
 
 @Controller
@@ -40,14 +38,5 @@ public class LocalAuthController {
 
         return ResponseEntity.ok(ApiResponse.ok(login));
     }
-
-    @PostMapping("/logout/local")
-    @Operation(summary = "로컬 로그아웃")
-    public ResponseEntity<ApiResponse<Void>> logout(HttpServletRequest request) {
-        localAuthService.logout(request);
-
-        return ResponseEntity.ok(ApiResponse.ok(null));
-    }
-
 
 }
