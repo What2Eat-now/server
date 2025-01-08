@@ -33,12 +33,15 @@ public class KakaoAuthService {
     private final AuthRepository authRepository;
     private final JwtProvider jwtProvider;
 
+    // 회원가입
     public void signup(KakaoAuthRequestDTO.KakaoSignupDTO request) {
 
+        // 이메일 유효성 검사
         if (validateKakaoAuth(request.getUserEmail())) {
             throw new CustomException(ErrorCode.EMAIL_ALREADY_EXISTS);
         }
 
+        //객체 변환후 저장
         User user = kakaoAuthConverter.signupToUserEntity(request);
         authRepository.save(user);
     }

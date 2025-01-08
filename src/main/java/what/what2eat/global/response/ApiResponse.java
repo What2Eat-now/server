@@ -26,7 +26,7 @@ public class ApiResponse<T> {
 
     // 데이터 포함하지 않은 실패 응답
     public static <T> ApiResponse<T> fail(CustomException e) {
-        return new ApiResponse<>(e.getErrorCode().getCode(), false, e.getDetailData() == null ? null : (T) e.getDetailData() , ExceptionDTO.of(e.getErrorCode()));
+        return new ApiResponse<>(e.getErrorCode().getCode(), false, null , ExceptionDTO.of(e.getErrorCode()));
     }
 
 
