@@ -1,6 +1,5 @@
-package what.what2eat.domain.auth.social.service;
+package what.what2eat.domain.auth.service;
 
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.*;
@@ -9,9 +8,9 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 import what.what2eat.domain.auth.entity.Role;
-import what.what2eat.domain.auth.social.controller.dto.KakaoAuthRequestDTO;
-import what.what2eat.domain.auth.social.controller.dto.KakaoAuthResponseDTO;
-import what.what2eat.domain.auth.social.converter.KakaoAuthConverter;
+import what.what2eat.domain.auth.controller.dto.KakaoAuthRequestDTO;
+import what.what2eat.domain.auth.controller.dto.KakaoAuthResponseDTO;
+import what.what2eat.domain.auth.converter.KakaoAuthConverter;
 import what.what2eat.domain.auth.entity.Provider;
 import what.what2eat.domain.auth.entity.User;
 import what.what2eat.domain.auth.repository.AuthRepository;
@@ -24,6 +23,7 @@ import java.util.Map;
 @Service
 @RequiredArgsConstructor
 @Slf4j
+@Transactional
 public class KakaoAuthService {
 
     private final RestTemplate restTemplate;
@@ -31,7 +31,6 @@ public class KakaoAuthService {
     private final AuthRepository authRepository;
     private final JwtProvider jwtProvider;
 
-    @Transactional
     public void signup(KakaoAuthRequestDTO.KakaoSignupDTO request) {
 
         if (validateKakaoAuth(request.getUserEmail())) {
@@ -43,7 +42,6 @@ public class KakaoAuthService {
     }
 
     // 토큰으로 사용자 정보 조회
-    @Transactional
     public KakaoAuthResponseDTO.LoginInfoDTO login(String kakaoAccessToken) {
 
         // 인증을 위한 헤더 설정
@@ -93,22 +91,4 @@ public class KakaoAuthService {
         return false;
     }
 
-    @Transactional
-    public void logout(HttpServletRequest request) {
-        String token = resolveToken(request);
-
-        if (!jwtProvider.validateToken(token)) {
-            throw new CustomException(ErrorCode.CONFLICT);
-        }
-        jwtProvider.addTokenToBlackList(token);
-    }
-
-    // Authorization 헤더에서 실제 JWT 토큰 문자열만 추출
-    private String resolveToken(HttpServletRequest request) {
-        String bearerToken = request.getHeader("Authorization");
-        if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
-            return bearerToken.substring(7);
-        }
-        return null;
-    }
 }

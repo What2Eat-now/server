@@ -1,9 +1,8 @@
-package what.what2eat.domain.auth.social.controller;
+package what.what2eat.domain.auth.controller;
 
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -13,9 +12,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import what.what2eat.domain.auth.social.controller.dto.KakaoAuthRequestDTO;
-import what.what2eat.domain.auth.social.controller.dto.KakaoAuthResponseDTO;
-import what.what2eat.domain.auth.social.service.KakaoAuthService;
+import what.what2eat.domain.auth.controller.dto.KakaoAuthRequestDTO;
+import what.what2eat.domain.auth.controller.dto.KakaoAuthResponseDTO;
+import what.what2eat.domain.auth.service.KakaoAuthService;
 import what.what2eat.global.response.ApiResponse;
 
 @Controller
@@ -40,13 +39,5 @@ public class KakaoAuthController {
 
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.ok(null));
-    }
-
-    @PostMapping("/logout/kakao")
-    @Operation(summary = "카카오 소셜 로그아웃")
-    public ResponseEntity<ApiResponse<Void>> logout(HttpServletRequest request) {
-        kakaoAuthService.logout(request);
-
-        return ResponseEntity.ok(ApiResponse.ok(null));
     }
 }

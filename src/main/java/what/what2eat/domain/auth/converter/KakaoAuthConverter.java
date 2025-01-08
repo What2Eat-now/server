@@ -1,10 +1,10 @@
-package what.what2eat.domain.auth.social.converter;
+package what.what2eat.domain.auth.converter;
 
 import org.springframework.stereotype.Component;
 import what.what2eat.domain.auth.entity.Provider;
 import what.what2eat.domain.auth.entity.Role;
 import what.what2eat.domain.auth.entity.User;
-import what.what2eat.domain.auth.social.controller.dto.KakaoAuthRequestDTO;
+import what.what2eat.domain.auth.controller.dto.KakaoAuthRequestDTO;
 
 @Component
 public class KakaoAuthConverter {

@@ -1,6 +1,5 @@
-package what.what2eat.domain.auth.local.service;
+package what.what2eat.domain.auth.service;
 
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -13,8 +12,8 @@ import org.springframework.transaction.annotation.Transactional;
 import what.what2eat.domain.auth.entity.Provider;
 import what.what2eat.domain.auth.entity.Role;
 import what.what2eat.domain.auth.entity.User;
-import what.what2eat.domain.auth.local.controller.dto.LocalAuthRequestDTO;
-import what.what2eat.domain.auth.local.controller.dto.LocalAuthResponseDTO;
+import what.what2eat.domain.auth.controller.dto.LocalAuthRequestDTO;
+import what.what2eat.domain.auth.controller.dto.LocalAuthResponseDTO;
 import what.what2eat.domain.auth.repository.AuthRepository;
 import what.what2eat.global.security.domain.CustomUserDetails;
 import what.what2eat.global.security.jwt.JwtProvider;
@@ -22,6 +21,7 @@ import what.what2eat.global.security.jwt.JwtProvider;
 @Service
 @RequiredArgsConstructor
 @Slf4j
+@Transactional
 public class LocalAuthService {
 
     private final AuthenticationManager authenticationManager;
@@ -29,7 +29,6 @@ public class LocalAuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtProvider jwtProvider;
 
-    @Transactional
     public void signUp(LocalAuthRequestDTO.SignUpRequestDTO request) {
         if (!authRepository.existsByUserEmail(request.getUserEmail())) {
             authRepository.save(User.builder()
@@ -44,7 +43,6 @@ public class LocalAuthService {
         }
     }
 
-    @Transactional
     public LocalAuthResponseDTO.LoginResponseDTO login(LocalAuthRequestDTO.LoginRequestDTO request) throws Exception {
 
         // 유효성 검사
@@ -88,21 +86,5 @@ public class LocalAuthService {
         authRepository.existsByUserEmail(request.getUserEmail());
     }
 
-    // Authorization 헤더에서 실제 JWT 토큰 문자열만 추출
-    private String resolveToken(HttpServletRequest request) {
-        String bearerToken = request.getHeader("Authorization");
-        if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
-            return bearerToken.substring(7);
-        }
-        return null;
-    }
 
-    public void logout(HttpServletRequest request) {
-        String token = resolveToken(request);
-
-        if (!jwtProvider.validateToken(token)) {
-            throw new RuntimeException("이미 블랙리스트에 존재합니다.");
-        }
-        jwtProvider.addTokenToBlackList(token);
-    }
 }
