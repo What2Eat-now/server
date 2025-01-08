@@ -38,7 +38,8 @@ public class KakaoAuthService {
             throw new CustomException(ErrorCode.EMAIL_ALREADY_EXISTS);
         }
 
-        kakaoAuthConverter.signupToUserEntity(request);
+        User user = kakaoAuthConverter.signupToUserEntity(request);
+        authRepository.save(user);
     }
 
     // 토큰으로 사용자 정보 조회
@@ -63,7 +64,9 @@ public class KakaoAuthService {
         if(!validateKakaoAuth(userInfo.getKakaoAccount().getKakaoEmail())){
             // 존재하지 않을 경우 회원가입을 위해 예외 처리
             throw new CustomException(ErrorCode.SIGNUP_REQUIRED,
-                    Map.of("kakaoUserInfo",userInfo));
+                    Map.of("kakaoUserInfo",userInfo.getKakaoAccount().getKakaoEmail(),
+                            "redirectUrl", "/api/v1/auth/signup/kakao",
+                            "socialId", userInfo.getUserId()));
         }
 
         // accessToken 생성

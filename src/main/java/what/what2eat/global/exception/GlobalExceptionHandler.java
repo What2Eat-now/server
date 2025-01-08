@@ -18,7 +18,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiResponse<String>> handleCustomException(CustomException e) {
         log.error("handleCustomException() in GlobalExceptionHandler throw CustomException : {}", e.getMessage());
         return ResponseEntity.status(e.getErrorCode().getHttpStatus())
-                .body(ApiResponse.fail(new CustomException(e.getErrorCode())));
+                .body(ApiResponse.fail(new CustomException(e.getErrorCode(), e.getDetailData())));
     }
 
     // 기본 예외
