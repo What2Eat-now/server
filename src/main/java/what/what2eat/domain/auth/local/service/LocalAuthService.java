@@ -22,6 +22,7 @@ import what.what2eat.global.security.jwt.JwtProvider;
 @Service
 @RequiredArgsConstructor
 @Slf4j
+@Transactional
 public class LocalAuthService {
 
     private final AuthenticationManager authenticationManager;
@@ -29,9 +30,8 @@ public class LocalAuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtProvider jwtProvider;
 
-    @Transactional
     public void signUp(LocalAuthRequestDTO.SignUpRequestDTO request) {
-        if (!authRepository.existsByUserEmailAndProvider(request.getUserEmail(), Provider.LOCAL)) {
+        if (!authRepository.existsByUserEmail(request.getUserEmail())) {
             authRepository.save(User.builder()
                     .userEmail(request.getUserEmail())
                     .password(passwordEncoder.encode(request.getPassword()))
@@ -44,7 +44,6 @@ public class LocalAuthService {
         }
     }
 
-    @Transactional
     public LocalAuthResponseDTO.LoginResponseDTO login(LocalAuthRequestDTO.LoginRequestDTO request) throws Exception {
 
         // 유효성 검사
@@ -85,24 +84,8 @@ public class LocalAuthService {
     }
 
     private void validateMember(LocalAuthRequestDTO.LoginRequestDTO request) {
-        authRepository.existsByUserEmailAndProvider(request.getUserEmail(), Provider.LOCAL);
+        authRepository.existsByUserEmail(request.getUserEmail());
     }
 
-    // Authorization 헤더에서 실제 JWT 토큰 문자열만 추출
-    private String resolveToken(HttpServletRequest request) {
-        String bearerToken = request.getHeader("Authorization");
-        if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
-            return bearerToken.substring(7);
-        }
-        return null;
-    }
 
-    public void logout(HttpServletRequest request) {
-        String token = resolveToken(request);
-
-        if (!jwtProvider.validateToken(token)) {
-            throw new RuntimeException("이미 블랙리스트에 존재합니다.");
-        }
-        jwtProvider.addTokenToBlackList(token);
-    }
 }

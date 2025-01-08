@@ -6,13 +6,17 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import what.what2eat.domain.auth.social.controller.dto.KakaoAuthRequestDTO;
 import what.what2eat.domain.auth.social.controller.dto.KakaoAuthResponseDTO;
 import what.what2eat.domain.auth.social.service.KakaoAuthService;
 import what.what2eat.global.response.ApiResponse;
-import what.what2eat.global.security.jwt.JwtProvider;
 
 @Controller
 @Slf4j
@@ -25,15 +29,16 @@ public class KakaoAuthController {
     // 카카오 로그인 후 토큰과 사용자 정보 반환받음
     @PostMapping("/login/kakao")
     @Operation(summary = "카카오 소셜 로그인")
-    public ResponseEntity<ApiResponse<KakaoAuthResponseDTO.LoginInfoDTO>> getAccessToken(@RequestParam String code) {
-        return ResponseEntity.ok(ApiResponse.ok(kakaoAuthService.getKakaoUserInfo(code)));
+    public ResponseEntity<ApiResponse<KakaoAuthResponseDTO.LoginInfoDTO>> login(@RequestParam String kakaoAccessToken) {
+        return ResponseEntity.ok(ApiResponse.ok(kakaoAuthService.login(kakaoAccessToken)));
     }
 
-    @PostMapping("/logout/kakao")
-    @Operation(summary = "카카오 소셜 로그아웃")
-    public ResponseEntity<ApiResponse<Void>> logout(HttpServletRequest request) {
-        kakaoAuthService.logout(request);
+    @PostMapping("/signup/kakao")
+    @Operation(summary = "카카오 회원가입")
+    public ResponseEntity<ApiResponse<Void>> signup(@RequestBody KakaoAuthRequestDTO.KakaoSignupDTO request) {
+        kakaoAuthService.signup(request);
 
-        return ResponseEntity.ok(ApiResponse.ok(null));
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.ok(null));
     }
 }

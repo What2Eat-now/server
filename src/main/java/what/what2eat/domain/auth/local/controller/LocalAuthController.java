@@ -41,13 +41,4 @@ public class LocalAuthController {
         return ResponseEntity.ok(ApiResponse.ok(login));
     }
 
-    @PostMapping("/logout/local")
-    @Operation(summary = "로컬 로그아웃")
-    public ResponseEntity<ApiResponse<Void>> logout(HttpServletRequest request) {
-        localAuthService.logout(request);
-
-        return ResponseEntity.ok(ApiResponse.ok(null));
-    }
-
-
 }

@@ -76,7 +76,7 @@ public class SecurityConfig {
     // 인증 및 인가가 필요한 엔드포인트에 적용되는 RequestMatcher
     private RequestMatcher[] requestHasRoleUser() {
         List<RequestMatcher> requestMatchers = List.of(
-                antMatcher("/api/v1/restaurants/**")
+                antMatcher("/api/v1/groups/**")
         );
         return requestMatchers.toArray(RequestMatcher[]::new);
     }
