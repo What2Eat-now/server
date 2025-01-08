@@ -1,6 +1,5 @@
-package what.what2eat.domain.auth.local.service;
+package what.what2eat.domain.auth.service;
 
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -13,8 +12,8 @@ import org.springframework.transaction.annotation.Transactional;
 import what.what2eat.domain.auth.entity.Provider;
 import what.what2eat.domain.auth.entity.Role;
 import what.what2eat.domain.auth.entity.User;
-import what.what2eat.domain.auth.local.controller.dto.LocalAuthRequestDTO;
-import what.what2eat.domain.auth.local.controller.dto.LocalAuthResponseDTO;
+import what.what2eat.domain.auth.controller.dto.LocalAuthRequestDTO;
+import what.what2eat.domain.auth.controller.dto.LocalAuthResponseDTO;
 import what.what2eat.domain.auth.repository.AuthRepository;
 import what.what2eat.global.security.domain.CustomUserDetails;
 import what.what2eat.global.security.jwt.JwtProvider;

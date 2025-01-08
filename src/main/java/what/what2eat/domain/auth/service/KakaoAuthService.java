@@ -1,6 +1,5 @@
-package what.what2eat.domain.auth.social.service;
+package what.what2eat.domain.auth.service;
 
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.*;
@@ -9,9 +8,9 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 import what.what2eat.domain.auth.entity.Role;
-import what.what2eat.domain.auth.social.controller.dto.KakaoAuthRequestDTO;
-import what.what2eat.domain.auth.social.controller.dto.KakaoAuthResponseDTO;
-import what.what2eat.domain.auth.social.converter.KakaoAuthConverter;
+import what.what2eat.domain.auth.controller.dto.KakaoAuthRequestDTO;
+import what.what2eat.domain.auth.controller.dto.KakaoAuthResponseDTO;
+import what.what2eat.domain.auth.converter.KakaoAuthConverter;
 import what.what2eat.domain.auth.entity.Provider;
 import what.what2eat.domain.auth.entity.User;
 import what.what2eat.domain.auth.repository.AuthRepository;

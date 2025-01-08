@@ -1,4 +1,4 @@
-package what.what2eat.domain.auth.social.controller.dto;
+package what.what2eat.domain.auth.controller.dto;
 
 import lombok.Builder;
 import lombok.Getter;

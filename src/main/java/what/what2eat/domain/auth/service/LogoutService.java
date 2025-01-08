@@ -1,4 +1,4 @@
-package what.what2eat.domain.auth.logout.service;
+package what.what2eat.domain.auth.service;
 
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
