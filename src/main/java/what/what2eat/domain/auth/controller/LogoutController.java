@@ -21,7 +21,7 @@ public class LogoutController {
     private final LogoutService logoutService;
 
     @PostMapping("/logout")
-    @Operation(summary = "공통 로그아웃")
+    @Operation(summary = "공통 로그아웃", description = "로그아웃을 처리합니다. Authorization 헤더에 accessToken을 첨부해서 요청하시면 됩니다. \n 응답 코드에 따른 자세한 결과는 PostMan API 명세서를 참고 부탁드립니다.")
     public ResponseEntity<ApiResponse<String>> logout(HttpServletRequest request) {
         logoutService.logout(request);
 

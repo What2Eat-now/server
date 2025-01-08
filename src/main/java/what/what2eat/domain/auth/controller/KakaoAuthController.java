@@ -21,19 +21,19 @@ import what.what2eat.global.response.ApiResponse;
 @Slf4j
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/auth")
-@Tag(name = "로그인 관련 컨트롤러", description = "로컬 or 소셜 로그인 API")
+@Tag(name = "카카오 소셜 로그인 컨트롤러", description = " 카카오 소셜 로그인 API를 처리합니다. 응답 코드에 따른 자세한 결과는 PostMan API 명세서를 참고 부탁드립니다.")
 public class KakaoAuthController {
     private final KakaoAuthService kakaoAuthService;
 
     // 카카오 로그인 후 토큰과 사용자 정보 반환받음
     @PostMapping("/login/kakao")
-    @Operation(summary = "카카오 소셜 로그인")
+    @Operation(summary = "카카오 소셜 로그인", description = "카카오 소셜 로그인을 처리합니다. kakaoAccessToken을 제공해야 합니다.")
     public ResponseEntity<ApiResponse<KakaoAuthResponseDTO.LoginInfoDTO>> login(@RequestParam String kakaoAccessToken) {
         return ResponseEntity.ok(ApiResponse.ok(kakaoAuthService.login(kakaoAccessToken)));
     }
 
     @PostMapping("/signup/kakao")
-    @Operation(summary = "카카오 회원가입")
+    @Operation(summary = "카카오 회원가입", description = "카카오 소셜 회원가입을 처리합니다. 이메일, 닉네임을 제공해야 합니다.")
     public ResponseEntity<ApiResponse<Void>> signup(@RequestBody KakaoAuthRequestDTO.KakaoSignupDTO request) {
         kakaoAuthService.signup(request);
 

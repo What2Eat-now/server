@@ -15,10 +15,13 @@ public class KakaoAuthResponseDTO {
     @AllArgsConstructor
     public static class LoginInfoDTO {
 
+        // 서비스 자체 access Token
         private String accessToken;
 
+        // 서비스 자체 refresh Token
         private String refreshToken;
 
+        // 로그인된 카카오 사용자 정보
         private KakaoUserInfoDTO userInfo;
     }
 
