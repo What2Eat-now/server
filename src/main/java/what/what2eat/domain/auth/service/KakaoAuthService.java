@@ -16,6 +16,8 @@ import what.what2eat.domain.auth.entity.User;
 import what.what2eat.domain.auth.repository.AuthRepository;
 import what.what2eat.global.exception.CustomException;
 import what.what2eat.global.exception.ErrorCode;
+import what.what2eat.global.response.ApiResponse;
+import what.what2eat.global.response.ResponseCode;
 import what.what2eat.global.security.jwt.JwtProvider;
 
 import java.util.Map;
@@ -31,18 +33,21 @@ public class KakaoAuthService {
     private final AuthRepository authRepository;
     private final JwtProvider jwtProvider;
 
+    // 회원가입
     public void signup(KakaoAuthRequestDTO.KakaoSignupDTO request) {
 
+        // 이메일 유효성 검사
         if (validateKakaoAuth(request.getUserEmail())) {
             throw new CustomException(ErrorCode.EMAIL_ALREADY_EXISTS);
         }
 
+        //객체 변환후 저장
         User user = kakaoAuthConverter.signupToUserEntity(request);
         authRepository.save(user);
     }
 
     // 토큰으로 사용자 정보 조회
-    public KakaoAuthResponseDTO.LoginInfoDTO login(String kakaoAccessToken) {
+    public ApiResponse<Map<String, Object>> login(String kakaoAccessToken) {
 
         // 인증을 위한 헤더 설정
         HttpHeaders headers = new HttpHeaders();
@@ -59,12 +64,15 @@ public class KakaoAuthService {
                 KakaoAuthResponseDTO.KakaoUserInfoDTO.class).getBody();
 
         // 사용자 정보 DB 존재 저장 유무 확인
-        if(!validateKakaoAuth(userInfo.getKakaoAccount().getKakaoEmail())){
-            // 존재하지 않을 경우 회원가입을 위해 예외 처리
-            throw new CustomException(ErrorCode.SIGNUP_REQUIRED,
-                    Map.of("kakaoUserInfo",userInfo.getKakaoAccount().getKakaoEmail(),
-                            "redirectUrl", "/api/v1/auth/signup/kakao",
-                            "socialId", userInfo.getUserId()));
+        if (!validateKakaoAuth(userInfo.getKakaoAccount().getKakaoEmail())) {
+            // 회원가입 필요 리다이렉트 처리
+            Map<String, Object> data = Map.of(
+                    "kakaoUserInfo", userInfo.getKakaoAccount().getKakaoEmail(),
+                    "redirectUrl", "/api/v1/auth/signup/kakao",
+                    "socialId", userInfo.getUserId()
+            );
+
+            return ApiResponse.of(HttpStatus.TEMPORARY_REDIRECT, data);
         }
 
         // accessToken 생성
@@ -73,11 +81,12 @@ public class KakaoAuthService {
         // refreshToken 생성
         String refreshToken = jwtProvider.createRefreshToken(userInfo.getKakaoAccount().getKakaoEmail());
 
-        return KakaoAuthResponseDTO.LoginInfoDTO.builder()
-                .accessToken(accessToken)
-                .refreshToken(refreshToken)
-                .userInfo(userInfo)
-                .build();
+        Map<String, Object> tokens = Map.of(
+                "accessToken", accessToken,
+                "refreshToken", refreshToken
+        );
+
+        return ApiResponse.ok(tokens);
     }
 
     // 카카오 로그인 정보 DB 저장 유무 확인

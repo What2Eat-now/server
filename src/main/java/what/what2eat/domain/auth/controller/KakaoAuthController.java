@@ -17,6 +17,8 @@ import what.what2eat.domain.auth.controller.dto.KakaoAuthResponseDTO;
 import what.what2eat.domain.auth.service.KakaoAuthService;
 import what.what2eat.global.response.ApiResponse;
 
+import java.util.Map;
+
 @Controller
 @Slf4j
 @RequiredArgsConstructor
@@ -28,8 +30,9 @@ public class KakaoAuthController {
     // 카카오 로그인 후 토큰과 사용자 정보 반환받음
     @PostMapping("/login/kakao")
     @Operation(summary = "카카오 소셜 로그인", description = "카카오 소셜 로그인을 처리합니다. kakaoAccessToken을 제공해야 합니다.")
-    public ResponseEntity<ApiResponse<KakaoAuthResponseDTO.LoginInfoDTO>> login(@RequestParam String kakaoAccessToken) {
-        return ResponseEntity.ok(ApiResponse.ok(kakaoAuthService.login(kakaoAccessToken)));
+    public ResponseEntity<ApiResponse<Map<String,Object>>> login(@RequestParam String kakaoAccessToken) {
+        return ResponseEntity.status(HttpStatus.TEMPORARY_REDIRECT)
+                .body(kakaoAuthService.login(kakaoAccessToken));
     }
 
     @PostMapping("/signup/kakao")
