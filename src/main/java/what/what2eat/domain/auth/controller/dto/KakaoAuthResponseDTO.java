@@ -1,4 +1,4 @@
-package what.what2eat.domain.auth.social.controller.dto;
+package what.what2eat.domain.auth.controller.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -15,7 +15,9 @@ public class KakaoAuthResponseDTO {
     @AllArgsConstructor
     public static class LoginInfoDTO {
 
-        private KakaoTokenDTO token;
+        private String accessToken;
+
+        private String refreshToken;
 
         private KakaoUserInfoDTO userInfo;
     }

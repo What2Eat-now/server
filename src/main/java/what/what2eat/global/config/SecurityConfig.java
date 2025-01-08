@@ -11,7 +11,6 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -77,7 +76,7 @@ public class SecurityConfig {
     // 인증 및 인가가 필요한 엔드포인트에 적용되는 RequestMatcher
     private RequestMatcher[] requestHasRoleUser() {
         List<RequestMatcher> requestMatchers = List.of(
-                antMatcher("/api/v1/restaurants/**")
+                antMatcher("/api/v1/groups/**")
         );
         return requestMatchers.toArray(RequestMatcher[]::new);
     }

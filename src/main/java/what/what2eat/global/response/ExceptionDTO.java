@@ -2,6 +2,7 @@ package what.what2eat.global.response;
 
 import lombok.Getter;
 import org.antlr.v4.runtime.misc.NotNull;
+import what.what2eat.global.exception.ErrorCode;
 
 /**
  * ApiResponse에서 error를 담당할 클래스

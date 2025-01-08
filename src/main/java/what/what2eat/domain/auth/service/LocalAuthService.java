@@ -1,4 +1,4 @@
-package what.what2eat.domain.auth.local.service;
+package what.what2eat.domain.auth.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -8,11 +8,12 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import what.what2eat.domain.auth.entity.Provider;
 import what.what2eat.domain.auth.entity.Role;
 import what.what2eat.domain.auth.entity.User;
-import what.what2eat.domain.auth.local.controller.dto.LocalAuthRequestDTO;
-import what.what2eat.domain.auth.local.controller.dto.LocalAuthResponseDTO;
+import what.what2eat.domain.auth.controller.dto.LocalAuthRequestDTO;
+import what.what2eat.domain.auth.controller.dto.LocalAuthResponseDTO;
 import what.what2eat.domain.auth.repository.AuthRepository;
 import what.what2eat.global.security.domain.CustomUserDetails;
 import what.what2eat.global.security.jwt.JwtProvider;
@@ -20,6 +21,7 @@ import what.what2eat.global.security.jwt.JwtProvider;
 @Service
 @RequiredArgsConstructor
 @Slf4j
+@Transactional
 public class LocalAuthService {
 
     private final AuthenticationManager authenticationManager;
@@ -28,7 +30,7 @@ public class LocalAuthService {
     private final JwtProvider jwtProvider;
 
     public void signUp(LocalAuthRequestDTO.SignUpRequestDTO request) {
-        if(!authRepository.existsByUserEmailAndProvider(request.getUserEmail(), Provider.LOCAL)){
+        if (!authRepository.existsByUserEmail(request.getUserEmail())) {
             authRepository.save(User.builder()
                     .userEmail(request.getUserEmail())
                     .password(passwordEncoder.encode(request.getPassword()))
@@ -36,12 +38,13 @@ public class LocalAuthService {
                     .role(Role.USER)
                     .provider(Provider.LOCAL)
                     .build());
-        }else{
+        } else {
             throw new IllegalArgumentException("이미 존재하는 아이디입니다.");
         }
     }
 
     public LocalAuthResponseDTO.LoginResponseDTO login(LocalAuthRequestDTO.LoginRequestDTO request) throws Exception {
+
         // 유효성 검사
         validateMember(request);
 
@@ -67,7 +70,6 @@ public class LocalAuthService {
 
             String refreshToken = jwtProvider.createRefreshToken(request.getUserEmail());
 
-
             return LocalAuthResponseDTO.LoginResponseDTO.builder()
                     .accessToken(accessToken)
                     .refreshToken(refreshToken)
@@ -81,6 +83,8 @@ public class LocalAuthService {
     }
 
     private void validateMember(LocalAuthRequestDTO.LoginRequestDTO request) {
-        authRepository.existsByUserEmailAndProvider(request.getUserEmail(), Provider.LOCAL);
+        authRepository.existsByUserEmail(request.getUserEmail());
     }
+
+
 }
