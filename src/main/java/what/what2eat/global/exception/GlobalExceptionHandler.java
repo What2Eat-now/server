@@ -29,8 +29,8 @@ public class GlobalExceptionHandler {
 
     // 기본 예외
     @ExceptionHandler(value = {Exception.class})
-    public ResponseEntity<ApiResponse<String>> handleException(Exception e) {
+    public ResponseEntity<String> handleException(Exception e) {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(ApiResponse.fail(new CustomException(ErrorCode.INTERNAL_SERVER_ERROR)));
+                .body(e.getMessage());
     }
 }

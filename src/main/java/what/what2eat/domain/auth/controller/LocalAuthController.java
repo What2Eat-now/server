@@ -10,6 +10,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import what.what2eat.domain.auth.controller.dto.LocalAuthRequestDTO;
 import what.what2eat.domain.auth.controller.dto.LocalAuthResponseDTO;
 import what.what2eat.domain.auth.service.LocalAuthService;
@@ -40,4 +41,11 @@ public class LocalAuthController {
         return ResponseEntity.ok(ApiResponse.ok(login));
     }
 
+    @PostMapping("/check-email")
+    @Operation(summary = "이메일 중복 체크", description = "이메일 중복 체크를 처리합니다. 이메일을 제공해야 합니다. \n 응답코드에 따른 결과값은 포스트맨 API 명세서를 참고 부탁드립니다.")
+    public ResponseEntity<ApiResponse<Boolean>> checkEmail(@RequestParam String userEmail) {
+        boolean checkEmail = localAuthService.validateMember(userEmail);
+
+        return ResponseEntity.ok(ApiResponse.ok(checkEmail));
+    }
 }
