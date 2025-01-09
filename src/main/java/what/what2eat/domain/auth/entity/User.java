@@ -26,7 +26,7 @@ public class User extends BaseEntity {
     @Column(name = "user_id")
     private Long userId;
 
-    @Column(name = "user_email", unique = true, nullable = false, length = 20)
+    @Column(name = "user_email", nullable = false, length = 50)
     private String userEmail;
 
     @Column(name = "nick_name", nullable = false, length = 20)
@@ -35,15 +35,19 @@ public class User extends BaseEntity {
     @Column(name = "user_img", length = 100)
     private String userImg;
 
-    @Column(name = "password", length = 40)
+    @Column(name = "password", length = 100)
     private String password;
 
     @Column(name = "provider", nullable = false)
     @Enumerated(EnumType.STRING)
-    private SocialType provider;
+    private Provider provider;
 
     @Column(name = "social_id", length = 20)
     private Long socialId;
+
+    @Column(name = "role")
+    @Enumerated(EnumType.STRING)
+    private Role role;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_group_id")
@@ -54,4 +58,14 @@ public class User extends BaseEntity {
 
     @OneToMany(mappedBy = "user")
     private List<LocationTracking> locationTrackings = new ArrayList<>();
+
+    // 그룹 할당 (명시적 양방향 관계 설정)
+    public void assignGroup(UserGroup userGroup) {
+        this.userGroup = userGroup;
+    }
+
+    // 그룹 삭제 (명시적 양방향 관계 설정)
+    public void removeGroup() {
+        this.userGroup = null;
+    }
 }

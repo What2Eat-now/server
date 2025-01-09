@@ -1,7 +1,5 @@
 package what.what2eat.domain.auth.controller.dto;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
@@ -9,7 +7,7 @@ import lombok.*;
 import java.util.Date;
 import java.util.Map;
 
-public class AuthResponseDTO {
+public class KakaoAuthResponseDTO {
 
     @Getter
     @Builder
@@ -17,8 +15,13 @@ public class AuthResponseDTO {
     @AllArgsConstructor
     public static class LoginInfoDTO {
 
-        private KakaoTokenDTO token;
+        // 서비스 자체 access Token
+        private String accessToken;
 
+        // 서비스 자체 refresh Token
+        private String refreshToken;
+
+        // 로그인된 카카오 사용자 정보
         private KakaoUserInfoDTO userInfo;
     }
 

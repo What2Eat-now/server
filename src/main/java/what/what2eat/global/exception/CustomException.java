@@ -1,7 +1,6 @@
 package what.what2eat.global.exception;
 
 import lombok.Getter;
-import what.what2eat.global.response.ErrorCode;
 
 @Getter
 public class CustomException extends RuntimeException {
@@ -11,4 +10,8 @@ public class CustomException extends RuntimeException {
         super(errorCode.getMessage());
         this.errorCode = errorCode;
     }
+
+
+
+
 }
