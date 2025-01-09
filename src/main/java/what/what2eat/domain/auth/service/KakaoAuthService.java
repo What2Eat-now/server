@@ -6,6 +6,7 @@ import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import what.what2eat.domain.auth.entity.Role;
 import what.what2eat.domain.auth.controller.dto.KakaoAuthRequestDTO;
@@ -21,6 +22,7 @@ import what.what2eat.global.response.ResponseCode;
 import what.what2eat.global.security.jwt.JwtProvider;
 
 import java.util.Map;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -51,22 +53,13 @@ public class KakaoAuthService {
     // 토큰으로 사용자 정보 조회
     public ApiResponse<Map<String, Object>> login(String kakaoAccessToken) {
 
-        // 인증을 위한 헤더 설정
-        HttpHeaders headers = new HttpHeaders();
-        headers.add("Authorization", "Bearer " + kakaoAccessToken);
-        headers.add("Content-type", "application/x-www-form-urlencoded;charset=utf-8");
-
-        HttpEntity<MultiValueMap<String, String>> httpEntity = new HttpEntity<>(headers);
-
         // 사용자 정보 조회
-        KakaoAuthResponseDTO.KakaoUserInfoDTO userInfo = restTemplate.exchange(
-                "https://kapi.kakao.com/v2/user/me",
-                HttpMethod.POST,
-                httpEntity,
-                KakaoAuthResponseDTO.KakaoUserInfoDTO.class).getBody();
+        KakaoAuthResponseDTO.KakaoUserInfoDTO userInfo = getKakaoUserInfo(kakaoAccessToken);
 
-        // 사용자 정보 DB 존재 저장 유무 확인
-        if (!validateKakaoAuth(userInfo.getKakaoAccount().getKakaoEmail())) {
+        // 사용자 존재 유무 확인
+        Optional<User> userOpt = findUserByEmail(userInfo.getKakaoAccount().getKakaoEmail());
+
+        if (userOpt.isEmpty()) {
             // 회원가입 필요 리다이렉트 처리
             Map<String, Object> data = Map.of(
                     "kakaoUserInfo", userInfo.getKakaoAccount().getKakaoEmail(),
@@ -77,29 +70,20 @@ public class KakaoAuthService {
             return ApiResponse.of(HttpStatus.TEMPORARY_REDIRECT, data);
         }
 
-        // accessToken 생성
-        String accessToken = jwtProvider.createAccessToken(userInfo.getKakaoAccount().getKakaoEmail(), Role.USER, Provider.KAKAO);
+        // 로그인 성공
+        User user = userOpt.get();
+        Map<String, String> tokens = createTokens(user.getUserEmail());
 
-        // refreshToken 생성
-        String refreshToken = jwtProvider.createRefreshToken(userInfo.getKakaoAccount().getKakaoEmail());
-
-        Map<String, Object> tokens = Map.of(
-                "accessToken", accessToken,
-                "refreshToken", refreshToken
-        );
-
-        return ApiResponse.ok(tokens);
+        return ApiResponse.ok(Map.of(
+                "message", "로그인 성공",
+                "tokens", tokens
+        ));
     }
 
     // 카카오 로그인 정보 DB 저장 유무 확인
-
     public boolean validateKakaoAuth(String kakaoUserEmail) {
         // 계정이 존재할 경우
-        if (authRepository.existsByUserEmail(kakaoUserEmail)) {
-            return true;
-        }
-        // 존재하지 않을 경우
-        return false;
+        return authRepository.existsByUserEmail(kakaoUserEmail);
     }
 
     // AccessToken 및 RefreshToken 생성
@@ -111,5 +95,33 @@ public class KakaoAuthService {
                 "accessToken", accessToken,
                 "refreshToken", refreshToken
         );
+    }
+
+    // DB 조회
+    private Optional<User> findUserByEmail(String email) {
+        return authRepository.findByUserEmail(email);
+    }
+
+    // 카카오 사용자 정보 조회
+    private KakaoAuthResponseDTO.KakaoUserInfoDTO getKakaoUserInfo(String kakaoAccessToken) {
+        try {
+            return restTemplate.exchange(
+                    "https://kapi.kakao.com/v2/user/me",
+                    HttpMethod.POST,
+                    createKakaoRequestEntity(kakaoAccessToken),
+                    KakaoAuthResponseDTO.KakaoUserInfoDTO.class
+            ).getBody();
+        } catch (HttpClientErrorException e) {
+            log.error("Kakao API 호출 실패: {}", e.getMessage());
+            throw new CustomException(ErrorCode.BAD_REQUEST);
+        }
+    }
+
+    // 카카오 요청 엔티티 생성
+    private HttpEntity<MultiValueMap<String, String>> createKakaoRequestEntity(String kakaoAccessToken) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Authorization", "Bearer " + kakaoAccessToken);
+        headers.add("Content-type", "application/x-www-form-urlencoded;charset=utf-8");
+        return new HttpEntity<>(headers);
     }
 }
