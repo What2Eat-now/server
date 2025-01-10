@@ -9,11 +9,11 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import what.what2eat.domain.auth.controller.dto.LocalAuthRequestDTO;
+import what.what2eat.domain.auth.controller.dto.LocalAuthResponseDTO;
 import what.what2eat.domain.auth.entity.Provider;
 import what.what2eat.domain.auth.entity.Role;
 import what.what2eat.domain.auth.entity.User;
-import what.what2eat.domain.auth.controller.dto.LocalAuthRequestDTO;
-import what.what2eat.domain.auth.controller.dto.LocalAuthResponseDTO;
 import what.what2eat.domain.auth.exception.AuthErrorCode;
 import what.what2eat.domain.auth.exception.MemberException;
 import what.what2eat.domain.auth.repository.AuthRepository;
@@ -32,23 +32,32 @@ public class LocalAuthService {
     private final JwtProvider jwtProvider;
 
     public void signUp(LocalAuthRequestDTO.SignUpRequestDTO request) {
-        if (!authRepository.existsByUserEmail(request.getUserEmail())) {
-            authRepository.save(User.builder()
-                    .userEmail(request.getUserEmail())
-                    .password(passwordEncoder.encode(request.getPassword()))
-                    .nickName(request.getNickName())
-                    .role(Role.USER)
-                    .provider(Provider.LOCAL)
-                    .build());
-        } else {
+        // 중복 유저 확인
+        if(validateMember(request.getUserEmail())){
             throw new MemberException(AuthErrorCode.DUPLICATE_USER_EMAIL);
         }
+
+        // 비밀번호 형식 확인
+        if (!isValidPassword(request.getPassword())) {
+            throw new MemberException(AuthErrorCode.INVALID_PASSWORD);
+        }
+
+        authRepository.save(User.builder()
+            .userEmail(request.getUserEmail())
+            .password(passwordEncoder.encode(request.getPassword()))
+            .nickName(request.getNickName())
+            .role(Role.USER)
+            .provider(Provider.LOCAL)
+            .build());
+
     }
 
     public LocalAuthResponseDTO.LoginResponseDTO login(LocalAuthRequestDTO.LoginRequestDTO request) throws Exception {
 
         // 유효성 검사
-        validateMember(request);
+        if (!validateMember(request.getUserEmail())) {
+            throw new MemberException(AuthErrorCode.USER_NOT_FOUND);
+        }
 
         try {
             // 인증 시도
@@ -84,9 +93,15 @@ public class LocalAuthService {
         }
     }
 
-    private void validateMember(LocalAuthRequestDTO.LoginRequestDTO request) {
-        authRepository.existsByUserEmail(request.getUserEmail());
+    /**
+     * 검증 메서드
+     */
+    private boolean isValidPassword(String password) {
+        return password.matches("^(?=.*[A-Z])(?=.*[@$!%*?&]).{8,16}$");
     }
 
+    public boolean validateMember(String userEmail) {
+        return authRepository.existsByUserEmail(userEmail);
+    }
 
 }

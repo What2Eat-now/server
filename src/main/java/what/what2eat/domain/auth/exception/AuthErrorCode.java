@@ -14,7 +14,8 @@ public enum AuthErrorCode implements BaseErrorCode {
     DUPLICATE_USER_NICKNAME("409", HttpStatus.CONFLICT, "이미 존재하는 닉네임입니다."),
 
     INVALID_USER_ROLE("403", HttpStatus.FORBIDDEN, "유효하지 않은 사용자 권한입니다."),
-    ALREADY_LOGOUT_USER("409", HttpStatus.CONFLICT, "이미 로그아웃된 사용자입니다.");
+    ALREADY_LOGOUT_USER("409", HttpStatus.CONFLICT, "이미 로그아웃된 사용자입니다."),
+    INVALID_PASSWORD("422", HttpStatus.UNPROCESSABLE_ENTITY, "비밀번호 형식이 잘못되었습니다.");
 
     private final String code;
     private final HttpStatus httpStatus;
