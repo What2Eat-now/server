@@ -34,7 +34,7 @@ public class RestaurantController {
                                                                                @RequestParam Double longitude,
                                                                                @RequestParam(required = false, defaultValue = "1000") Integer distance) throws URISyntaxException {
         return ResponseEntity.status(HttpStatus.OK)
-                .body(ApiResponse.ok(
+                .body(ApiResponse.of(
                         restaurantService.getNearbyRestaurants(
                                 RestaurantRequestDTO.RestaurantGetDTO.builder()
                                         .latitude(latitude)
@@ -50,7 +50,7 @@ public class RestaurantController {
                                                                                 @RequestParam Double longitude,
                                                                                 @RequestParam(required = false, defaultValue = "1000") Integer distance) {
         return ResponseEntity.status(HttpStatus.OK)
-                .body(ApiResponse.ok(restaurantService.getRandomRestaurant(
+                .body(ApiResponse.of(restaurantService.getRandomRestaurant(
                         RestaurantRequestDTO.RestaurantGetDTO.builder()
                                 .latitude(latitude)
                                 .longitude(longitude)

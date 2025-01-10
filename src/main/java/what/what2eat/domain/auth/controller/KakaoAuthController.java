@@ -39,6 +39,6 @@ public class KakaoAuthController {
     @Operation(summary = "카카오 회원가입", description = "카카오 소셜 회원가입을 처리합니다. 이메일, 닉네임을 제공해야 합니다.")
     public ResponseEntity<ApiResponse<Map<String,String>>> signup(@RequestBody KakaoAuthRequestDTO.KakaoSignupDTO request) {
         return ResponseEntity.status(HttpStatus.OK)
-                .body(ApiResponse.ok(kakaoAuthService.signup(request)));
+                .body(ApiResponse.of(kakaoAuthService.signup(request)));
     }
 }

@@ -14,9 +14,11 @@ import what.what2eat.domain.auth.controller.dto.KakaoAuthResponseDTO;
 import what.what2eat.domain.auth.converter.KakaoAuthConverter;
 import what.what2eat.domain.auth.entity.Provider;
 import what.what2eat.domain.auth.entity.User;
+import what.what2eat.domain.auth.exception.AuthErrorCode;
+import what.what2eat.domain.auth.exception.MemberException;
 import what.what2eat.domain.auth.repository.AuthRepository;
 import what.what2eat.global.exception.CustomException;
-import what.what2eat.global.exception.ErrorCode;
+import what.what2eat.global.exception.CommonErrorCode;
 import what.what2eat.global.response.ApiResponse;
 import what.what2eat.global.response.ResponseCode;
 import what.what2eat.global.security.jwt.JwtProvider;
@@ -40,7 +42,7 @@ public class KakaoAuthService {
 
         // 이메일 유효성 검사
         if (validateKakaoAuth(request.getUserEmail())) {
-            throw new CustomException(ErrorCode.EMAIL_ALREADY_EXISTS);
+            throw new MemberException(AuthErrorCode.DUPLICATE_USER_EMAIL);
         }
 
         //객체 변환후 저장
@@ -67,14 +69,14 @@ public class KakaoAuthService {
                     "socialId", userInfo.getUserId()
             );
 
-            return ApiResponse.of(HttpStatus.TEMPORARY_REDIRECT, data);
+            return ApiResponse.of(ResponseCode.NEED_SIGNUP, data);
         }
 
         // 로그인 성공
         User user = userOpt.get();
         Map<String, String> tokens = createTokens(user.getUserEmail());
 
-        return ApiResponse.ok(Map.of(
+        return ApiResponse.of(Map.of(
                 "message", "로그인 성공",
                 "tokens", tokens
         ));
@@ -113,7 +115,7 @@ public class KakaoAuthService {
             ).getBody();
         } catch (HttpClientErrorException e) {
             log.error("Kakao API 호출 실패: {}", e.getMessage());
-            throw new CustomException(ErrorCode.BAD_REQUEST);
+            throw new MemberException(CommonErrorCode.BAD_REQUEST);
         }
     }
 

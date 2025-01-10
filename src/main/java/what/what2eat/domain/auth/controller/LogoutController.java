@@ -25,6 +25,6 @@ public class LogoutController {
     public ResponseEntity<ApiResponse<String>> logout(HttpServletRequest request) {
         logoutService.logout(request);
 
-        return ResponseEntity.ok(ApiResponse.ok(ResponseCode.SUCCESS.getMessage()));
+        return ResponseEntity.ok(ApiResponse.of(ResponseCode.SUCCESS.getMessage()));
     }
 }
