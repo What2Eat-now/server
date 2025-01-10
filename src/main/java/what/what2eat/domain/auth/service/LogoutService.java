@@ -4,8 +4,9 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import what.what2eat.domain.auth.exception.AuthErrorCode;
 import what.what2eat.global.exception.CustomException;
-import what.what2eat.global.exception.ErrorCode;
+import what.what2eat.global.exception.CommonErrorCode;
 import what.what2eat.global.security.jwt.JwtProvider;
 
 @Service
@@ -28,7 +29,7 @@ public class LogoutService {
         String token = resolveToken(request);
 
         if (!jwtProvider.validateToken(token)) {
-            throw new CustomException(ErrorCode.ALREADY_BLACKLIST);
+            throw new CustomException(AuthErrorCode.ALREADY_LOGOUT_USER);
         }
         jwtProvider.addTokenToBlackList(token);
     }

@@ -14,6 +14,8 @@ import what.what2eat.domain.auth.entity.Role;
 import what.what2eat.domain.auth.entity.User;
 import what.what2eat.domain.auth.controller.dto.LocalAuthRequestDTO;
 import what.what2eat.domain.auth.controller.dto.LocalAuthResponseDTO;
+import what.what2eat.domain.auth.exception.AuthErrorCode;
+import what.what2eat.domain.auth.exception.MemberException;
 import what.what2eat.domain.auth.repository.AuthRepository;
 import what.what2eat.global.security.domain.CustomUserDetails;
 import what.what2eat.global.security.jwt.JwtProvider;
@@ -39,7 +41,7 @@ public class LocalAuthService {
                     .provider(Provider.LOCAL)
                     .build());
         } else {
-            throw new IllegalArgumentException("이미 존재하는 아이디입니다.");
+            throw new MemberException(AuthErrorCode.DUPLICATE_USER_EMAIL);
         }
     }
 
