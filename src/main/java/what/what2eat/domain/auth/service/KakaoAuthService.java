@@ -14,6 +14,7 @@ import what.what2eat.domain.auth.controller.dto.KakaoAuthResponseDTO;
 import what.what2eat.domain.auth.converter.KakaoAuthConverter;
 import what.what2eat.domain.auth.entity.Provider;
 import what.what2eat.domain.auth.entity.User;
+import what.what2eat.domain.auth.entity.UserStatus;
 import what.what2eat.domain.auth.exception.AuthErrorCode;
 import what.what2eat.domain.auth.exception.MemberException;
 import what.what2eat.domain.auth.repository.AuthRepository;
@@ -65,8 +66,7 @@ public class KakaoAuthService {
             // 회원가입 필요 리다이렉트 처리
             Map<String, Object> data = Map.of(
                     "kakaoUserInfo", userInfo.getKakaoAccount().getKakaoEmail(),
-                    "redirectUrl", "/api/v1/auth/signup/kakao",
-                    "socialId", userInfo.getUserId()
+                    "redirectUrl", "/api/v1/auth/signup/kakao"
             );
 
             return ApiResponse.of(ResponseCode.NEED_SIGNUP, data);
@@ -85,7 +85,7 @@ public class KakaoAuthService {
     // 카카오 로그인 정보 DB 저장 유무 확인
     public boolean validateKakaoAuth(String kakaoUserEmail) {
         // 계정이 존재할 경우
-        return authRepository.existsByUserEmail(kakaoUserEmail);
+        return authRepository.existsByUserEmailAndUserStatus(kakaoUserEmail, UserStatus.ACTIVE);
     }
 
     // AccessToken 및 RefreshToken 생성

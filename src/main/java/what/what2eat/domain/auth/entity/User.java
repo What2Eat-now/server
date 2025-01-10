@@ -42,8 +42,8 @@ public class User extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private Provider provider;
 
-    @Column(name = "social_id", length = 20)
-    private Long socialId;
+    @Column(name = "user_status", nullable = false)
+    private UserStatus userStatus;
 
     @Column(name = "role")
     @Enumerated(EnumType.STRING)
@@ -67,5 +67,9 @@ public class User extends BaseEntity {
     // 그룹 삭제 (명시적 양방향 관계 설정)
     public void removeGroup() {
         this.userGroup = null;
+    }
+
+    public void delete() {
+        this.userStatus = UserStatus.DELETED;
     }
 }

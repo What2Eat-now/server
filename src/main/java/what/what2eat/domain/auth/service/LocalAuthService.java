@@ -14,6 +14,7 @@ import what.what2eat.domain.auth.controller.dto.LocalAuthResponseDTO;
 import what.what2eat.domain.auth.entity.Provider;
 import what.what2eat.domain.auth.entity.Role;
 import what.what2eat.domain.auth.entity.User;
+import what.what2eat.domain.auth.entity.UserStatus;
 import what.what2eat.domain.auth.exception.AuthErrorCode;
 import what.what2eat.domain.auth.exception.MemberException;
 import what.what2eat.domain.auth.repository.AuthRepository;
@@ -48,8 +49,8 @@ public class LocalAuthService {
             .nickName(request.getNickName())
             .role(Role.USER)
             .provider(Provider.LOCAL)
+            .userStatus(UserStatus.ACTIVE)
             .build());
-
     }
 
     public LocalAuthResponseDTO.LoginResponseDTO login(LocalAuthRequestDTO.LoginRequestDTO request) throws Exception {
@@ -101,7 +102,7 @@ public class LocalAuthService {
     }
 
     public boolean validateMember(String userEmail) {
-        return authRepository.existsByUserEmail(userEmail);
+        return authRepository.existsByUserEmailAndUserStatus(userEmail, UserStatus.ACTIVE);
     }
 
 }
