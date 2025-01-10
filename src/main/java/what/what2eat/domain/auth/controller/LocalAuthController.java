@@ -46,6 +46,6 @@ public class LocalAuthController {
     public ResponseEntity<ApiResponse<Boolean>> checkEmail(@RequestParam String userEmail) {
         boolean checkEmail = localAuthService.validateMember(userEmail);
 
-        return ResponseEntity.ok(ApiResponse.ok(checkEmail));
+        return ResponseEntity.ok(ApiResponse.of(checkEmail));
     }
 }
