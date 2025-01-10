@@ -69,16 +69,10 @@ public class LocalAuthService {
                     )
             );
 
-            // 인증 객체에서 role 추출
-            Role role = Role.valueOf(authentication.getAuthorities().stream()
-                    .findFirst()
-                    .map(auth -> auth.getAuthority())
-                    .orElse(Role.USER.name()));
-
             // 인증 객체에서 사용자 정보 추출(Provider 추출 위해 작성)
             CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
 
-            String accessToken = jwtProvider.createAccessToken(request.getUserEmail(), role, userDetails.getProvider());
+            String accessToken = jwtProvider.createAccessToken(userDetails);
 
             String refreshToken = jwtProvider.createRefreshToken(request.getUserEmail());
 

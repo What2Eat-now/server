@@ -24,6 +24,7 @@ import what.what2eat.global.security.service.CustomUserDetailsService;
 import java.util.List;
 
 import static org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher;
+import static what.what2eat.domain.auth.entity.Role.*;
 
 @Configuration
 @EnableWebSecurity
@@ -63,7 +64,7 @@ public class SecurityConfig {
         http.securityMatchers(matchers -> matchers.requestMatchers(requestHasRoleUser()))
                 .authorizeHttpRequests(auth -> auth
                 .anyRequest()
-                .hasAuthority(Role.USER.name()));
+                .hasAuthority(USER.name()));
 
         // 커스텀 필터 추가
         //    UsernamePasswordAuthenticationFilter 앞에 JWT 필터를 두어, 토큰 검증이 먼저 수행되도록

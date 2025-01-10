@@ -1,20 +1,25 @@
 package what.what2eat.global.security.jwt;
 
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Component;
-import what.what2eat.domain.auth.entity.Provider;
 import what.what2eat.domain.auth.entity.Role;
+import what.what2eat.global.security.domain.CustomUserDetails;
 
 import javax.crypto.SecretKey;
 import java.time.Instant;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
+
+import static what.what2eat.domain.auth.entity.Role.USER;
 
 @Component
 @Slf4j
@@ -32,14 +37,14 @@ public class JwtProvider {
     private Set<String> blackList = new HashSet<>();
 
     // Access Token 생성
-    public String createAccessToken(String userEmail, Role role, Provider provider) {
+    public String createAccessToken(CustomUserDetails userDetails) {
         Instant now = Instant.now();
         Instant expirationTime = now.plusSeconds(accessTokenValidity);
 
         return Jwts.builder()
-                .subject(userEmail)
-                .claim("provider",provider.name())
-                .claim("role", role)
+                .subject(userDetails.getUsername())
+                .claim("userId", userDetails.getUserId())
+                .claim("provider",userDetails.getProvider())
                 .issuedAt(Date.from(now))
                 .expiration(Date.from(expirationTime))
                 .signWith(extractSecretKey())
@@ -76,17 +81,28 @@ public class JwtProvider {
         }
     }
 
-    /**
-     * 토큰에서 username 추출
-     */
+    // 토큰에서 사용자 이메일 추출
     public String getUserEmail(String token) {
+        return parseClaims(token).getSubject();
+    }
+
+    // 토큰에서 Role 추출
+    public Role getRole(Collection<? extends GrantedAuthority> authorities) {
+        return Role.valueOf(authorities.stream()
+                .findFirst()
+                .map(authority -> authority.getAuthority()) // 권한에서 ROLE_ 제거
+                .orElse(USER.name())); // String을 Role Enum으로 변환
+    }
+
+    // 토큰에서 클레임 파싱
+    private Claims parseClaims(String token) {
         return Jwts.parser()
                 .verifyWith(extractSecretKey())
                 .build()
                 .parseSignedClaims(token)
-                .getPayload()
-                .getSubject();
+                .getPayload();
     }
+
 
     /**
      * SecretKey 추출
