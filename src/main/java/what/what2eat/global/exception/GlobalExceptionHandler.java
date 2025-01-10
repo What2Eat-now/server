@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.servlet.NoHandlerFoundException;
 import what.what2eat.global.response.ApiResponse;
+import what.what2eat.global.response.ErrorResponse;
 
 @Slf4j
 @RestControllerAdvice
@@ -15,22 +16,26 @@ public class GlobalExceptionHandler {
 
     // 존재하지 않는 요청에 대한 예외
     @ExceptionHandler(value = {NoHandlerFoundException.class, HttpRequestMethodNotSupportedException.class})
-    public ResponseEntity<ApiResponse<String>> handleNoPageFoundException(Exception e) {
+    public ResponseEntity<ErrorResponse> handleNoPageFoundException(Exception e) {
+        ErrorResponse errorResponse = ErrorResponse.of("404", e.getMessage());
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(ApiResponse.fail(new CustomException(ErrorCode.NOT_FOUND)));
+                .body(errorResponse);
     }
 
     // 커스텀 예외
     @ExceptionHandler(value = {CustomException.class})
-    public ResponseEntity<ApiResponse<String>> handleCustomException(CustomException e) {
-        return ResponseEntity.status(e.getErrorCode().getHttpStatus())
-                .body(ApiResponse.fail(new CustomException(e.getErrorCode())));
+    public ResponseEntity<ErrorResponse> handleCustomException(CustomException e) {
+        BaseErrorCode errorCode = e.getErrorCode();
+        ErrorResponse errorResponse = ErrorResponse.of(errorCode.getCode(), errorCode.getMessage());
+        return ResponseEntity.status(errorCode.getHttpStatus())
+                .body(errorResponse);
     }
 
     // 기본 예외
     @ExceptionHandler(value = {Exception.class})
-    public ResponseEntity<String> handleException(Exception e) {
+    public ResponseEntity<ErrorResponse> handleGlobalException(Exception e) {
+        ErrorResponse errorResponse = ErrorResponse.of("500", e.getMessage());
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(e.getMessage());
+                .body(errorResponse);
     }
 }

@@ -21,7 +21,7 @@ public class UserGroupController {
             @RequestBody UserGroupReqeustDTO.CreateUserGroupDTO request) {
         userGroupService.createUserGroup(request);
 
-        return ResponseEntity.ok(ApiResponse.ok("그룹 생성 완료."));
+        return ResponseEntity.ok(ApiResponse.of("그룹 생성 완료."));
     }
 
     @PostMapping("/{groupId}/members")
@@ -29,7 +29,7 @@ public class UserGroupController {
                                                          @RequestBody UserGroupReqeustDTO.JoinUserGroupDTO request) {
         userGroupService.joinUserGroup(groupId, request);
 
-        return ResponseEntity.ok(ApiResponse.ok("그룹 참가 완료."));
+        return ResponseEntity.ok(ApiResponse.of("그룹 참가 완료."));
     }
 
     @PostMapping("/{groupId}/members/{memberId}")
@@ -38,6 +38,6 @@ public class UserGroupController {
 
         userGroupService.withDrawUserGroup(groupId, userId);
 
-        return ResponseEntity.ok(ApiResponse.ok("그룹 탈퇴가 완료되었습니다."));
+        return ResponseEntity.ok(ApiResponse.of("그룹 탈퇴가 완료되었습니다."));
     }
 }

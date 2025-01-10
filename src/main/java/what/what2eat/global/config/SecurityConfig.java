@@ -77,6 +77,7 @@ public class SecurityConfig {
     private RequestMatcher[] requestHasRoleUser() {
         List<RequestMatcher> requestMatchers = List.of(
                 antMatcher("/api/v1/groups/**")
+//                antMatcher("/api/v1/auth/logout")
         );
         return requestMatchers.toArray(RequestMatcher[]::new);
     }

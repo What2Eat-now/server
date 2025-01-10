@@ -9,14 +9,14 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import what.what2eat.domain.auth.controller.dto.LocalAuthRequestDTO;
+import what.what2eat.domain.auth.controller.dto.LocalAuthResponseDTO;
 import what.what2eat.domain.auth.entity.Provider;
 import what.what2eat.domain.auth.entity.Role;
 import what.what2eat.domain.auth.entity.User;
-import what.what2eat.domain.auth.controller.dto.LocalAuthRequestDTO;
-import what.what2eat.domain.auth.controller.dto.LocalAuthResponseDTO;
+import what.what2eat.domain.auth.exception.AuthErrorCode;
+import what.what2eat.domain.auth.exception.MemberException;
 import what.what2eat.domain.auth.repository.AuthRepository;
-import what.what2eat.global.exception.CustomException;
-import what.what2eat.global.exception.ErrorCode;
 import what.what2eat.global.security.domain.CustomUserDetails;
 import what.what2eat.global.security.jwt.JwtProvider;
 
@@ -34,12 +34,12 @@ public class LocalAuthService {
     public void signUp(LocalAuthRequestDTO.SignUpRequestDTO request) {
         // 중복 유저 확인
         if(validateMember(request.getUserEmail())){
-            throw new CustomException(ErrorCode.EMAIL_ALREADY_EXISTS);
+            throw new MemberException(AuthErrorCode.DUPLICATE_USER_EMAIL);
         }
 
         // 비밀번호 형식 확인
         if (!isValidPassword(request.getPassword())) {
-            throw new CustomException(ErrorCode.INVALID_PASSWORD);
+            throw new MemberException(AuthErrorCode.INVALID_PASSWORD);
         }
 
         authRepository.save(User.builder()
@@ -56,7 +56,7 @@ public class LocalAuthService {
 
         // 유효성 검사
         if (!validateMember(request.getUserEmail())) {
-            throw new CustomException(ErrorCode.USER_NOT_FOUND);
+            throw new MemberException(AuthErrorCode.USER_NOT_FOUND);
         }
 
         try {
