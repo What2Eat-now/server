@@ -5,6 +5,7 @@ import what.what2eat.domain.auth.entity.Provider;
 import what.what2eat.domain.auth.entity.Role;
 import what.what2eat.domain.auth.entity.User;
 import what.what2eat.domain.auth.controller.dto.KakaoAuthRequestDTO;
+import what.what2eat.domain.auth.entity.UserStatus;
 
 @Component
 public class KakaoAuthConverter {
@@ -15,7 +16,7 @@ public class KakaoAuthConverter {
                 .userEmail(request.getUserEmail())
                 .role(Role.USER)
                 .provider(Provider.KAKAO)
-                .socialId(request.getSocialId())
+                .userStatus(UserStatus.ACTIVE)
                 .build();
     }
 

@@ -28,6 +28,7 @@ public class CustomUserDetailsService implements UserDetailsService {
         log.info("유저 정보 조회 완료");
 
         return CustomUserDetails.builder()
+                .userId(user.getUserId())
                 .email(user.getUserEmail())
                 .password(user.getPassword())
                 .provider(user.getProvider())

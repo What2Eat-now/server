@@ -3,6 +3,7 @@ package what.what2eat.domain.auth.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.*;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.MultiValueMap;
@@ -14,6 +15,7 @@ import what.what2eat.domain.auth.controller.dto.KakaoAuthResponseDTO;
 import what.what2eat.domain.auth.converter.KakaoAuthConverter;
 import what.what2eat.domain.auth.entity.Provider;
 import what.what2eat.domain.auth.entity.User;
+import what.what2eat.domain.auth.entity.UserStatus;
 import what.what2eat.domain.auth.exception.AuthErrorCode;
 import what.what2eat.domain.auth.exception.MemberException;
 import what.what2eat.domain.auth.repository.AuthRepository;
@@ -21,8 +23,10 @@ import what.what2eat.global.exception.CustomException;
 import what.what2eat.global.exception.CommonErrorCode;
 import what.what2eat.global.response.ApiResponse;
 import what.what2eat.global.response.ResponseCode;
+import what.what2eat.global.security.domain.CustomUserDetails;
 import what.what2eat.global.security.jwt.JwtProvider;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -46,10 +50,9 @@ public class KakaoAuthService {
         }
 
         //객체 변환후 저장
-        User user = kakaoAuthConverter.signupToUserEntity(request);
-        authRepository.save(user);
+        User user = authRepository.save(kakaoAuthConverter.signupToUserEntity(request));
 
-        return createTokens(request.getUserEmail());
+        return createTokens(user);
     }
 
     // 토큰으로 사용자 정보 조회
@@ -65,16 +68,14 @@ public class KakaoAuthService {
             // 회원가입 필요 리다이렉트 처리
             Map<String, Object> data = Map.of(
                     "kakaoUserInfo", userInfo.getKakaoAccount().getKakaoEmail(),
-                    "redirectUrl", "/api/v1/auth/signup/kakao",
-                    "socialId", userInfo.getUserId()
-            );
+                    "redirectUrl", "/api/v1/auth/signup/kakao");
 
             return ApiResponse.of(ResponseCode.NEED_SIGNUP, data);
         }
 
         // 로그인 성공
         User user = userOpt.get();
-        Map<String, String> tokens = createTokens(user.getUserEmail());
+        Map<String, String> tokens = createTokens(user);
 
         return ApiResponse.of(Map.of(
                 "message", "로그인 성공",
@@ -85,13 +86,24 @@ public class KakaoAuthService {
     // 카카오 로그인 정보 DB 저장 유무 확인
     public boolean validateKakaoAuth(String kakaoUserEmail) {
         // 계정이 존재할 경우
-        return authRepository.existsByUserEmail(kakaoUserEmail);
+        return authRepository.existsByUserEmailAndUserStatus(kakaoUserEmail, UserStatus.ACTIVE);
     }
 
-    // AccessToken 및 RefreshToken 생성
-    private Map<String, String> createTokens(String userEmail) {
-        String accessToken = jwtProvider.createAccessToken(userEmail, Role.USER, Provider.KAKAO);
-        String refreshToken = jwtProvider.createRefreshToken(userEmail);
+    /**
+     * AccessToken 및 RefreshToken 생성
+     */
+    private Map<String, String> createTokens(User user) {
+        CustomUserDetails userDetails = new CustomUserDetails(
+                user.getUserId(),
+                user.getUserEmail(),
+                null,
+                user.getNickName(),
+                user.getProvider(),
+                List.of(new SimpleGrantedAuthority(user.getRole().name()))
+        );
+
+        String accessToken = jwtProvider.createAccessToken(userDetails);
+        String refreshToken = jwtProvider.createRefreshToken(user.getUserEmail());
 
         return Map.of(
                 "accessToken", accessToken,

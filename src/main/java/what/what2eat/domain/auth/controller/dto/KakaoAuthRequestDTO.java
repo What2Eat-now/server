@@ -21,7 +21,5 @@ public class KakaoAuthRequestDTO {
         @Size(max = 20, message = "닉네임은 최대 20자까지 가능합니다.")
         private String nickName;
 
-        @NotBlank(message = "소셜 Id는 필수 입력 항목입니다.")
-        private Long socialId;
     }
 }

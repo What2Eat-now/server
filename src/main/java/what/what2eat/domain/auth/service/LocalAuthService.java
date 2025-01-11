@@ -14,6 +14,7 @@ import what.what2eat.domain.auth.controller.dto.LocalAuthResponseDTO;
 import what.what2eat.domain.auth.entity.Provider;
 import what.what2eat.domain.auth.entity.Role;
 import what.what2eat.domain.auth.entity.User;
+import what.what2eat.domain.auth.entity.UserStatus;
 import what.what2eat.domain.auth.exception.AuthErrorCode;
 import what.what2eat.domain.auth.exception.MemberException;
 import what.what2eat.domain.auth.repository.AuthRepository;
@@ -48,8 +49,8 @@ public class LocalAuthService {
             .nickName(request.getNickName())
             .role(Role.USER)
             .provider(Provider.LOCAL)
+            .userStatus(UserStatus.ACTIVE)
             .build());
-
     }
 
     public LocalAuthResponseDTO.LoginResponseDTO login(LocalAuthRequestDTO.LoginRequestDTO request) throws Exception {
@@ -68,16 +69,10 @@ public class LocalAuthService {
                     )
             );
 
-            // 인증 객체에서 role 추출
-            Role role = Role.valueOf(authentication.getAuthorities().stream()
-                    .findFirst()
-                    .map(auth -> auth.getAuthority())
-                    .orElse(Role.USER.name()));
-
             // 인증 객체에서 사용자 정보 추출(Provider 추출 위해 작성)
             CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
 
-            String accessToken = jwtProvider.createAccessToken(request.getUserEmail(), role, userDetails.getProvider());
+            String accessToken = jwtProvider.createAccessToken(userDetails);
 
             String refreshToken = jwtProvider.createRefreshToken(request.getUserEmail());
 
@@ -101,7 +96,7 @@ public class LocalAuthService {
     }
 
     public boolean validateMember(String userEmail) {
-        return authRepository.existsByUserEmail(userEmail);
+        return authRepository.existsByUserEmailAndUserStatus(userEmail, UserStatus.ACTIVE);
     }
 
 }

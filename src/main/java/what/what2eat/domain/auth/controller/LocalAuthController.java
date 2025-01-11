@@ -15,6 +15,7 @@ import what.what2eat.domain.auth.controller.dto.LocalAuthRequestDTO;
 import what.what2eat.domain.auth.controller.dto.LocalAuthResponseDTO;
 import what.what2eat.domain.auth.service.LocalAuthService;
 import what.what2eat.global.response.ApiResponse;
+import what.what2eat.global.response.ResponseCode;
 
 @Controller
 @RequiredArgsConstructor
@@ -30,7 +31,7 @@ public class LocalAuthController {
     public ResponseEntity<ApiResponse<Void>> signUp(@Valid @RequestBody LocalAuthRequestDTO.SignUpRequestDTO request) {
         localAuthService.signUp(request);
 
-        return ResponseEntity.ok(ApiResponse.of(null));
+        return ResponseEntity.ok(ApiResponse.of(ResponseCode.CREATED));
     }
 
     @PostMapping("/login/local")
