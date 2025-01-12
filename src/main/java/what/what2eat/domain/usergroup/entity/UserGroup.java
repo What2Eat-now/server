@@ -6,7 +6,6 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import what.what2eat.domain.auth.entity.User;
-import what.what2eat.domain.meeting.entity.Meeting;
 import what.what2eat.global.common.entity.BaseEntity;
 
 import java.util.ArrayList;
@@ -38,8 +37,8 @@ public class UserGroup extends BaseEntity {
     @OneToMany(mappedBy = "userGroup", cascade = CascadeType.ALL)
     private List<User> users = new ArrayList<>();
 
-    @OneToMany(mappedBy = "userGroup", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Meeting> meetings = new ArrayList<>();
+//    @OneToMany(mappedBy = "userGroup", cascade = CascadeType.ALL, orphanRemoval = true)
+//    private List<Meeting> meetings = new ArrayList<>();
 
     // 그룹 구성원 추가 (양방향 관계 연결)
     public void addUser(User user) {

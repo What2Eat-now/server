@@ -5,9 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import what.what2eat.domain.diary.entity.Diary;
 import what.what2eat.domain.usergroup.entity.UserGroup;
-import what.what2eat.domain.location.entity.LocationTracking;
-import what.what2eat.domain.meeting.entity.Participant;
 import what.what2eat.global.common.entity.BaseEntity;
 
 import java.util.ArrayList;
@@ -53,12 +52,9 @@ public class User extends BaseEntity {
     @JoinColumn(name = "user_group_id")
     private UserGroup userGroup;
 
-    @OneToMany(mappedBy = "user")
-    private List<Participant> participants = new ArrayList<>();
 
     @OneToMany(mappedBy = "user")
-    private List<LocationTracking> locationTrackings = new ArrayList<>();
-
+    private List<Diary> diaries = new ArrayList<>();
     // 그룹 할당 (명시적 양방향 관계 설정)
     public void assignGroup(UserGroup userGroup) {
         this.userGroup = userGroup;
