@@ -52,9 +52,9 @@ public class User extends BaseEntity {
     @JoinColumn(name = "user_group_id")
     private UserGroup userGroup;
 
-
-    @OneToMany(mappedBy = "user")
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<Diary> diaries = new ArrayList<>();
+
     // 그룹 할당 (명시적 양방향 관계 설정)
     public void assignGroup(UserGroup userGroup) {
         this.userGroup = userGroup;

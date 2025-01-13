@@ -5,9 +5,10 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.locationtech.jts.geom.Point;
 import what.what2eat.domain.auth.entity.User;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 @Entity
 @Table(name = "diary")
@@ -28,25 +29,25 @@ public class Diary {
     @Column(name = "content", nullable = false, length = 200)
     private String content;
 
-    @Column(name = "visit_place", nullable = false, length = 50)
-    private String visit_place;
+    @Column(name = "place_name", nullable = false, length = 50)
+    private String placeName;
 
     @Column(name = "visit_date", nullable = false)
-    private LocalDateTime visit_date;
+    private LocalDate visitDate;
 
-    @Column(name = "visit_location", nullable = false, length = 50)
-    private String visit_location;
+    @Column(name = "location", nullable = false, length = 50)
+    private Point location;
 
-    @Column(name = "emotion", nullable = false)
-    private String emotion;
+    @Column(name = "marker_number", nullable = false)
+    private Integer markerNumber;
 
     @Column(name = "rate", nullable = false, length = 10)
     private String rate;
 
-    @Column(name = "img_url", nullable = false, length = 100)
-    private String img_url;
+    @Column(name = "upload_img", nullable = false, length = 100)
+    private String uploadImg;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "diary_id")
+    @JoinColumn(name = "user_id")
     private User user;
 }

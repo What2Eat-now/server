@@ -6,4 +6,5 @@ import what.what2eat.domain.diary.entity.Diary;
 
 @Repository
 public interface DiaryRepository extends JpaRepository<Diary, Long> {
+
 }
