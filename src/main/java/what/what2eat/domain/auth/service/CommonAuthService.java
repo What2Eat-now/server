@@ -9,6 +9,8 @@ import what.what2eat.domain.auth.entity.UserStatus;
 import what.what2eat.domain.auth.exception.AuthErrorCode;
 import what.what2eat.domain.auth.exception.MemberException;
 import what.what2eat.domain.auth.repository.AuthRepository;
+import what.what2eat.global.exception.CommonErrorCode;
+import what.what2eat.global.exception.CustomException;
 import what.what2eat.global.security.jwt.JwtProvider;
 
 import java.util.Optional;
@@ -37,6 +39,16 @@ public class CommonAuthService {
             throw new MemberException(AuthErrorCode.ALREADY_LOGOUT_USER);
         }
         jwtProvider.addTokenToBlackList(token);
+    }
+
+    public void validateToken(HttpServletRequest request) {
+        String token = resolveToken(request);
+
+        boolean isValid = jwtProvider.validateToken(token);
+
+        if (!isValid) {
+            throw new CustomException(CommonErrorCode.INVALID_TOKEN);
+        }
     }
 
     public void delete(HttpServletRequest request) {
