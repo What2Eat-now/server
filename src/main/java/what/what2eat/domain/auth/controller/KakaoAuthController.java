@@ -43,8 +43,10 @@ public class KakaoAuthController {
 
     @PostMapping("/signup/kakao")
     @Operation(summary = "카카오 회원가입", description = "카카오 소셜 회원가입을 처리합니다. 이메일, 닉네임을 제공해야 합니다.")
-    public ResponseEntity<ApiResponse<Map<String,String>>> signup(@RequestBody KakaoAuthRequestDTO.KakaoSignupDTO request) {
-        return ResponseEntity.ok(ApiResponse.of(kakaoAuthService.signup(request)));
+    public ResponseEntity<ApiResponse<Void>> signup(@RequestBody KakaoAuthRequestDTO.KakaoSignupDTO request) {
+        kakaoAuthService.signup(request);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.of(ResponseCode.CREATED));
     }
 
 }

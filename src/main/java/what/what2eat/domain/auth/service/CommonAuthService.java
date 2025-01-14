@@ -21,7 +21,6 @@ public class CommonAuthService {
     private final JwtProvider jwtProvider;
     private final AuthRepository authRepository;
 
-
     // Authorization 헤더에서 실제 JWT 토큰 문자열만 추출
     private String resolveToken(HttpServletRequest request) {
         String bearerToken = request.getHeader("Authorization");
@@ -59,11 +58,13 @@ public class CommonAuthService {
         userOpt.get().delete();
     }
 
-    public boolean validateMember(String userEmail) {
+    // 로그인시
+    public void validateMember(String userEmail) {
         Boolean isExist = authRepository.existsByUserEmailAndUserStatus(userEmail, UserStatus.ACTIVE);
 
-        if(isExist) throw new MemberException(AuthErrorCode.DUPLICATE_USER_EMAIL);
+        // 이메일이 존재하지 않으면 404 에러 반환
+        if(!isExist) throw new MemberException(AuthErrorCode.USER_NOT_FOUND);
 
-        return isExist;
     }
+
 }

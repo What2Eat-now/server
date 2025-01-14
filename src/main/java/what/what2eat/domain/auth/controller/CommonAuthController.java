@@ -29,9 +29,9 @@ public class CommonAuthController {
     @PostMapping("/check-email")
     @Operation(summary = "이메일 중복 체크", description = "이메일 중복 체크를 처리합니다. 이메일을 제공해야 합니다. \n 응답코드에 따른 결과값은 포스트맨 API 명세서를 참고 부탁드립니다.")
     public ResponseEntity<ApiResponse<Boolean>> checkEmail(@RequestParam String userEmail) {
-        boolean checkEmail = commonAuthService.validateMember(userEmail);
+        commonAuthService.validateMember(userEmail);
 
-        return ResponseEntity.ok(ApiResponse.of(checkEmail));
+        return ResponseEntity.ok(ApiResponse.of(ResponseCode.SUCCESS));
     }
 
     @DeleteMapping("")

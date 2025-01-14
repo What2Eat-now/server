@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -31,7 +32,8 @@ public class LocalAuthController {
     public ResponseEntity<ApiResponse<Void>> signUp(@Valid @RequestBody LocalAuthRequestDTO.SignUpRequestDTO request) {
         localAuthService.signUp(request);
 
-        return ResponseEntity.ok(ApiResponse.of(ResponseCode.CREATED));
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.of(ResponseCode.CREATED));
     }
 
     @PostMapping("/login/local")

@@ -41,18 +41,12 @@ public class KakaoAuthService {
     private final AuthRepository authRepository;
     private final JwtProvider jwtProvider;
 
+
     // 회원가입
-    public Map<String, String> signup(KakaoAuthRequestDTO.KakaoSignupDTO request) {
-
-        // 이메일 유효성 검사
-        if (validateKakaoAuth(request.getUserEmail())) {
-            throw new MemberException(AuthErrorCode.DUPLICATE_USER_EMAIL);
-        }
-
+    public void signup(KakaoAuthRequestDTO.KakaoSignupDTO request) {
         //객체 변환후 저장
-        User user = authRepository.save(kakaoAuthConverter.signupToUserEntity(request));
+        authRepository.save(kakaoAuthConverter.signupToUserEntity(request));
 
-        return createTokens(user);
     }
 
     // 토큰으로 사용자 정보 조회
@@ -76,12 +70,6 @@ public class KakaoAuthService {
 
         return new KakaoAuthResponseDTO.KakaoLoginResultDTO(
                 false, null, tokens);    }
-
-    // 카카오 로그인 정보 DB 저장 유무 확인
-    public boolean validateKakaoAuth(String kakaoUserEmail) {
-        // 계정이 존재할 경우
-        return authRepository.existsByUserEmailAndUserStatus(kakaoUserEmail, UserStatus.ACTIVE);
-    }
 
     /**
      * AccessToken 및 RefreshToken 생성
