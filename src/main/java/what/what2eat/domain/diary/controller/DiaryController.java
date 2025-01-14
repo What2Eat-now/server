@@ -1,0 +1,53 @@
+package what.what2eat.domain.diary.controller;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.*;
+import what.what2eat.domain.diary.controller.dto.DiaryRequestDTO;
+import what.what2eat.domain.diary.controller.dto.DiaryResponseDTO;
+import what.what2eat.domain.diary.service.DiaryService;
+import what.what2eat.global.response.ApiResponse;
+import what.what2eat.global.response.ResponseCode;
+
+import java.util.List;
+
+@Controller
+@Slf4j
+@RequestMapping("/api/v1/diary")
+@RequiredArgsConstructor
+@Tag(name = "다이어리 관련 컨트롤러", description = "다이어리 관련 API를 처리하는 컨트롤러 입니다.")
+public class DiaryController {
+
+    private final DiaryService diaryService;
+
+    // 다이어리 작성
+    @PostMapping("")
+    @Operation(summary = "다이어리 작성", description = "다이어리 작성을 처리하는 API 입니다.")
+    public ResponseEntity<ApiResponse<Void>> writeDiary(@RequestBody DiaryRequestDTO.DiaryWriteDTO request) {
+        diaryService.writeDiary(request);
+
+        return ResponseEntity.ok(ApiResponse.of(ResponseCode.CREATED));
+    }
+
+    // 다이어리 목록 조회
+    @GetMapping("")
+    @Operation(summary = "다이어리 목록 조회", description = "다이어리 목록 조회를 처리하는 API 입니다.")
+    public ResponseEntity<ApiResponse<List<DiaryResponseDTO.GetDiaryThumbnailDTO>>> getAllDiaryThumbnail() {
+        List<DiaryResponseDTO.GetDiaryThumbnailDTO> allDiaryThumbnails = diaryService.getAllDiaryThumbnails();
+
+        return ResponseEntity.ok(ApiResponse.of(ResponseCode.SUCCESS, allDiaryThumbnails));
+    }
+
+    // 다이어리 상세 조회
+    @GetMapping("/{diaryId}")
+    @Operation(summary = "다이어리 상세 조회", description = "다이어리 상세 조회를 처리하는 API 입니다.")
+    public ResponseEntity<ApiResponse<DiaryResponseDTO.GetDiaryDTO>> getDiary(@PathVariable Long diaryId) {
+        DiaryResponseDTO.GetDiaryDTO getDiaryDTO = diaryService.getDiary(diaryId);
+
+        return ResponseEntity.ok(ApiResponse.of(ResponseCode.SUCCESS, getDiaryDTO));
+    }
+}

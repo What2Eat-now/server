@@ -7,8 +7,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.locationtech.jts.geom.Point;
 import what.what2eat.domain.category.entity.Category;
-import what.what2eat.domain.meeting.entity.Meeting;
-import what.what2eat.domain.review.entity.Review;
+
 
 import java.util.ArrayList;
 import java.util.List;
@@ -45,12 +44,6 @@ public class Restaurant {
 
     @Column(name = "restaurant_url", nullable = false, length = 50)
     private String restaurantUrl;
-
-    @OneToMany(mappedBy = "restaurant", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Review> reviews = new ArrayList<>();
-
-    @OneToMany(mappedBy = "restaurant", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Meeting> meetings = new ArrayList<>();
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id")
