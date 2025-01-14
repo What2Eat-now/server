@@ -11,6 +11,8 @@ import what.what2eat.domain.auth.exception.AuthErrorCode;
 import what.what2eat.domain.auth.exception.MemberException;
 import what.what2eat.domain.auth.repository.AuthRepository;
 import what.what2eat.domain.diary.Converter.DiaryConverter;
+import what.what2eat.domain.diary.Exception.DiaryErrorCode;
+import what.what2eat.domain.diary.Exception.DiaryException;
 import what.what2eat.domain.diary.controller.dto.DiaryRequestDTO;
 import what.what2eat.domain.diary.controller.dto.DiaryResponseDTO;
 import what.what2eat.domain.diary.entity.Diary;
@@ -49,7 +51,8 @@ public class DiaryService {
 
     // 다이어리 상세 정보 조회
     public DiaryResponseDTO.GetDiaryDTO getDiary(Long diaryId) {
-        Diary diary = diaryRepository.findById(diaryId).orElseThrow(() -> new IllegalArgumentException("다이어리 데이터가 존재하지 않습니다."));
+        Diary diary = diaryRepository.findById(diaryId)
+                .orElseThrow(() -> new DiaryException(DiaryErrorCode.DIARY_NOT_FOUND));
 
         DiaryResponseDTO.GetDiaryDTO getDiaryDTO = diaryConverter.toGetDiaryDTO(diary);
 
