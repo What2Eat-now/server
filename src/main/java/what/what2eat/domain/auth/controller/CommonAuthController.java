@@ -40,4 +40,11 @@ public class CommonAuthController {
 
         return ResponseEntity.ok(ApiResponse.of(ResponseCode.SUCCESS));
     }
+
+    @PostMapping("/validate-token")
+    public ResponseEntity<ApiResponse<Void>> validateToken(HttpServletRequest request) {
+        commonAuthService.validateToken(request);
+
+        return ResponseEntity.ok(ApiResponse.of(ResponseCode.CONFIRM));
+    }
 }
