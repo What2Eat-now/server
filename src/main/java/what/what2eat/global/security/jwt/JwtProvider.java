@@ -7,19 +7,15 @@ import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
-import what.what2eat.domain.auth.entity.Role;
 import what.what2eat.global.security.domain.CustomUserDetails;
 
 import javax.crypto.SecretKey;
 import java.time.Instant;
-import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
-
-import static what.what2eat.domain.auth.entity.Role.USER;
 
 @Component
 @Slf4j
@@ -86,12 +82,14 @@ public class JwtProvider {
         return parseClaims(token).getSubject();
     }
 
-    // 토큰에서 Role 추출
-    public Role getRole(Collection<? extends GrantedAuthority> authorities) {
-        return Role.valueOf(authorities.stream()
-                .findFirst()
-                .map(authority -> authority.getAuthority()) // 권한에서 ROLE_ 제거
-                .orElse(USER.name())); // String을 Role Enum으로 변환
+    // Spring Security Context에서 userId 추출
+    public Long extractUserId() {
+        CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder
+                .getContext()
+                .getAuthentication()
+                .getPrincipal();
+
+        return userDetails.getUserId();  // userId를 Long 타입으로 변환
     }
 
     // 토큰에서 클레임 파싱
