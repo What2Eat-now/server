@@ -65,7 +65,7 @@ public class DiaryService {
     public List<DiaryResponseDTO.GetDiaryThumbnailDTO> getAllDiaryThumbnails() {
 
         // userId로 필터링 필요
-        List<Diary> diaryList = diaryRepository.findAll();
+        List<Diary> diaryList = diaryRepository.findByUserUserId(jwtProvider.extractUserId());
 
         // 다이어리 썸네일 목록 -> DTO 목록으로 변환
         List<DiaryResponseDTO.GetDiaryThumbnailDTO> thumbnailDTOList = diaryList.stream()
