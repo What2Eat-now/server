@@ -78,7 +78,6 @@ public class KakaoAuthService {
         Map<String, String> tokens = createTokens(user);
 
         return ApiResponse.of(Map.of(
-                "message", "로그인 성공",
                 "tokens", tokens
         ));
     }

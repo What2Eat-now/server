@@ -31,14 +31,13 @@ public class KakaoAuthController {
     @PostMapping("/login/kakao")
     @Operation(summary = "카카오 소셜 로그인", description = "카카오 소셜 로그인을 처리합니다. kakaoAccessToken을 제공해야 합니다.")
     public ResponseEntity<ApiResponse<Map<String,Object>>> login(@RequestParam String kakaoAccessToken) {
-        return ResponseEntity.status(HttpStatus.TEMPORARY_REDIRECT)
-                .body(kakaoAuthService.login(kakaoAccessToken));
+        return ResponseEntity.ok(kakaoAuthService.login(kakaoAccessToken));
     }
 
     @PostMapping("/signup/kakao")
     @Operation(summary = "카카오 회원가입", description = "카카오 소셜 회원가입을 처리합니다. 이메일, 닉네임을 제공해야 합니다.")
     public ResponseEntity<ApiResponse<Map<String,String>>> signup(@RequestBody KakaoAuthRequestDTO.KakaoSignupDTO request) {
-        return ResponseEntity.status(HttpStatus.OK)
-                .body(ApiResponse.of(kakaoAuthService.signup(request)));
+        return ResponseEntity.ok(ApiResponse.of(kakaoAuthService.signup(request)));
     }
+
 }
