@@ -1,6 +1,7 @@
 package what.what2eat.global.security.jwt;
 
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
@@ -9,6 +10,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
+import what.what2eat.global.exception.CommonErrorCode;
+import what.what2eat.global.exception.CustomException;
 import what.what2eat.global.security.domain.CustomUserDetails;
 
 import javax.crypto.SecretKey;
