@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -31,7 +32,8 @@ public class LocalAuthController {
     public ResponseEntity<ApiResponse<Void>> signUp(@Valid @RequestBody LocalAuthRequestDTO.SignUpRequestDTO request) {
         localAuthService.signUp(request);
 
-        return ResponseEntity.ok(ApiResponse.of(ResponseCode.CREATED));
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.of(ResponseCode.CREATED));
     }
 
     @PostMapping("/login/local")
@@ -42,11 +44,5 @@ public class LocalAuthController {
         return ResponseEntity.ok(ApiResponse.of(login));
     }
 
-    @PostMapping("/check-email")
-    @Operation(summary = "이메일 중복 체크", description = "이메일 중복 체크를 처리합니다. 이메일을 제공해야 합니다. \n 응답코드에 따른 결과값은 포스트맨 API 명세서를 참고 부탁드립니다.")
-    public ResponseEntity<ApiResponse<Boolean>> checkEmail(@RequestParam String userEmail) {
-        boolean checkEmail = localAuthService.validateMember(userEmail);
 
-        return ResponseEntity.ok(ApiResponse.of(checkEmail));
-    }
 }

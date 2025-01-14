@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import what.what2eat.domain.auth.entity.User;
+import what.what2eat.domain.auth.entity.UserStatus;
 import what.what2eat.domain.auth.exception.AuthErrorCode;
 import what.what2eat.domain.auth.exception.MemberException;
 import what.what2eat.domain.auth.repository.AuthRepository;
@@ -19,7 +20,6 @@ public class CommonAuthService {
 
     private final JwtProvider jwtProvider;
     private final AuthRepository authRepository;
-
 
     // Authorization 헤더에서 실제 JWT 토큰 문자열만 추출
     private String resolveToken(HttpServletRequest request) {
@@ -57,4 +57,14 @@ public class CommonAuthService {
         // 회원 탈퇴 처리
         userOpt.get().delete();
     }
+
+    // 로그인시
+    public void validateMember(String userEmail) {
+        Boolean isExist = authRepository.existsByUserEmailAndUserStatus(userEmail, UserStatus.ACTIVE);
+
+        // 이메일이 존재하지 않으면 404 에러 반환
+        if(!isExist) throw new MemberException(AuthErrorCode.USER_NOT_FOUND);
+
+    }
+
 }
