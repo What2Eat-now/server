@@ -41,22 +41,16 @@ public class KakaoAuthService {
     private final AuthRepository authRepository;
     private final JwtProvider jwtProvider;
 
+
     // 회원가입
-    public Map<String, String> signup(KakaoAuthRequestDTO.KakaoSignupDTO request) {
-
-        // 이메일 유효성 검사
-        if (validateKakaoAuth(request.getUserEmail())) {
-            throw new MemberException(AuthErrorCode.DUPLICATE_USER_EMAIL);
-        }
-
+    public void signup(KakaoAuthRequestDTO.KakaoSignupDTO request) {
         //객체 변환후 저장
-        User user = authRepository.save(kakaoAuthConverter.signupToUserEntity(request));
+        authRepository.save(kakaoAuthConverter.signupToUserEntity(request));
 
-        return createTokens(user);
     }
 
     // 토큰으로 사용자 정보 조회
-    public ApiResponse<Map<String, Object>> login(String kakaoAccessToken) {
+    public KakaoAuthResponseDTO.KakaoLoginResultDTO login(String kakaoAccessToken) {
 
         // 사용자 정보 조회
         KakaoAuthResponseDTO.KakaoUserInfoDTO userInfo = getKakaoUserInfo(kakaoAccessToken);
@@ -66,28 +60,16 @@ public class KakaoAuthService {
 
         if (userOpt.isEmpty()) {
             // 회원가입 필요 리다이렉트 처리
-            Map<String, Object> data = Map.of(
-                    "kakaoUserInfo", userInfo.getKakaoAccount().getKakaoEmail(),
-                    "redirectUrl", "/api/v1/auth/signup/kakao");
-
-            return ApiResponse.of(ResponseCode.NEED_SIGNUP, data);
+            return new KakaoAuthResponseDTO.KakaoLoginResultDTO(
+                    true, userInfo.getKakaoAccount().getKakaoEmail(), null);
         }
 
         // 로그인 성공
         User user = userOpt.get();
         Map<String, String> tokens = createTokens(user);
 
-        return ApiResponse.of(Map.of(
-                "message", "로그인 성공",
-                "tokens", tokens
-        ));
-    }
-
-    // 카카오 로그인 정보 DB 저장 유무 확인
-    public boolean validateKakaoAuth(String kakaoUserEmail) {
-        // 계정이 존재할 경우
-        return authRepository.existsByUserEmailAndUserStatus(kakaoUserEmail, UserStatus.ACTIVE);
-    }
+        return new KakaoAuthResponseDTO.KakaoLoginResultDTO(
+                false, null, tokens);    }
 
     /**
      * AccessToken 및 RefreshToken 생성
@@ -126,7 +108,7 @@ public class KakaoAuthService {
                     KakaoAuthResponseDTO.KakaoUserInfoDTO.class
             ).getBody();
         } catch (HttpClientErrorException e) {
-            log.error("Kakao API 호출 실패: {}", e.getMessage());
+            log.error("Kakao API 호출 실패: 상태 코드 {}, 응답 본문 {}", e.getStatusCode(), e.getResponseBodyAsString());
             throw new MemberException(CommonErrorCode.BAD_REQUEST);
         }
     }

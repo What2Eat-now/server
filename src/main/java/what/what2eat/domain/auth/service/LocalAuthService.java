@@ -31,12 +31,10 @@ public class LocalAuthService {
     private final AuthRepository authRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtProvider jwtProvider;
+    private final CommonAuthService commonAuthService;
 
+    // 회원가입 =>
     public void signUp(LocalAuthRequestDTO.SignUpRequestDTO request) {
-        // 중복 유저 확인
-        if(validateMember(request.getUserEmail())){
-            throw new MemberException(AuthErrorCode.DUPLICATE_USER_EMAIL);
-        }
 
         // 비밀번호 형식 확인
         if (!isValidPassword(request.getPassword())) {
@@ -56,9 +54,7 @@ public class LocalAuthService {
     public LocalAuthResponseDTO.LoginResponseDTO login(LocalAuthRequestDTO.LoginRequestDTO request) throws Exception {
 
         // 유효성 검사
-        if (!validateMember(request.getUserEmail())) {
-            throw new MemberException(AuthErrorCode.USER_NOT_FOUND);
-        }
+        commonAuthService.validateMember(request.getUserEmail());
 
         try {
             // 인증 시도
@@ -95,8 +91,6 @@ public class LocalAuthService {
         return password.matches("^(?=.*[A-Z])(?=.*[@$!%*?&]).{8,16}$");
     }
 
-    public boolean validateMember(String userEmail) {
-        return authRepository.existsByUserEmailAndUserStatus(userEmail, UserStatus.ACTIVE);
-    }
+
 
 }
