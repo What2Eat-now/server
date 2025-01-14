@@ -31,10 +31,11 @@ public class LocalAuthService {
     private final AuthRepository authRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtProvider jwtProvider;
+    private CommonAuthService commonAuthService;
 
     public void signUp(LocalAuthRequestDTO.SignUpRequestDTO request) {
         // 중복 유저 확인
-        if(validateMember(request.getUserEmail())){
+        if(commonAuthService.validateMember(request.getUserEmail())){
             throw new MemberException(AuthErrorCode.DUPLICATE_USER_EMAIL);
         }
 
@@ -56,7 +57,7 @@ public class LocalAuthService {
     public LocalAuthResponseDTO.LoginResponseDTO login(LocalAuthRequestDTO.LoginRequestDTO request) throws Exception {
 
         // 유효성 검사
-        if (!validateMember(request.getUserEmail())) {
+        if (!commonAuthService.validateMember(request.getUserEmail())) {
             throw new MemberException(AuthErrorCode.USER_NOT_FOUND);
         }
 
@@ -95,8 +96,6 @@ public class LocalAuthService {
         return password.matches("^(?=.*[A-Z])(?=.*[@$!%*?&]).{8,16}$");
     }
 
-    public boolean validateMember(String userEmail) {
-        return authRepository.existsByUserEmailAndUserStatus(userEmail, UserStatus.ACTIVE);
-    }
+
 
 }

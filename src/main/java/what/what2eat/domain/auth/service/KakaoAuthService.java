@@ -56,7 +56,7 @@ public class KakaoAuthService {
     }
 
     // 토큰으로 사용자 정보 조회
-    public ApiResponse<Map<String, Object>> login(String kakaoAccessToken) {
+    public KakaoAuthResponseDTO.KakaoLoginResultDTO login(String kakaoAccessToken) {
 
         // 사용자 정보 조회
         KakaoAuthResponseDTO.KakaoUserInfoDTO userInfo = getKakaoUserInfo(kakaoAccessToken);
@@ -66,21 +66,16 @@ public class KakaoAuthService {
 
         if (userOpt.isEmpty()) {
             // 회원가입 필요 리다이렉트 처리
-            Map<String, Object> data = Map.of(
-                    "kakaoUserInfo", userInfo.getKakaoAccount().getKakaoEmail(),
-                    "redirectUrl", "/api/v1/auth/signup/kakao");
-
-            return ApiResponse.of(ResponseCode.NEED_SIGNUP, data);
+            return new KakaoAuthResponseDTO.KakaoLoginResultDTO(
+                    true, userInfo.getKakaoAccount().getKakaoEmail(), null);
         }
 
         // 로그인 성공
         User user = userOpt.get();
         Map<String, String> tokens = createTokens(user);
 
-        return ApiResponse.of(Map.of(
-                "tokens", tokens
-        ));
-    }
+        return new KakaoAuthResponseDTO.KakaoLoginResultDTO(
+                false, null, tokens);    }
 
     // 카카오 로그인 정보 DB 저장 유무 확인
     public boolean validateKakaoAuth(String kakaoUserEmail) {
@@ -125,7 +120,7 @@ public class KakaoAuthService {
                     KakaoAuthResponseDTO.KakaoUserInfoDTO.class
             ).getBody();
         } catch (HttpClientErrorException e) {
-            log.error("Kakao API 호출 실패: {}", e.getMessage());
+            log.error("Kakao API 호출 실패: 상태 코드 {}, 응답 본문 {}", e.getStatusCode(), e.getResponseBodyAsString());
             throw new MemberException(CommonErrorCode.BAD_REQUEST);
         }
     }

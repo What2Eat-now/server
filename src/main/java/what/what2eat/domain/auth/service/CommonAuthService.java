@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import what.what2eat.domain.auth.entity.User;
+import what.what2eat.domain.auth.entity.UserStatus;
 import what.what2eat.domain.auth.exception.AuthErrorCode;
 import what.what2eat.domain.auth.exception.MemberException;
 import what.what2eat.domain.auth.repository.AuthRepository;
@@ -56,5 +57,13 @@ public class CommonAuthService {
 
         // 회원 탈퇴 처리
         userOpt.get().delete();
+    }
+
+    public boolean validateMember(String userEmail) {
+        Boolean isExist = authRepository.existsByUserEmailAndUserStatus(userEmail, UserStatus.ACTIVE);
+
+        if(isExist) throw new MemberException(AuthErrorCode.DUPLICATE_USER_EMAIL);
+
+        return isExist;
     }
 }

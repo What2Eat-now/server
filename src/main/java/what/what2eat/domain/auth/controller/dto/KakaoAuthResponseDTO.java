@@ -29,6 +29,15 @@ public class KakaoAuthResponseDTO {
     @Builder
     @RequiredArgsConstructor
     @AllArgsConstructor
+    public static class KakaoLoginResultDTO {
+        private boolean requiresSignup;
+        private String kakaoEmail;
+        private Map<String, String> tokens;    }
+
+    @Getter
+    @Builder
+    @RequiredArgsConstructor
+    @AllArgsConstructor
     public static class KakaoTokenDTO{
 
         @JsonProperty("access_token")
