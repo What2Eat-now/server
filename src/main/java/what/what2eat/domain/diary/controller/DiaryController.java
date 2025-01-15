@@ -13,6 +13,7 @@ import what.what2eat.domain.diary.service.DiaryService;
 import what.what2eat.global.response.ApiResponse;
 import what.what2eat.global.response.ResponseCode;
 
+import java.io.IOException;
 import java.util.List;
 
 @Controller
@@ -27,7 +28,7 @@ public class DiaryController {
     // 다이어리 작성
     @PostMapping("")
     @Operation(summary = "다이어리 작성", description = "다이어리 작성을 처리하는 API 입니다.")
-    public ResponseEntity<ApiResponse<Void>> writeDiary(@RequestBody DiaryRequestDTO.DiaryWriteDTO request) {
+    public ResponseEntity<ApiResponse<Void>> writeDiary(@ModelAttribute DiaryRequestDTO.DiaryWriteDTO request) throws IOException {
         diaryService.writeDiary(request);
 
         return ResponseEntity.ok(ApiResponse.of(ResponseCode.CREATED));

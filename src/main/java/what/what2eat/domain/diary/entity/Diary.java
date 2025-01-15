@@ -6,9 +6,12 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.locationtech.jts.geom.Point;
+import org.springframework.web.multipart.MultipartFile;
 import what.what2eat.domain.auth.entity.User;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "diary")
@@ -44,8 +47,9 @@ public class Diary {
     @Column(name = "rate", nullable = false, length = 10)
     private String rate;
 
-    @Column(name = "upload_img", nullable = false, length = 100)
-    private String uploadImg;
+    @Builder.Default
+    @OneToMany(mappedBy = "diary",fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private List<DiaryImage> uploadImgList = new ArrayList<>(); // 이미지 데이터
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")

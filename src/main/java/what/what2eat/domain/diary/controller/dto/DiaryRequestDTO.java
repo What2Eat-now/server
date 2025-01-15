@@ -5,8 +5,10 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Builder;
 import lombok.Getter;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
+import java.util.List;
 
 public class DiaryRequestDTO {
 
@@ -36,9 +38,9 @@ public class DiaryRequestDTO {
 
         private String rate;
 
-        private Integer marker_number;
+        private Integer markerNumber;
 
-        private String uploadImg;
+        private List<MultipartFile> uploadImgList;
     }
 }
 
