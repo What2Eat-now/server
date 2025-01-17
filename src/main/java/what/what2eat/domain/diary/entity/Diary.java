@@ -54,4 +54,14 @@ public class Diary {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;
+
+    public void update(Diary diary) {
+        this.title = diary.getTitle();
+        this.content = diary.getContent();
+        this.placeName = diary.getPlaceName();
+        this.visitDate = diary.getVisitDate();
+        this.location = diary.getLocation();
+        this.markerNumber = diary.getMarkerNumber();
+        this.rate = diary.getRate();
+    }
 }

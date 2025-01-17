@@ -43,6 +43,14 @@ public class DiaryController {
         return ResponseEntity.ok(ApiResponse.of(ResponseCode.SUCCESS, allDiaryThumbnails));
     }
 
+    // 다이어리 수정
+    @PutMapping("/{diaryId}")
+    public ResponseEntity<ApiResponse<Void>> updateDiary(@PathVariable Long diaryId, DiaryRequestDTO.DiaryUpdateDTO request) {
+        diaryService.updateDiary(diaryId, request);
+
+        return ResponseEntity.ok(ApiResponse.of(ResponseCode.SUCCESS));
+    }
+
     // 다이어리 상세 조회
     @GetMapping("/{diaryId}")
     @Operation(summary = "다이어리 상세 조회", description = "다이어리 상세 조회를 처리하는 API 입니다.")
