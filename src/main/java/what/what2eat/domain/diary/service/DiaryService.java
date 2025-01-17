@@ -78,7 +78,7 @@ public class DiaryService {
 
         // 기존 이미지 URL 리스트
         List<String> existingUrlList = existingDiary.getUploadImgList().stream()
-                .map(diaryImage -> s3Service.extractKey(diaryImage.getImageUrl()))
+                .map(diaryImage -> diaryImage.getImageUrl())
                 .collect(Collectors.toList());
 
         // 삭제할 이미지 URL 리스트 추출
@@ -94,7 +94,7 @@ public class DiaryService {
 
             // DB 데이터 삭제
             existingDiary.getUploadImgList().removeIf(
-                    diaryImage -> deleteUrlList.contains(s3Service.extractKey(diaryImage.getImageUrl()))
+                    diaryImage -> deleteUrlList.contains(diaryImage.getImageUrl())
             );
         }
 
@@ -106,7 +106,6 @@ public class DiaryService {
             String preFilePath = "diary_image/" + userId;
             uploadDiaryImages(existingDiary, newImgList, preFilePath);
         }
-
 
     }
 
@@ -162,9 +161,7 @@ public class DiaryService {
     }
 
     /**
-     * 해당 MultipartFile 리스트에 실제 업로드할 파일이 있는지 검사한다.
-     *
-     * @param files MultipartFile 객체 리스트
+     * 해당 MultipartFile 리스트에 실제 업로드할 파일이 있는지 검사
      * @return 리스트가 null이거나, 요소가 없거나 모든 파일이 비어있다면 true, 그렇지 않으면 false를 반환
      */
     public boolean isMultipartFileListEmpty(List<MultipartFile> files) {

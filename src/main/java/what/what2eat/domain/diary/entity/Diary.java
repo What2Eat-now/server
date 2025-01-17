@@ -48,7 +48,7 @@ public class Diary {
     private String rate;
 
     @Builder.Default
-    @OneToMany(mappedBy = "diary",fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "diary",fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<DiaryImage> uploadImgList = new ArrayList<>(); // 이미지 데이터
 
     @ManyToOne(fetch = FetchType.LAZY)
