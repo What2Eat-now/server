@@ -4,6 +4,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import what.what2eat.domain.auth.entity.Provider;
 import what.what2eat.domain.auth.entity.User;
 import what.what2eat.domain.auth.entity.UserStatus;
 import what.what2eat.domain.auth.exception.AuthErrorCode;
@@ -70,13 +71,6 @@ public class CommonAuthService {
         userOpt.get().delete();
     }
 
-    // 로그인시
-    public void validateMember(String userEmail) {
-        Boolean isExist = authRepository.existsByUserEmailAndUserStatus(userEmail, UserStatus.ACTIVE);
 
-        // 이메일이 존재하지 않으면 404 에러 반환
-        if(!isExist) throw new MemberException(AuthErrorCode.USER_NOT_FOUND);
-
-    }
 
 }
