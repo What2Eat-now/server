@@ -5,6 +5,7 @@ import lombok.Getter;
 
 
 import java.time.LocalDate;
+import java.util.List;
 
 public class DiaryResponseDTO {
 
@@ -26,9 +27,9 @@ public class DiaryResponseDTO {
 
         private String rate;
 
-        private Integer marker_number;
+        private Integer markerNumber;
 
-        private String upload_img;
+        private List<String> uploadImgList;
     }
 
 
@@ -46,6 +47,8 @@ public class DiaryResponseDTO {
 
         private Integer markerNumber;
 
-        private String uploadImg;
+        private List<String> uploadImgList;
     }
+
+
 }

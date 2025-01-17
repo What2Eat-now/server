@@ -6,6 +6,12 @@ import what.what2eat.domain.auth.entity.User;
 import what.what2eat.domain.diary.controller.dto.DiaryRequestDTO;
 import what.what2eat.domain.diary.controller.dto.DiaryResponseDTO;
 import what.what2eat.domain.diary.entity.Diary;
+import what.what2eat.domain.diary.entity.DiaryImage;
+
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Component
 public class DiaryConverter {
@@ -19,8 +25,7 @@ public class DiaryConverter {
                 .placeName(request.getPlaceName())
                 .location(point)
                 .rate(request.getRate())
-                .markerNumber(request.getMarker_number())
-                .uploadImg(request.getUploadImg())
+                .markerNumber(request.getMarkerNumber())
                 .build();
     }
 
@@ -33,9 +38,9 @@ public class DiaryConverter {
                 .longitude(diary.getLocation().getX())
                 .placeName(diary.getPlaceName())
                 .rate(diary.getRate())
-                .marker_number(diary.getMarkerNumber())
+                .markerNumber(diary.getMarkerNumber())
                 .visitDate(diary.getVisitDate())
-                .upload_img(diary.getUploadImg())
+                .uploadImgList(convertImagesToUrls(diary.getUploadImgList()))
                 .build();
     }
 
@@ -46,7 +51,13 @@ public class DiaryConverter {
                 .title(diary.getTitle())
                 .markerNumber(diary.getMarkerNumber())
                 .placeName(diary.getPlaceName())
-                .uploadImg(diary.getUploadImg())
+                .uploadImgList(convertImagesToUrls(diary.getUploadImgList()))
                 .visitDate(diary.getVisitDate()).build();
+    }
+
+    private List<String> convertImagesToUrls(List<DiaryImage> imageList) {
+        return imageList.stream()
+                .map(DiaryImage::getImageUrl)
+                .collect(Collectors.toList());
     }
 }
