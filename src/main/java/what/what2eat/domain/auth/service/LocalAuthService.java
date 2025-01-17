@@ -31,6 +31,7 @@ public class LocalAuthService {
     private final AuthRepository authRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtProvider jwtProvider;
+    private final CommonAuthService commonAuthService;
 
     // 회원가입 =>
     public void signUp(LocalAuthRequestDTO.SignUpRequestDTO request) {
@@ -52,8 +53,8 @@ public class LocalAuthService {
 
     public LocalAuthResponseDTO.LoginResponseDTO login(LocalAuthRequestDTO.LoginRequestDTO request) throws Exception {
 
-        // 유효성 검사
         validateMember(request.getUserEmail());
+
 
         try {
             // 인증 시도
