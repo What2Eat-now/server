@@ -23,6 +23,11 @@ public enum CommonErrorCode implements BaseErrorCode{
     FAIL_S3_UPLOAD("500", HttpStatus.INTERNAL_SERVER_ERROR, "S3 이미지 업로드에 실패했습니다."),
     FAIL_S3_DELETE("500", HttpStatus.INTERNAL_SERVER_ERROR, "S3 이미지 삭제에 실패했습니다.");
 
+
+    // S3 ERROR
+    FAIL_S3_UPLOAD("500", HttpStatus.INTERNAL_SERVER_ERROR, "S3 이미지 업로드에 실패했습니다."),
+    FAIL_S3_DELETE("500", HttpStatus.INTERNAL_SERVER_ERROR, "S3 이미지 삭제에 실패했습니다.");
+
     /**
      * auth 예외 처리
      */
