@@ -7,6 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import what.what2eat.global.exception.CommonErrorCode;
 import what.what2eat.global.exception.CustomException;
@@ -50,6 +51,7 @@ public class S3Service {
                 })
                 .collect(Collectors.toList()); // 결과를 리스트로 변환하여 반환
     }
+
 
     /**
      * 고유한 파일명을 생성

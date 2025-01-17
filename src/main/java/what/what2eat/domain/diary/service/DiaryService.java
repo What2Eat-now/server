@@ -51,28 +51,33 @@ public class DiaryService {
 
         String preFilePath = "diary_image/" + user.getUserId();
 
-        // 다이어리 이미지 저장
-        List<String> uploadedFileUrl = s3Service.uploadFiles(request.getUploadImgList(), preFilePath);
-
         // 다이어리 객체 생성
         Diary diary = diaryConverter.todiary(request, user, point);
 
-        //S3 업로드 후 DiaryImageList 생성
-        List<DiaryImage> imageList = uploadedFileUrl.stream()
-                .map(url -> DiaryImage.builder()
-                        .imageUrl(url) // 이미지 URL 설정
-                        .diary(diary) // Diary와 연관 설정
-                        .build())
-                .collect(Collectors.toList());
+        // 다이어리 이미지를 첨부한 경우에만 연관관계 설정
+        if (request.getUploadImgList().isEmpty()) {
 
-        // Diary와 이미지 리스트 연관 설정
-        diary.getUploadImgList().addAll(imageList);
+            // 다이어리 이미지 저장
+            List<String> uploadedFileUrl = s3Service.uploadFiles(request.getUploadImgList(), preFilePath);
+
+            //S3 업로드 후 DiaryImageList 생성
+            List<DiaryImage> imageList = uploadedFileUrl.stream()
+                    .map(url -> DiaryImage.builder()
+                            .imageUrl(url) // 이미지 URL 설정
+                            .diary(diary) // Diary와 연관 설정
+                            .build())
+                    .collect(Collectors.toList());
+
+            // Diary와 이미지 리스트 연관 설정
+            diary.getUploadImgList().addAll(imageList);
+        }
 
         // Diary 저장(이미지 함께 저장됨)
         diaryRepository.save(diary);
 
         log.info("다이어리 작성 완료");
     }
+
 
     // 다이어리 상세 정보 조회
     public DiaryResponseDTO.GetDiaryDTO getDiary(Long diaryId) {
