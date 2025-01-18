@@ -19,10 +19,6 @@ public enum CommonErrorCode implements BaseErrorCode{
     CONFLICT("409", HttpStatus.CONFLICT, "이미 존재하는 리소스입니다."),
     INVALID_TOKEN("401",HttpStatus.UNAUTHORIZED, "유효하지 않는 토큰입니다."),
 
-    // S3 ERROR
-    FAIL_S3_UPLOAD("500", HttpStatus.INTERNAL_SERVER_ERROR, "S3 이미지 업로드에 실패했습니다."),
-    FAIL_S3_DELETE("500", HttpStatus.INTERNAL_SERVER_ERROR, "S3 이미지 삭제에 실패했습니다.");
-
 
     // S3 ERROR
     FAIL_S3_UPLOAD("500", HttpStatus.INTERNAL_SERVER_ERROR, "S3 이미지 업로드에 실패했습니다."),
