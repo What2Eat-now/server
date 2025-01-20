@@ -106,6 +106,24 @@ public class DiaryService {
             String preFilePath = "diary_image/" + userId;
             uploadDiaryImages(existingDiary, newImgList, preFilePath);
         }
+    }
+
+    // 다이어리 삭제
+    public void deleteDiary(Long diaryId) {
+        // 다이어리 조회
+        Diary existingDiary = diaryRepository.findById(diaryId)
+                .orElseThrow(() -> new DiaryException(DiaryErrorCode.DIARY_NOT_FOUND));
+
+        // s3에 저장된 imgUrl List 반환
+        List<String> uploadedImgUrlList = existingDiary.getUploadImgList().stream()
+                .map(diaryImage -> diaryImage.getImageUrl())
+                .collect(Collectors.toList());
+
+        // s3에 저장된 파일 삭제
+        s3Service.deleteFiles(uploadedImgUrlList);
+
+        // DB에 저장된 다이어리, 다이어리 이미지 삭제
+        diaryRepository.delete(existingDiary);
 
     }
 

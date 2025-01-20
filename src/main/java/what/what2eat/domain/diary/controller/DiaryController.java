@@ -45,7 +45,7 @@ public class DiaryController {
 
     // 다이어리 수정
     @PutMapping("/{diaryId}")
-    @Operation(summary = "다이어리 수정" , description = "다이어리 수정을 처리하는 API 입니다.")
+    @Operation(summary = "다이어리 수정", description = "다이어리 수정을 처리하는 API 입니다.")
     public ResponseEntity<ApiResponse<Void>> updateDiary(@PathVariable Long diaryId, DiaryRequestDTO.DiaryUpdateDTO request) {
         diaryService.updateDiary(diaryId, request);
 
@@ -59,5 +59,13 @@ public class DiaryController {
         DiaryResponseDTO.GetDiaryDTO getDiaryDTO = diaryService.getDiary(diaryId);
 
         return ResponseEntity.ok(ApiResponse.of(ResponseCode.SUCCESS, getDiaryDTO));
+    }
+
+    @DeleteMapping("/{diaryId}")
+    @Operation(summary = "다이어리 삭제", description = "다이어리 삭제를 처리하는 API 입니다.")
+    public ResponseEntity<ApiResponse<Void>> deleteDiary(@PathVariable Long diaryId) {
+        diaryService.deleteDiary(diaryId);
+
+        return ResponseEntity.ok(ApiResponse.of(ResponseCode.SUCCESS));
     }
 }
