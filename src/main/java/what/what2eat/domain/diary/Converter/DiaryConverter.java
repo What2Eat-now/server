@@ -34,8 +34,7 @@ public class DiaryConverter {
         return DiaryResponseDTO.GetDiaryDTO.builder()
                 .title(diary.getTitle())
                 .content(diary.getContent())
-                .latitude(diary.getLocation().getY())
-                .longitude(diary.getLocation().getX())
+
                 .placeName(diary.getPlaceName())
                 .rate(diary.getRate())
                 .markerNumber(diary.getMarkerNumber())
@@ -49,6 +48,8 @@ public class DiaryConverter {
         return DiaryResponseDTO.GetDiaryThumbnailDTO.builder()
                 .diaryId(diary.getDiaryId())
                 .title(diary.getTitle())
+                .latitude(diary.getLocation().getY())
+                .longitude(diary.getLocation().getX())
                 .markerNumber(diary.getMarkerNumber())
                 .placeName(diary.getPlaceName())
                 .uploadImgList(convertImagesToUrls(diary.getUploadImgList()))
