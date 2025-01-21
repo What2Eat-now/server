@@ -61,10 +61,10 @@ public class DiaryController {
         return ResponseEntity.ok(ApiResponse.of(ResponseCode.SUCCESS, getDiaryDTO));
     }
 
-    @DeleteMapping("/{diaryId}")
+    @DeleteMapping("")
     @Operation(summary = "다이어리 삭제", description = "다이어리 삭제를 처리하는 API 입니다.")
-    public ResponseEntity<ApiResponse<Void>> deleteDiary(@PathVariable Long diaryId) {
-        diaryService.deleteDiary(diaryId);
+    public ResponseEntity<ApiResponse<Void>> deleteDiary(@RequestBody DiaryRequestDTO.DiaryDeleteDTO request) {
+        diaryService.deleteDiary(request);
 
         return ResponseEntity.ok(ApiResponse.of(ResponseCode.SUCCESS));
     }

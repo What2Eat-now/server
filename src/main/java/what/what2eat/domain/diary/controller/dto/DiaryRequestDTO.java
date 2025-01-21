@@ -75,5 +75,11 @@ public class DiaryRequestDTO {
 
         private List<MultipartFile> newImgList;
     }
+
+    @Getter
+    @Builder
+    public static class DiaryDeleteDTO {
+        private List<Long> diaryIdList;
+    }
 }
 

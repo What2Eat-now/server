@@ -45,6 +45,8 @@ public class DiaryResponseDTO {
 
         private Double longitude;
 
+        private String rate;
+
         private Integer markerNumber;
 
         private List<String> uploadImgList;

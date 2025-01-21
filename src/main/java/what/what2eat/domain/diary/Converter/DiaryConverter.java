@@ -38,7 +38,7 @@ public class DiaryConverter {
                 .rate(diary.getRate())
                 .markerNumber(diary.getMarkerNumber())
                 .visitDate(diary.getVisitDate())
-                .uploadImgList(convertImagesToUrls(diary.getUploadImgList()))
+                .uploadImgList(convertImagesToUrls(diary.getDiaryImageList()))
                 .build();
     }
 
@@ -49,9 +49,10 @@ public class DiaryConverter {
                 .title(diary.getTitle())
                 .latitude(diary.getLocation().getX())
                 .longitude(diary.getLocation().getY())
+                .rate(diary.getRate())
                 .markerNumber(diary.getMarkerNumber())
                 .placeName(diary.getPlaceName())
-                .uploadImgList(convertImagesToUrls(diary.getUploadImgList()))
+                .uploadImgList(convertImagesToUrls(diary.getDiaryImageList()))
                 .visitDate(diary.getVisitDate()).build();
     }
 

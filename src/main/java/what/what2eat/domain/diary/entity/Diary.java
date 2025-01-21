@@ -49,7 +49,7 @@ public class Diary {
 
     @Builder.Default
     @OneToMany(mappedBy = "diary",fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<DiaryImage> uploadImgList = new ArrayList<>(); // 이미지 데이터
+    private List<DiaryImage> diaryImageList = new ArrayList<>(); // 이미지 데이터
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
