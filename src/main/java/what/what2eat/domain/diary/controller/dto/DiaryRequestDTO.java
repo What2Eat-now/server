@@ -36,7 +36,7 @@ public class DiaryRequestDTO {
         @NotNull(message = "경도는 필수 입력 항목입니다.")
         private Double longitude;
 
-        private String rate;
+        private Integer rate;
 
         private Integer markerNumber;
 
@@ -67,7 +67,7 @@ public class DiaryRequestDTO {
         @NotNull(message = "경도는 필수 입력 항목입니다.")
         private Double longitude;
 
-        private String rate;
+        private Integer rate;
 
         private Integer markerNumber;
 
