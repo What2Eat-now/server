@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 @Slf4j
@@ -35,10 +36,11 @@ import java.util.stream.Collectors;
 public class DiaryService {
     private final DiaryRepository diaryRepository;
     private final JwtProvider jwtProvider;
-    private final GeometryFactory geometryFactory;
     private final AuthRepository authRepository;
     private final DiaryConverter diaryConverter;
     private final S3Service s3Service;
+    private final GeometryFactory geometryFactory;
+
 
     // 다이어리 작성
     public void writeDiary(DiaryRequestDTO.DiaryWriteDTO request){
@@ -70,14 +72,16 @@ public class DiaryService {
     public void updateDiary(Long diaryId, DiaryRequestDTO.DiaryUpdateDTO request) {
         Long userId = jwtProvider.extractUserId();
 
+        log.info("diaryId = " + diaryId);
+
         Diary existingDiary = diaryRepository.findById(diaryId).orElseThrow(
                 () -> new DiaryException(DiaryErrorCode.DIARY_NOT_FOUND));
 
         // 다이어리 업데이트
-        existingDiary.update(existingDiary);
+        existingDiary.update(request, getPoint(request.getLatitude(), request.getLongitude()));
 
         // 기존 이미지 URL 리스트
-        List<String> existingUrlList = existingDiary.getUploadImgList().stream()
+        List<String> existingUrlList = existingDiary.getDiaryImageList().stream()
                 .map(diaryImage -> diaryImage.getImageUrl())
                 .collect(Collectors.toList());
 
@@ -93,7 +97,7 @@ public class DiaryService {
             s3Service.deleteFiles(deleteUrlList);
 
             // DB 데이터 삭제
-            existingDiary.getUploadImgList().removeIf(
+            existingDiary.getDiaryImageList().removeIf(
                     diaryImage -> deleteUrlList.contains(diaryImage.getImageUrl())
             );
         }
@@ -109,21 +113,26 @@ public class DiaryService {
     }
 
     // 다이어리 삭제
-    public void deleteDiary(Long diaryId) {
-        // 다이어리 조회
-        Diary existingDiary = diaryRepository.findById(diaryId)
-                .orElseThrow(() -> new DiaryException(DiaryErrorCode.DIARY_NOT_FOUND));
+    public void deleteDiary(DiaryRequestDTO.DiaryDeleteDTO request) {
+
+        // 다이어리 목록 조회
+        List<Diary> existingDiaryList = diaryRepository.findAllById(request.getDiaryIdList());
+
+        if (existingDiaryList.isEmpty()) {
+            throw new DiaryException(DiaryErrorCode.DIARY_NOT_FOUND);
+        }
 
         // s3에 저장된 imgUrl List 반환
-        List<String> uploadedImgUrlList = existingDiary.getUploadImgList().stream()
-                .map(diaryImage -> diaryImage.getImageUrl())
+        List<String> uploadedImgUrlList = existingDiaryList.stream()
+                .flatMap(diary -> diary.getDiaryImageList().stream())
+                .map(DiaryImage::getImageUrl)
                 .collect(Collectors.toList());
 
         // s3에 저장된 파일 삭제
         s3Service.deleteFiles(uploadedImgUrlList);
 
         // DB에 저장된 다이어리, 다이어리 이미지 삭제
-        diaryRepository.delete(existingDiary);
+        diaryRepository.deleteAll(existingDiaryList);
 
     }
 
@@ -170,13 +179,9 @@ public class DiaryService {
                 .collect(Collectors.toList());
 
         // Diary 엔티티에 연관관계 설정
-        diary.getUploadImgList().addAll(imageList);
+        diary.getDiaryImageList().addAll(imageList);
     }
 
-    // 위도, 경도 -> point로 변환
-    private Point getPoint(Double latitude, Double longitude) {
-        return geometryFactory.createPoint(new Coordinate(latitude, longitude));
-    }
 
     /**
      * 해당 MultipartFile 리스트에 실제 업로드할 파일이 있는지 검사
@@ -188,6 +193,12 @@ public class DiaryService {
         }
         // 모든 파일이 null이거나 비어있으면 "빈 리스트"로 판단
         return files.stream().allMatch(file -> file == null || file.isEmpty());
+    }
+
+
+    // 위도(latitude), 경도(longitude) -> point로 변환
+    private Point getPoint(Double latitude, Double longitude) {
+        return geometryFactory.createPoint(new Coordinate(latitude, longitude));
     }
 
 }

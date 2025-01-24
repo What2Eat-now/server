@@ -21,7 +21,7 @@ public class DiaryResponseDTO {
 
         private LocalDate visitDate;
 
-        private String rate;
+        private Integer rate;
 
         private Integer markerNumber;
 
@@ -44,6 +44,8 @@ public class DiaryResponseDTO {
         private Double latitude;
 
         private Double longitude;
+
+        private Integer rate;
 
         private Integer markerNumber;
 
