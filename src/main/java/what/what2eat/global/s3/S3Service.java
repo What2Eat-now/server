@@ -61,14 +61,14 @@ public class S3Service {
                 .collect(Collectors.toList()); // 결과를 리스트로 변환하여 반환
     }
 
-    public void deleteFiles(List<String> deleteImgKeyList) {
+    public void deleteFiles(List<String> deleteImgUrlList) {
 
-        if (deleteImgKeyList.isEmpty()) {
+        if (deleteImgUrlList.isEmpty()) {
             return;
         }
 
         // ObjectIdentifier 리스트 생성
-        List<ObjectIdentifier> toDeleteList = deleteImgKeyList.stream()
+        List<ObjectIdentifier> toDeleteList = deleteImgUrlList.stream()
                 .map(url -> ObjectIdentifier.builder().key(extractKey(url)).build())
                 .collect(Collectors.toList());
 
@@ -78,7 +78,6 @@ public class S3Service {
                 .delete(Delete.builder().objects(toDeleteList).build()).build();
 
         try{
-
             // 요청 후 응답 객체 생성
             DeleteObjectsResponse objectsResponse = s3Client.deleteObjects(objectsRequest);
 

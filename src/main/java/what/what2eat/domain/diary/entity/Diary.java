@@ -5,9 +5,12 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Point;
 import org.springframework.web.multipart.MultipartFile;
 import what.what2eat.domain.auth.entity.User;
+import what.what2eat.domain.diary.controller.dto.DiaryRequestDTO;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -20,6 +23,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class Diary {
+
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -45,23 +49,24 @@ public class Diary {
     private Integer markerNumber;
 
     @Column(name = "rate", nullable = false, length = 10)
-    private String rate;
+    private Integer rate;
 
     @Builder.Default
     @OneToMany(mappedBy = "diary",fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<DiaryImage> uploadImgList = new ArrayList<>(); // 이미지 데이터
+    private List<DiaryImage> diaryImageList = new ArrayList<>(); // 이미지 데이터
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;
 
-    public void update(Diary diary) {
-        this.title = diary.getTitle();
-        this.content = diary.getContent();
-        this.placeName = diary.getPlaceName();
-        this.visitDate = diary.getVisitDate();
-        this.location = diary.getLocation();
-        this.markerNumber = diary.getMarkerNumber();
-        this.rate = diary.getRate();
+    public void update(DiaryRequestDTO.DiaryUpdateDTO request, Point location) {
+        this.title = request.getTitle();
+        this.content = request.getContent();
+        this.placeName = request.getPlaceName();
+        this.visitDate = request.getVisitDate();
+        this.location = location;
+        this.markerNumber = request.getMarkerNumber();
+        this.rate = request.getRate();
     }
+
 }
