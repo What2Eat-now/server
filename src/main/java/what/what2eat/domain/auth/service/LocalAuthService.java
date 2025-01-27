@@ -31,7 +31,6 @@ public class LocalAuthService {
     private final AuthRepository authRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtProvider jwtProvider;
-    private final CommonAuthService commonAuthService;
 
     // 회원가입 =>
     public void signUp(LocalAuthRequestDTO.SignUpRequestDTO request) {

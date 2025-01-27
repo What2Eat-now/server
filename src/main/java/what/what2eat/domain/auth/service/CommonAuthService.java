@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import what.what2eat.domain.auth.controller.dto.CommonAuthRequestDTO;
 import what.what2eat.domain.auth.entity.User;
+import what.what2eat.domain.auth.entity.UserStatus;
 import what.what2eat.domain.auth.exception.AuthErrorCode;
 import what.what2eat.domain.auth.exception.MemberException;
 import what.what2eat.domain.auth.repository.AuthRepository;
@@ -51,28 +52,22 @@ public class CommonAuthService {
         }
     }
 
-    public void delete(HttpServletRequest request) {
+    public void delete() {
 
-        // 헤더에서 토큰 추출
-        String token = resolveToken(request);
+        User user = authRepository.findByUserIdAndUserStatus(jwtProvider.extractUserId(), UserStatus.ACTIVE)
+                .orElseThrow(() -> new MemberException(AuthErrorCode.USER_NOT_FOUND));
 
-        // 토큰에서 userEmail 추출
-        String userEmail = jwtProvider.getUserEmail(token);
-
-        // user 조회
-        Optional<User> userOpt = authRepository.findByUserEmail(userEmail);
-
-        if (userOpt.isEmpty()) {
+        if (user == null) {
             throw new MemberException(AuthErrorCode.USER_NOT_FOUND);
         }
 
         // 회원 탈퇴 처리
-        userOpt.get().delete();
+        user.delete();
     }
 
     public void updateUserInfo(CommonAuthRequestDTO.UpdateInfoDTO request) {
 
-        User user = authRepository.findById(jwtProvider.extractUserId())
+        User user = authRepository.findByUserIdAndUserStatus(jwtProvider.extractUserId(), UserStatus.ACTIVE)
                 .orElseThrow(() -> new MemberException(AuthErrorCode.USER_NOT_FOUND));
 
         // 이메일 유효성 검사 후 닉네임 변경

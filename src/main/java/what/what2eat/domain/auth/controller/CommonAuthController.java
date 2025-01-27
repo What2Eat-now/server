@@ -30,8 +30,8 @@ public class CommonAuthController {
 
     @DeleteMapping("")
     @Operation(summary = "공통 회원탈퇴", description = "회원탈퇴를 처리합니다. Authorization 헤더에 accessToken을 첨부해서 요청하시면 됩니다. \n 응답 코드에 따른 자세한 결과는 PostMan API 명세서를 참고 부탁드립니다.")
-    public ResponseEntity<ApiResponse<ResponseCode>> withdrawal(HttpServletRequest request) {
-        commonAuthService.delete(request);
+    public ResponseEntity<ApiResponse<ResponseCode>> withdrawal() {
+        commonAuthService.delete();
 
         return ResponseEntity.ok(ApiResponse.of(ResponseCode.SUCCESS));
     }
