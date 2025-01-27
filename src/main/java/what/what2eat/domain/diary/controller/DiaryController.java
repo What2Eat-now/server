@@ -13,7 +13,6 @@ import what.what2eat.domain.diary.service.DiaryService;
 import what.what2eat.global.response.ApiResponse;
 import what.what2eat.global.response.ResponseCode;
 
-import java.io.IOException;
 import java.util.List;
 
 @Controller
