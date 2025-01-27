@@ -6,6 +6,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import what.what2eat.domain.auth.controller.dto.CommonAuthRequestDTO;
 import what.what2eat.domain.auth.entity.Provider;
 import what.what2eat.domain.auth.service.CommonAuthService;
 import what.what2eat.global.response.ApiResponse;
@@ -36,9 +37,16 @@ public class CommonAuthController {
     }
 
     @PostMapping("/validate-token")
-    public ResponseEntity<ApiResponse<Void>> validateToken(HttpServletRequest request) {
+    public ResponseEntity<ApiResponse<ResponseCode>> validateToken(HttpServletRequest request) {
         commonAuthService.validateToken(request);
 
         return ResponseEntity.ok(ApiResponse.of(ResponseCode.CONFIRM));
+    }
+
+    @PutMapping("")
+    public ResponseEntity<ApiResponse<ResponseCode>> updateUserInfo(@RequestBody CommonAuthRequestDTO.UpdateInfoDTO request) {
+        commonAuthService.updateUserInfo(request);
+
+        return ResponseEntity.ok(ApiResponse.of(ResponseCode.SUCCESS));
     }
 }

@@ -4,9 +4,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import what.what2eat.domain.auth.entity.Provider;
+import what.what2eat.domain.auth.controller.dto.CommonAuthRequestDTO;
 import what.what2eat.domain.auth.entity.User;
-import what.what2eat.domain.auth.entity.UserStatus;
 import what.what2eat.domain.auth.exception.AuthErrorCode;
 import what.what2eat.domain.auth.exception.MemberException;
 import what.what2eat.domain.auth.repository.AuthRepository;
@@ -71,5 +70,16 @@ public class CommonAuthService {
         userOpt.get().delete();
     }
 
+    public void updateUserInfo(CommonAuthRequestDTO.UpdateInfoDTO request) {
+
+        User user = authRepository.findById(jwtProvider.extractUserId())
+                .orElseThrow(() -> new MemberException(AuthErrorCode.USER_NOT_FOUND));
+
+        // 이메일 유효성 검사 후 닉네임 변경
+        if (user.getUserEmail().equals(request.getUserEmail())) {
+            user.updateNickName(request.getNickName());
+        }
+
+    }
 
 }
