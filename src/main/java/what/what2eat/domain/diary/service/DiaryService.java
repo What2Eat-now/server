@@ -24,11 +24,8 @@ import what.what2eat.domain.diary.repository.DiaryRepository;
 import what.what2eat.global.s3.S3Service;
 import what.what2eat.global.security.jwt.JwtProvider;
 
-import java.io.IOException;
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Service
 @Slf4j
@@ -159,6 +156,10 @@ public class DiaryService {
         List<DiaryResponseDTO.GetDiaryThumbnailDTO> thumbnailDTOList = diaryList.stream()
                 .map(diaryConverter::diaryToThumbnailDTO)
                 .collect(Collectors.toList());
+
+        if (thumbnailDTOList.isEmpty()) {
+            throw new DiaryException(DiaryErrorCode.DIARY_NOT_FOUND);
+        }
 
         return thumbnailDTOList;
     }

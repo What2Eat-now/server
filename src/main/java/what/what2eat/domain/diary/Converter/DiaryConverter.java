@@ -8,8 +8,6 @@ import what.what2eat.domain.diary.controller.dto.DiaryResponseDTO;
 import what.what2eat.domain.diary.entity.Diary;
 import what.what2eat.domain.diary.entity.DiaryImage;
 
-import java.io.IOException;
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
