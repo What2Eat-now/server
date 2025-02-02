@@ -21,4 +21,15 @@ public class CommonAuthRequestDTO {
         @Size(max = 20, message = "닉네임은 최대 20자까지 가능합니다.")
         private String nickName;
     }
+
+    @Getter
+    @Builder
+    public static class TokenRefreshDTO {
+
+        @NotBlank(message = "refreshToken은 필수 입력 항목입니다.")
+        private String accessToken;
+
+        @NotBlank(message = "refreshToken은 필수 입력 항목입니다.")
+        private String refreshToken;
+    }
 }

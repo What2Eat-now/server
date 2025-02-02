@@ -94,7 +94,8 @@ public class SecurityConfig {
                 antMatcher("/swagger-ui/**"),
                 antMatcher("/v3/api-docs/**"),
                 antMatcher("/api/v1/auth/login/**"),
-                antMatcher("/api/v1/auth/signup/**")
+                antMatcher("/api/v1/auth/signup/**"),
+                antMatcher("/api/v1/auth/reissue")
         );
 
         return requestMatchers.toArray(RequestMatcher[]::new);

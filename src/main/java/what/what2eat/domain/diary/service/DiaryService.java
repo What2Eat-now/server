@@ -11,7 +11,7 @@ import org.springframework.web.multipart.MultipartFile;
 import what.what2eat.domain.auth.entity.User;
 import what.what2eat.domain.auth.entity.UserStatus;
 import what.what2eat.domain.auth.exception.AuthErrorCode;
-import what.what2eat.domain.auth.exception.MemberException;
+import what.what2eat.domain.auth.exception.AuthException;
 import what.what2eat.domain.auth.repository.AuthRepository;
 import what.what2eat.domain.diary.Converter.DiaryConverter;
 import what.what2eat.domain.diary.Exception.DiaryErrorCode;
@@ -45,7 +45,7 @@ public class DiaryService {
 
         // 사용자 조회
         User user = authRepository.findByUserIdAndUserStatus(jwtProvider.extractUserId(), UserStatus.ACTIVE)
-                .orElseThrow(() -> new MemberException(AuthErrorCode.USER_NOT_FOUND));
+                .orElseThrow(() -> new AuthException(AuthErrorCode.USER_NOT_FOUND));
 
         // 위도,경도 -> Point 타입으로 변환
         Point point = getPoint(request.getLatitude(), request.getLongitude());

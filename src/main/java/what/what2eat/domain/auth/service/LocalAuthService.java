@@ -16,7 +16,7 @@ import what.what2eat.domain.auth.entity.Role;
 import what.what2eat.domain.auth.entity.User;
 import what.what2eat.domain.auth.entity.UserStatus;
 import what.what2eat.domain.auth.exception.AuthErrorCode;
-import what.what2eat.domain.auth.exception.MemberException;
+import what.what2eat.domain.auth.exception.AuthException;
 import what.what2eat.domain.auth.repository.AuthRepository;
 import what.what2eat.global.security.domain.CustomUserDetails;
 import what.what2eat.global.security.jwt.JwtProvider;
@@ -37,7 +37,7 @@ public class LocalAuthService {
 
         // 비밀번호 형식 확인
         if (!isValidPassword(request.getPassword())) {
-            throw new MemberException(AuthErrorCode.INVALID_PASSWORD);
+            throw new AuthException(AuthErrorCode.INVALID_PASSWORD);
         }
 
         authRepository.save(User.builder()
@@ -96,7 +96,7 @@ public class LocalAuthService {
         Boolean isExist = authRepository.existsByUserEmailAndUserStatusAndProvider(userEmail, UserStatus.ACTIVE, Provider.LOCAL);
 
         // 이메일이 존재하지 않으면 404 에러 반환
-        if(!isExist) throw new MemberException(AuthErrorCode.USER_NOT_FOUND);
+        if(!isExist) throw new AuthException(AuthErrorCode.USER_NOT_FOUND);
 
     }
 }
