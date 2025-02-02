@@ -1,9 +1,11 @@
 package what.what2eat.global.config;
 
+import io.swagger.v3.oas.models.PathItem;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -78,9 +80,10 @@ public class SecurityConfig {
     private RequestMatcher[] requestHasRoleUser() {
         List<RequestMatcher> requestMatchers = List.of(
                 antMatcher("/api/v1/groups/**"),
-                antMatcher("/api/v1/diary/**")
-//                antMatcher("/api/v1/auth/logout")
+                antMatcher("/api/v1/diary/**"),
+                antMatcher(HttpMethod.PUT ,"/api/v1/auth")
         );
+
         return requestMatchers.toArray(RequestMatcher[]::new);
     }
 
@@ -91,7 +94,8 @@ public class SecurityConfig {
                 antMatcher("/swagger-ui/**"),
                 antMatcher("/v3/api-docs/**"),
                 antMatcher("/api/v1/auth/login/**"),
-                antMatcher("/api/v1/auth/signup/**")
+                antMatcher("/api/v1/auth/signup/**"),
+                antMatcher("/api/v1/auth/reissue")
         );
 
         return requestMatchers.toArray(RequestMatcher[]::new);

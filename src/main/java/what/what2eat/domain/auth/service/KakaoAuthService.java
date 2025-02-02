@@ -9,20 +9,13 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
-import what.what2eat.domain.auth.entity.Role;
 import what.what2eat.domain.auth.controller.dto.KakaoAuthRequestDTO;
 import what.what2eat.domain.auth.controller.dto.KakaoAuthResponseDTO;
 import what.what2eat.domain.auth.converter.KakaoAuthConverter;
-import what.what2eat.domain.auth.entity.Provider;
 import what.what2eat.domain.auth.entity.User;
-import what.what2eat.domain.auth.entity.UserStatus;
-import what.what2eat.domain.auth.exception.AuthErrorCode;
-import what.what2eat.domain.auth.exception.MemberException;
+import what.what2eat.domain.auth.exception.AuthException;
 import what.what2eat.domain.auth.repository.AuthRepository;
-import what.what2eat.global.exception.CustomException;
 import what.what2eat.global.exception.CommonErrorCode;
-import what.what2eat.global.response.ApiResponse;
-import what.what2eat.global.response.ResponseCode;
 import what.what2eat.global.security.domain.CustomUserDetails;
 import what.what2eat.global.security.jwt.JwtProvider;
 
@@ -109,7 +102,7 @@ public class KakaoAuthService {
             ).getBody();
         } catch (HttpClientErrorException e) {
             log.error("Kakao API 호출 실패: 상태 코드 {}, 응답 본문 {}", e.getStatusCode(), e.getResponseBodyAsString());
-            throw new MemberException(CommonErrorCode.BAD_REQUEST);
+            throw new AuthException(CommonErrorCode.BAD_REQUEST);
         }
     }
 
