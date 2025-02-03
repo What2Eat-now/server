@@ -3,22 +3,20 @@ package what.what2eat.domain.auth.service;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import what.what2eat.domain.auth.controller.dto.CommonAuthRequestDTO;
-import what.what2eat.domain.auth.controller.dto.LocalAuthResponseDTO;
+import what.what2eat.domain.auth.controller.dto.AuthRequestDTO;
+import what.what2eat.domain.auth.controller.dto.AuthResponseDTO;
 import what.what2eat.domain.auth.entity.User;
 import what.what2eat.domain.auth.entity.UserStatus;
 import what.what2eat.domain.auth.exception.AuthErrorCode;
 import what.what2eat.domain.auth.exception.AuthException;
 import what.what2eat.domain.auth.repository.AuthRepository;
-import what.what2eat.global.exception.CustomException;
 import what.what2eat.global.security.domain.CustomUserDetails;
 import what.what2eat.global.security.jwt.JwtProvider;
 
 import java.util.List;
-
+import java.util.Optional;
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -66,7 +64,24 @@ public class CommonAuthService {
         user.delete();
     }
 
-    public void updateUserInfo(CommonAuthRequestDTO.UpdateInfoDTO request) {
+    public AuthResponseDTO.GetUserInfoDTO getUserInfo(HttpServletRequest request) {
+        validateToken(request);
+
+        String token = resolveToken(request);
+
+        String userEmail = jwtProvider.getUserEmail(token);
+
+        User findUser = authRepository.findByUserEmailAndUserStatus(userEmail, UserStatus.ACTIVE).orElseThrow(
+                () -> new AuthException(AuthErrorCode.USER_NOT_FOUND));
+
+        return AuthResponseDTO.GetUserInfoDTO.builder()
+                .nickName(findUser.getNickName())
+                .userEmail(findUser.getUserEmail())
+                .build();
+
+    }
+
+    public void updateUserInfo(AuthRequestDTO.UpdateInfoDTO request) {
 
         User user = authRepository.findByUserIdAndUserStatus(jwtProvider.extractUserId(), UserStatus.ACTIVE)
                 .orElseThrow(() -> new AuthException(AuthErrorCode.USER_NOT_FOUND));
@@ -78,7 +93,7 @@ public class CommonAuthService {
 
     }
 
-    public LocalAuthResponseDTO.LoginResponseDTO refreshToken(CommonAuthRequestDTO.TokenRefreshDTO request) {
+    public AuthResponseDTO.LocalLoginResponseDTO refreshToken(AuthRequestDTO.TokenRefreshDTO request) {
         // refresh token 검증
         jwtProvider.validateToken(request.getRefreshToken());
 
@@ -86,7 +101,7 @@ public class CommonAuthService {
         String userEmail = jwtProvider.getUserEmail(request.getRefreshToken());
 
         // 이메일로 사용자 정보 DB 조회
-        User user = authRepository.findByUserEmail(userEmail).orElseThrow(
+        User user = authRepository.findByUserEmailAndUserStatus(userEmail, UserStatus.ACTIVE).orElseThrow(
                 () -> new AuthException(AuthErrorCode.USER_NOT_FOUND));
 
         // 유저 객체 생성
@@ -105,7 +120,7 @@ public class CommonAuthService {
         String accessToken = jwtProvider.createAccessToken(userDetails);
         String refreshToken = jwtProvider.createRefreshToken(userDetails.getEmail());
 
-        return LocalAuthResponseDTO.LoginResponseDTO.builder()
+        return AuthResponseDTO.LocalLoginResponseDTO.builder()
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
                 .build();
