@@ -53,11 +53,10 @@ public class CommonAuthController {
         return ResponseEntity.ok(ApiResponse.of(ResponseCode.SUCCESS));
     }
 
-//    @GetMapping("/me")
-//    public ResponseEntity<ApiResponse<AuthResponseDTO>> getUserInfo(HttpServletRequest request) {
-//
-//
-//    }
+    @GetMapping("/me")
+    public ResponseEntity<ApiResponse<AuthResponseDTO.GetUserInfoDTO>> getUserInfo(HttpServletRequest request) {
+        return ResponseEntity.ok(ApiResponse.of(commonAuthService.getUserInfo(request)));
+    }
 
     @PostMapping("/reissue")
     @Operation(summary = "Access Token 재발급", description = "Access Token 재발급을 처리합니다. \n 응답 코드에 따른 자세한 결과는 PostMan API 명세서를 참고 부탁드립니다.")

@@ -110,5 +110,15 @@ public class AuthResponseDTO {
     }
     ///////////////////////////////////////////////////////////////////
 
+    // 공통
+
+    @Getter
+    @Builder
+    public static class GetUserInfoDTO {
+        private String userEmail;
+
+        private String nickName;
+
+    }
 
 }

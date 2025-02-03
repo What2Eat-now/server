@@ -16,6 +16,7 @@ import what.what2eat.global.security.domain.CustomUserDetails;
 import what.what2eat.global.security.jwt.JwtProvider;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -64,7 +65,22 @@ public class CommonAuthService {
         user.delete();
     }
 
+    public AuthResponseDTO.GetUserInfoDTO getUserInfo(HttpServletRequest request) {
+        validateToken(request);
 
+        String token = resolveToken(request);
+
+        String userEmail = jwtProvider.getUserEmail(token);
+
+        User findUser = authRepository.findByUserEmail(userEmail).orElseThrow(
+                () -> new AuthException(AuthErrorCode.USER_NOT_FOUND));
+
+        return AuthResponseDTO.GetUserInfoDTO.builder()
+                .nickName(findUser.getNickName())
+                .userEmail(findUser.getUserEmail())
+                .build();
+
+    }
 
     public void updateUserInfo(AuthRequestDTO.UpdateInfoDTO request) {
 
