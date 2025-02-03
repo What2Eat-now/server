@@ -17,7 +17,6 @@ import what.what2eat.global.security.jwt.JwtProvider;
 
 import java.util.List;
 import java.util.Optional;
-
 @Service
 @RequiredArgsConstructor
 @Transactional

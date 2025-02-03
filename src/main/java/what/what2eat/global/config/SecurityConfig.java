@@ -83,6 +83,7 @@ public class SecurityConfig {
                 antMatcher("/api/v1/diary/**"),
                 antMatcher(HttpMethod.PUT ,"/api/v1/auth"),
                 antMatcher(HttpMethod.DELETE, "/api/v1/auth")
+
         );
 
         return requestMatchers.toArray(RequestMatcher[]::new);

@@ -1,5 +1,3 @@
-package what.what2eat.domain.auth.service;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.*;
@@ -23,6 +21,7 @@ import what.what2eat.global.security.jwt.JwtProvider;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+
 
 @Service
 @RequiredArgsConstructor
