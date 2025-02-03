@@ -9,8 +9,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
-import what.what2eat.domain.auth.controller.dto.KakaoAuthRequestDTO;
-import what.what2eat.domain.auth.controller.dto.KakaoAuthResponseDTO;
+import what.what2eat.domain.auth.controller.dto.AuthRequestDTO;
+import what.what2eat.domain.auth.controller.dto.AuthResponseDTO;
 import what.what2eat.domain.auth.converter.KakaoAuthConverter;
 import what.what2eat.domain.auth.entity.User;
 import what.what2eat.domain.auth.exception.AuthException;
@@ -36,24 +36,25 @@ public class KakaoAuthService {
 
 
     // 회원가입
-    public void signup(KakaoAuthRequestDTO.KakaoSignupDTO request) {
+    public void signup(AuthRequestDTO.KakaoSignupDTO request) {
         //객체 변환후 저장
         authRepository.save(kakaoAuthConverter.signupToUserEntity(request));
 
     }
 
     // 토큰으로 사용자 정보 조회
-    public KakaoAuthResponseDTO.KakaoLoginResultDTO login(String kakaoAccessToken) {
+
+    public AuthResponseDTO.KakaoLoginResponseDTO login(String kakaoAccessToken) {
 
         // 사용자 정보 조회
-        KakaoAuthResponseDTO.KakaoUserInfoDTO userInfo = getKakaoUserInfo(kakaoAccessToken);
+        AuthResponseDTO.KakaoUserInfoDTO userInfo = getKakaoUserInfo(kakaoAccessToken);
 
         // 사용자 존재 유무 확인
         Optional<User> userOpt = findUserByEmail(userInfo.getKakaoAccount().getKakaoEmail());
 
         if (userOpt.isEmpty()) {
             // 회원가입 필요 리다이렉트 처리
-            return new KakaoAuthResponseDTO.KakaoLoginResultDTO(
+            return new AuthResponseDTO.KakaoLoginResponseDTO(
                     true, userInfo.getKakaoAccount().getKakaoEmail(), null);
         }
 
@@ -61,8 +62,9 @@ public class KakaoAuthService {
         User user = userOpt.get();
         Map<String, String> tokens = createTokens(user);
 
-        return new KakaoAuthResponseDTO.KakaoLoginResultDTO(
-                false, null, tokens);    }
+        return new AuthResponseDTO.KakaoLoginResponseDTO(
+                false, null, tokens);
+    }
 
     /**
      * AccessToken 및 RefreshToken 생성
@@ -92,13 +94,13 @@ public class KakaoAuthService {
     }
 
     // 카카오 사용자 정보 조회
-    private KakaoAuthResponseDTO.KakaoUserInfoDTO getKakaoUserInfo(String kakaoAccessToken) {
+    private AuthResponseDTO.KakaoUserInfoDTO getKakaoUserInfo(String kakaoAccessToken) {
         try {
             return restTemplate.exchange(
                     "https://kapi.kakao.com/v2/user/me",
                     HttpMethod.POST,
                     createKakaoRequestEntity(kakaoAccessToken),
-                    KakaoAuthResponseDTO.KakaoUserInfoDTO.class
+                    AuthResponseDTO.KakaoUserInfoDTO.class
             ).getBody();
         } catch (HttpClientErrorException e) {
             log.error("Kakao API 호출 실패: 상태 코드 {}, 응답 본문 {}", e.getStatusCode(), e.getResponseBodyAsString());

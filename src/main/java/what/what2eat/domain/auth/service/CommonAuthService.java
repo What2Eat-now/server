@@ -3,17 +3,15 @@ package what.what2eat.domain.auth.service;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import what.what2eat.domain.auth.controller.dto.CommonAuthRequestDTO;
-import what.what2eat.domain.auth.controller.dto.LocalAuthResponseDTO;
+import what.what2eat.domain.auth.controller.dto.AuthRequestDTO;
+import what.what2eat.domain.auth.controller.dto.AuthResponseDTO;
 import what.what2eat.domain.auth.entity.User;
 import what.what2eat.domain.auth.entity.UserStatus;
 import what.what2eat.domain.auth.exception.AuthErrorCode;
 import what.what2eat.domain.auth.exception.AuthException;
 import what.what2eat.domain.auth.repository.AuthRepository;
-import what.what2eat.global.exception.CustomException;
 import what.what2eat.global.security.domain.CustomUserDetails;
 import what.what2eat.global.security.jwt.JwtProvider;
 
@@ -66,7 +64,9 @@ public class CommonAuthService {
         user.delete();
     }
 
-    public void updateUserInfo(CommonAuthRequestDTO.UpdateInfoDTO request) {
+
+
+    public void updateUserInfo(AuthRequestDTO.UpdateInfoDTO request) {
 
         User user = authRepository.findByUserIdAndUserStatus(jwtProvider.extractUserId(), UserStatus.ACTIVE)
                 .orElseThrow(() -> new AuthException(AuthErrorCode.USER_NOT_FOUND));
@@ -78,7 +78,7 @@ public class CommonAuthService {
 
     }
 
-    public LocalAuthResponseDTO.LoginResponseDTO refreshToken(CommonAuthRequestDTO.TokenRefreshDTO request) {
+    public AuthResponseDTO.LocalLoginResponseDTO refreshToken(AuthRequestDTO.TokenRefreshDTO request) {
         // refresh token 검증
         jwtProvider.validateToken(request.getRefreshToken());
 
@@ -105,7 +105,7 @@ public class CommonAuthService {
         String accessToken = jwtProvider.createAccessToken(userDetails);
         String refreshToken = jwtProvider.createRefreshToken(userDetails.getEmail());
 
-        return LocalAuthResponseDTO.LoginResponseDTO.builder()
+        return AuthResponseDTO.LocalLoginResponseDTO.builder()
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
                 .build();
