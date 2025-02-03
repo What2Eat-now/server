@@ -81,7 +81,8 @@ public class SecurityConfig {
         List<RequestMatcher> requestMatchers = List.of(
                 antMatcher("/api/v1/groups/**"),
                 antMatcher("/api/v1/diary/**"),
-                antMatcher(HttpMethod.PUT ,"/api/v1/auth")
+                antMatcher(HttpMethod.PUT ,"/api/v1/auth"),
+                antMatcher(HttpMethod.DELETE, "/api/v1/auth")
         );
 
         return requestMatchers.toArray(RequestMatcher[]::new);

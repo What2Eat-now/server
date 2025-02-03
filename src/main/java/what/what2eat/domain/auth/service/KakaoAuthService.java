@@ -13,6 +13,7 @@ import what.what2eat.domain.auth.controller.dto.AuthRequestDTO;
 import what.what2eat.domain.auth.controller.dto.AuthResponseDTO;
 import what.what2eat.domain.auth.converter.KakaoAuthConverter;
 import what.what2eat.domain.auth.entity.User;
+import what.what2eat.domain.auth.entity.UserStatus;
 import what.what2eat.domain.auth.exception.AuthException;
 import what.what2eat.domain.auth.repository.AuthRepository;
 import what.what2eat.global.exception.CommonErrorCode;
@@ -90,7 +91,7 @@ public class KakaoAuthService {
 
     // DB 조회
     private Optional<User> findUserByEmail(String email) {
-        return authRepository.findByUserEmail(email);
+        return authRepository.findByUserEmailAndUserStatus(email, UserStatus.ACTIVE);
     }
 
     // 카카오 사용자 정보 조회

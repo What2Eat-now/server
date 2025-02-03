@@ -72,7 +72,7 @@ public class CommonAuthService {
 
         String userEmail = jwtProvider.getUserEmail(token);
 
-        User findUser = authRepository.findByUserEmail(userEmail).orElseThrow(
+        User findUser = authRepository.findByUserEmailAndUserStatus(userEmail, UserStatus.ACTIVE).orElseThrow(
                 () -> new AuthException(AuthErrorCode.USER_NOT_FOUND));
 
         return AuthResponseDTO.GetUserInfoDTO.builder()
@@ -102,7 +102,7 @@ public class CommonAuthService {
         String userEmail = jwtProvider.getUserEmail(request.getRefreshToken());
 
         // 이메일로 사용자 정보 DB 조회
-        User user = authRepository.findByUserEmail(userEmail).orElseThrow(
+        User user = authRepository.findByUserEmailAndUserStatus(userEmail, UserStatus.ACTIVE).orElseThrow(
                 () -> new AuthException(AuthErrorCode.USER_NOT_FOUND));
 
         // 유저 객체 생성
