@@ -2,6 +2,8 @@ package what.what2eat.domain.auth.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -31,6 +33,9 @@ public class LocalAuthService {
     private final AuthRepository authRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtProvider jwtProvider;
+
+
+
 
     // 회원가입 =>
     public void signUp(LocalRequestDTO.SignUpRequestDTO request) {
@@ -97,6 +102,5 @@ public class LocalAuthService {
 
         // 이메일이 존재하지 않으면 404 에러 반환
         if(!isExist) throw new AuthException(AuthErrorCode.USER_NOT_FOUND);
-
     }
 }

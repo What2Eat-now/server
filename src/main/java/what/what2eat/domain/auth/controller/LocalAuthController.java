@@ -47,5 +47,4 @@ public class LocalAuthController {
 
         return ResponseEntity.ok(ApiResponse.of(ResponseCode.SUCCESS));
     }
-
 }
