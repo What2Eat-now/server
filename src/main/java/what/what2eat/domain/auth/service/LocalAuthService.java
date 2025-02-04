@@ -9,8 +9,8 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import what.what2eat.domain.auth.controller.dto.AuthRequestDTO;
-import what.what2eat.domain.auth.controller.dto.AuthResponseDTO;
+import what.what2eat.domain.auth.controller.dto.request.LocalRequestDTO;
+import what.what2eat.domain.auth.controller.dto.response.LocalResponseDTO;
 import what.what2eat.domain.auth.entity.Provider;
 import what.what2eat.domain.auth.entity.Role;
 import what.what2eat.domain.auth.entity.User;
@@ -33,7 +33,7 @@ public class LocalAuthService {
     private final JwtProvider jwtProvider;
 
     // 회원가입 =>
-    public void signUp(AuthRequestDTO.SignUpRequestDTO request) {
+    public void signUp(LocalRequestDTO.SignUpRequestDTO request) {
 
         // 비밀번호 형식 확인
         if (!isValidPassword(request.getPassword())) {
@@ -50,7 +50,7 @@ public class LocalAuthService {
             .build());
     }
 
-    public AuthResponseDTO.LocalLoginResponseDTO login(AuthRequestDTO.LoginRequestDTO request) throws Exception {
+    public LocalResponseDTO.LocalLoginResponseDTO login(LocalRequestDTO.LoginRequestDTO request) throws Exception {
 
         validateMember(request.getUserEmail());
 
@@ -71,7 +71,7 @@ public class LocalAuthService {
 
             String refreshToken = jwtProvider.createRefreshToken(request.getUserEmail());
 
-            return AuthResponseDTO.LocalLoginResponseDTO.builder()
+            return LocalResponseDTO.LocalLoginResponseDTO.builder()
                     .accessToken(accessToken)
                     .refreshToken(refreshToken)
                     .build();

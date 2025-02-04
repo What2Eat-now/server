@@ -1,41 +1,25 @@
-package what.what2eat.domain.auth.controller.dto;
+package what.what2eat.domain.auth.controller.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 
 import java.util.Date;
 import java.util.Map;
 
-public class AuthResponseDTO {
-
-    // 로컬
-    @Getter
-    @Builder
-    public static class LocalLoginResponseDTO{
-        private String accessToken;
-        private String refreshToken;
-    }
-    ///////////////////////////////////////////////////////////////////
-
-    // 카카오
+public class KakaoResponseDTO {
 
     @Getter
     @Builder
-    @RequiredArgsConstructor
-    @AllArgsConstructor
     public static class KakaoLoginResponseDTO {
         private boolean requiresSignup;
         private String kakaoEmail;
-        private Map<String, String> tokens;    }
+        private Map<String, String> tokens;
+    }
 
     @Getter
     @Builder
-    @RequiredArgsConstructor
-    @AllArgsConstructor
     public static class KakaoTokenDTO{
 
         @JsonProperty("access_token")
@@ -56,8 +40,6 @@ public class AuthResponseDTO {
 
     @Getter
     @Builder
-    @AllArgsConstructor
-    @RequiredArgsConstructor
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public static class KakaoUserInfoDTO {
 
@@ -81,17 +63,15 @@ public class AuthResponseDTO {
 
         //uuid 등 추가 정보
         @JsonProperty("for_partner")
-        private AuthResponseDTO.Partner partner;
+        private KakaoResponseDTO.Partner partner;
 
         //사용자 이메일 정보
         @JsonProperty("kakao_account")
-        private AuthResponseDTO.KakaoAccount kakaoAccount;
+        private KakaoResponseDTO.KakaoAccount kakaoAccount;
     }
 
     @Getter
     @Builder
-    @AllArgsConstructor
-    @RequiredArgsConstructor
     public static class KakaoAccount {
 
         @JsonProperty("email")
@@ -101,24 +81,10 @@ public class AuthResponseDTO {
 
     @Getter
     @Builder
-    @AllArgsConstructor
-    @RequiredArgsConstructor
     public static class Partner {
         //고유 ID
         @JsonProperty("uuid")
         private String uuid;
-    }
-    ///////////////////////////////////////////////////////////////////
-
-    // 공통
-
-    @Getter
-    @Builder
-    public static class GetUserInfoDTO {
-        private String userEmail;
-
-        private String nickName;
-
     }
 
 }

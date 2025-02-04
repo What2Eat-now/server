@@ -7,18 +7,14 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import what.what2eat.domain.auth.controller.dto.AuthRequestDTO;
-import what.what2eat.domain.auth.controller.dto.AuthResponseDTO;
+import org.springframework.web.bind.annotation.*;
+import what.what2eat.domain.auth.controller.dto.request.LocalRequestDTO;
+import what.what2eat.domain.auth.controller.dto.response.LocalResponseDTO;
 import what.what2eat.domain.auth.service.LocalAuthService;
 import what.what2eat.global.response.ApiResponse;
 import what.what2eat.global.response.ResponseCode;
 
-@Controller
+@RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/auth")
 @Slf4j
@@ -29,7 +25,7 @@ public class LocalAuthController {
 
     @PostMapping("/signup/local")
     @Operation(summary = "로컬 회원가입", description = "로컬 회원가입을 처리합니다. 이메일, 비밀번호, 닉네임을 제공해야 합니다. \n 응답코드에 따른 결과값은 포스트맨 API 명세서를 참고 부탁드립니다.")
-    public ResponseEntity<ApiResponse<Void>> signUp(@Valid @RequestBody AuthRequestDTO.SignUpRequestDTO request) {
+    public ResponseEntity<ApiResponse<Void>> signUp(@Valid @RequestBody LocalRequestDTO.SignUpRequestDTO request) {
         localAuthService.signUp(request);
 
         return ResponseEntity.status(HttpStatus.CREATED)
@@ -38,8 +34,8 @@ public class LocalAuthController {
 
     @PostMapping("/login/local")
     @Operation(summary = "로컬 로그인", description = "로컬 로그인을 처리합니다. 이메일, 비밀번호를 제공해야 합니다. \n 응답코드에 따른 결과값은 포스트맨 API 명세서를 참고 부탁드립니다.")
-    public ResponseEntity<ApiResponse<AuthResponseDTO.LocalLoginResponseDTO>> login(@Valid @RequestBody AuthRequestDTO.LoginRequestDTO request) throws Exception {
-        AuthResponseDTO.LocalLoginResponseDTO login = localAuthService.login(request);
+    public ResponseEntity<ApiResponse<LocalResponseDTO.LocalLoginResponseDTO>> login(@Valid @RequestBody LocalRequestDTO.LoginRequestDTO request) throws Exception {
+        LocalResponseDTO.LocalLoginResponseDTO login = localAuthService.login(request);
 
         return ResponseEntity.ok(ApiResponse.of(login));
     }

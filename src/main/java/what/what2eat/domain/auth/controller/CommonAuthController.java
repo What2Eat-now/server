@@ -6,8 +6,9 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import what.what2eat.domain.auth.controller.dto.AuthRequestDTO;
-import what.what2eat.domain.auth.controller.dto.AuthResponseDTO;
+import what.what2eat.domain.auth.controller.dto.request.CommonRequestDTO;
+import what.what2eat.domain.auth.controller.dto.response.CommonResponseDTO;
+import what.what2eat.domain.auth.controller.dto.response.LocalResponseDTO;
 import what.what2eat.domain.auth.service.CommonAuthService;
 import what.what2eat.global.response.ApiResponse;
 import what.what2eat.global.response.ResponseCode;
@@ -47,7 +48,7 @@ public class CommonAuthController {
 
     @PutMapping("/me")
     @Operation(summary = "회원 정보 수정", description = "회원 정보 수정을 처리합니다. \n 응답 코드에 따른 자세한 결과는 PostMan API 명세서를 참고 부탁드립니다.")
-    public ResponseEntity<ApiResponse<ResponseCode>> updateUserInfo(@RequestBody AuthRequestDTO.UpdateInfoDTO request) {
+    public ResponseEntity<ApiResponse<ResponseCode>> updateUserInfo(@RequestBody CommonRequestDTO.UpdateInfoDTO request) {
 
         commonAuthService.updateUserInfo(request);
 
@@ -55,14 +56,14 @@ public class CommonAuthController {
     }
 
     @GetMapping("/me")
-    public ResponseEntity<ApiResponse<AuthResponseDTO.GetUserInfoDTO>> getUserInfo(HttpServletRequest request) {
+    public ResponseEntity<ApiResponse<CommonResponseDTO.GetUserInfoDTO>> getUserInfo(HttpServletRequest request) {
         return ResponseEntity.ok(ApiResponse.of(commonAuthService.getUserInfo(request)));
     }
 
     @PostMapping("/reissue")
     @Operation(summary = "Access Token 재발급", description = "Access Token 재발급을 처리합니다. \n 응답 코드에 따른 자세한 결과는 PostMan API 명세서를 참고 부탁드립니다.")
-    public ResponseEntity<ApiResponse<AuthResponseDTO.LocalLoginResponseDTO>> refreshAccessToken(@RequestBody AuthRequestDTO.TokenRefreshDTO request) {
-        AuthResponseDTO.LocalLoginResponseDTO token = commonAuthService.refreshToken(request);
+    public ResponseEntity<ApiResponse<LocalResponseDTO.LocalLoginResponseDTO>> refreshAccessToken(@RequestBody CommonRequestDTO.TokenRefreshDTO request) {
+        LocalResponseDTO.LocalLoginResponseDTO token = commonAuthService.refreshToken(request);
 
 
         return ResponseEntity.ok(ApiResponse.of(token));

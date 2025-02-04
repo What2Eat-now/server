@@ -5,8 +5,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import what.what2eat.domain.auth.controller.dto.AuthRequestDTO;
-import what.what2eat.domain.auth.controller.dto.AuthResponseDTO;
+import what.what2eat.domain.auth.controller.dto.request.CommonRequestDTO;
+import what.what2eat.domain.auth.controller.dto.response.CommonResponseDTO;
+import what.what2eat.domain.auth.controller.dto.response.LocalResponseDTO;
 import what.what2eat.domain.auth.entity.User;
 import what.what2eat.domain.auth.entity.UserStatus;
 import what.what2eat.domain.auth.exception.AuthErrorCode;
@@ -16,7 +17,6 @@ import what.what2eat.global.security.domain.CustomUserDetails;
 import what.what2eat.global.security.jwt.JwtProvider;
 
 import java.util.List;
-import java.util.Optional;
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -64,7 +64,7 @@ public class CommonAuthService {
         user.delete();
     }
 
-    public AuthResponseDTO.GetUserInfoDTO getUserInfo(HttpServletRequest request) {
+    public CommonResponseDTO.GetUserInfoDTO getUserInfo(HttpServletRequest request) {
         validateToken(request);
 
         String token = resolveToken(request);
@@ -74,14 +74,14 @@ public class CommonAuthService {
         User findUser = authRepository.findByUserEmailAndUserStatus(userEmail, UserStatus.ACTIVE).orElseThrow(
                 () -> new AuthException(AuthErrorCode.USER_NOT_FOUND));
 
-        return AuthResponseDTO.GetUserInfoDTO.builder()
+        return CommonResponseDTO.GetUserInfoDTO.builder()
                 .nickName(findUser.getNickName())
                 .userEmail(findUser.getUserEmail())
                 .build();
 
     }
 
-    public void updateUserInfo(AuthRequestDTO.UpdateInfoDTO request) {
+    public void updateUserInfo(CommonRequestDTO.UpdateInfoDTO request) {
 
         User user = authRepository.findByUserIdAndUserStatus(jwtProvider.extractUserId(), UserStatus.ACTIVE)
                 .orElseThrow(() -> new AuthException(AuthErrorCode.USER_NOT_FOUND));
@@ -93,7 +93,7 @@ public class CommonAuthService {
 
     }
 
-    public AuthResponseDTO.LocalLoginResponseDTO refreshToken(AuthRequestDTO.TokenRefreshDTO request) {
+    public LocalResponseDTO.LocalLoginResponseDTO refreshToken(CommonRequestDTO.TokenRefreshDTO request) {
         // refresh token 검증
         jwtProvider.validateToken(request.getRefreshToken());
 
@@ -120,7 +120,7 @@ public class CommonAuthService {
         String accessToken = jwtProvider.createAccessToken(userDetails);
         String refreshToken = jwtProvider.createRefreshToken(userDetails.getEmail());
 
-        return AuthResponseDTO.LocalLoginResponseDTO.builder()
+        return LocalResponseDTO.LocalLoginResponseDTO.builder()
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
                 .build();
