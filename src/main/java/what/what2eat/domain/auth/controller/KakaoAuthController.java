@@ -12,13 +12,11 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import what.what2eat.domain.auth.controller.dto.KakaoAuthRequestDTO;
-import what.what2eat.domain.auth.controller.dto.KakaoAuthResponseDTO;
+import what.what2eat.domain.auth.controller.dto.AuthRequestDTO;
+import what.what2eat.domain.auth.controller.dto.AuthResponseDTO;
 import what.what2eat.domain.auth.service.KakaoAuthService;
 import what.what2eat.global.response.ApiResponse;
 import what.what2eat.global.response.ResponseCode;
-
-import java.util.Map;
 
 @Controller
 @Slf4j
@@ -32,7 +30,7 @@ public class KakaoAuthController {
     @PostMapping("/login/kakao")
     @Operation(summary = "카카오 소셜 로그인", description = "카카오 소셜 로그인을 처리합니다. kakaoAccessToken을 제공해야 합니다.")
     public ResponseEntity<ApiResponse<Object>> login(@RequestParam String kakaoAccessToken) {
-        KakaoAuthResponseDTO.KakaoLoginResultDTO loginResult = kakaoAuthService.login(kakaoAccessToken);
+        AuthResponseDTO.KakaoLoginResponseDTO loginResult = kakaoAuthService.login(kakaoAccessToken);
 
         if (loginResult.isRequiresSignup()) {
             return ResponseEntity.ok(ApiResponse.of(ResponseCode.NEED_SIGNUP,loginResult.getKakaoEmail()));
@@ -43,7 +41,7 @@ public class KakaoAuthController {
 
     @PostMapping("/signup/kakao")
     @Operation(summary = "카카오 회원가입", description = "카카오 소셜 회원가입을 처리합니다. 이메일, 닉네임을 제공해야 합니다.")
-    public ResponseEntity<ApiResponse<Void>> signup(@RequestBody KakaoAuthRequestDTO.KakaoSignupDTO request) {
+    public ResponseEntity<ApiResponse<Void>> signup(@RequestBody AuthRequestDTO.KakaoSignupDTO request) {
         kakaoAuthService.signup(request);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.of(ResponseCode.CREATED));

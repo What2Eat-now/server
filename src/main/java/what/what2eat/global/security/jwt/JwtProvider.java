@@ -10,6 +10,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
+import what.what2eat.domain.auth.exception.AuthErrorCode;
+import what.what2eat.domain.auth.exception.AuthException;
 import what.what2eat.global.exception.CommonErrorCode;
 import what.what2eat.global.exception.CustomException;
 import what.what2eat.global.security.domain.CustomUserDetails;
@@ -65,18 +67,21 @@ public class JwtProvider {
 
     public boolean validateToken(String token) {
         if (isTokenBlackListed(token)) {
-            return false;
+            throw new AuthException(AuthErrorCode.ALREADY_BLACK_LIST);
         }
 
         try {
             Jwts.parser()
                     .verifyWith(extractSecretKey())
                     .build()
-                    .parseSignedClaims(token);
+                    .parseSignedClaims(token); //토큰을 파싱하면서, 내부적으로 서명(Signature) 검증과 토큰의 구조가 올바른지 확인
             return true;
-        } catch (JwtException | IllegalArgumentException e) {
+        } catch (ExpiredJwtException e) { // 토큰 만료된 경우
+            log.error("Expired JWT token: {}", e.getMessage());
+            throw new AuthException(AuthErrorCode.EXPIRED_TOKEN);
+        } catch (JwtException | IllegalArgumentException e) { // 유효하지 않은 토큰인 경우
             log.error("Invalid JWT token : {}", e.getMessage());
-            return false;
+            throw new AuthException(AuthErrorCode.INVALID_TOKEN);
         }
     }
 
@@ -103,7 +108,6 @@ public class JwtProvider {
                 .parseSignedClaims(token)
                 .getPayload();
     }
-
 
     /**
      * SecretKey 추출

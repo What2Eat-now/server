@@ -9,14 +9,14 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import what.what2eat.domain.auth.controller.dto.LocalAuthRequestDTO;
-import what.what2eat.domain.auth.controller.dto.LocalAuthResponseDTO;
+import what.what2eat.domain.auth.controller.dto.AuthRequestDTO;
+import what.what2eat.domain.auth.controller.dto.AuthResponseDTO;
 import what.what2eat.domain.auth.entity.Provider;
 import what.what2eat.domain.auth.entity.Role;
 import what.what2eat.domain.auth.entity.User;
 import what.what2eat.domain.auth.entity.UserStatus;
 import what.what2eat.domain.auth.exception.AuthErrorCode;
-import what.what2eat.domain.auth.exception.MemberException;
+import what.what2eat.domain.auth.exception.AuthException;
 import what.what2eat.domain.auth.repository.AuthRepository;
 import what.what2eat.global.security.domain.CustomUserDetails;
 import what.what2eat.global.security.jwt.JwtProvider;
@@ -31,14 +31,13 @@ public class LocalAuthService {
     private final AuthRepository authRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtProvider jwtProvider;
-    private final CommonAuthService commonAuthService;
 
     // 회원가입 =>
-    public void signUp(LocalAuthRequestDTO.SignUpRequestDTO request) {
+    public void signUp(AuthRequestDTO.SignUpRequestDTO request) {
 
         // 비밀번호 형식 확인
         if (!isValidPassword(request.getPassword())) {
-            throw new MemberException(AuthErrorCode.INVALID_PASSWORD);
+            throw new AuthException(AuthErrorCode.INVALID_PASSWORD);
         }
 
         authRepository.save(User.builder()
@@ -51,7 +50,7 @@ public class LocalAuthService {
             .build());
     }
 
-    public LocalAuthResponseDTO.LoginResponseDTO login(LocalAuthRequestDTO.LoginRequestDTO request) throws Exception {
+    public AuthResponseDTO.LocalLoginResponseDTO login(AuthRequestDTO.LoginRequestDTO request) throws Exception {
 
         validateMember(request.getUserEmail());
 
@@ -72,7 +71,7 @@ public class LocalAuthService {
 
             String refreshToken = jwtProvider.createRefreshToken(request.getUserEmail());
 
-            return LocalAuthResponseDTO.LoginResponseDTO.builder()
+            return AuthResponseDTO.LocalLoginResponseDTO.builder()
                     .accessToken(accessToken)
                     .refreshToken(refreshToken)
                     .build();
@@ -97,7 +96,7 @@ public class LocalAuthService {
         Boolean isExist = authRepository.existsByUserEmailAndUserStatusAndProvider(userEmail, UserStatus.ACTIVE, Provider.LOCAL);
 
         // 이메일이 존재하지 않으면 404 에러 반환
-        if(!isExist) throw new MemberException(AuthErrorCode.USER_NOT_FOUND);
+        if(!isExist) throw new AuthException(AuthErrorCode.USER_NOT_FOUND);
 
     }
 }

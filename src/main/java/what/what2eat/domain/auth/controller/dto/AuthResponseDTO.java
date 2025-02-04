@@ -2,34 +2,32 @@ package what.what2eat.domain.auth.controller.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
 import java.util.Date;
 import java.util.Map;
 
-public class KakaoAuthResponseDTO {
+public class AuthResponseDTO {
 
+    // 로컬
     @Getter
     @Builder
-    @RequiredArgsConstructor
-    @AllArgsConstructor
-    public static class LoginInfoDTO {
-
-        // 서비스 자체 access Token
+    public static class LocalLoginResponseDTO{
         private String accessToken;
-
-        // 서비스 자체 refresh Token
         private String refreshToken;
-
-        // 로그인된 카카오 사용자 정보
-        private KakaoUserInfoDTO userInfo;
     }
+    ///////////////////////////////////////////////////////////////////
+
+    // 카카오
 
     @Getter
     @Builder
     @RequiredArgsConstructor
     @AllArgsConstructor
-    public static class KakaoLoginResultDTO {
+    public static class KakaoLoginResponseDTO {
         private boolean requiresSignup;
         private String kakaoEmail;
         private Map<String, String> tokens;    }
@@ -83,11 +81,11 @@ public class KakaoAuthResponseDTO {
 
         //uuid 등 추가 정보
         @JsonProperty("for_partner")
-        private Partner partner;
+        private AuthResponseDTO.Partner partner;
 
         //사용자 이메일 정보
         @JsonProperty("kakao_account")
-        private KakaoAccount kakaoAccount;
+        private AuthResponseDTO.KakaoAccount kakaoAccount;
     }
 
     @Getter
@@ -110,4 +108,17 @@ public class KakaoAuthResponseDTO {
         @JsonProperty("uuid")
         private String uuid;
     }
+    ///////////////////////////////////////////////////////////////////
+
+    // 공통
+
+    @Getter
+    @Builder
+    public static class GetUserInfoDTO {
+        private String userEmail;
+
+        private String nickName;
+
+    }
+
 }

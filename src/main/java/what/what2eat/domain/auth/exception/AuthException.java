@@ -5,9 +5,9 @@ import what.what2eat.global.exception.BaseErrorCode;
 import what.what2eat.global.exception.CustomException;
 
 @Getter
-public class MemberException extends CustomException {
+public class AuthException extends CustomException {
 
-    public MemberException(BaseErrorCode errorCode) {
+    public AuthException(BaseErrorCode errorCode) {
         super(errorCode);
     }
 }
