@@ -13,25 +13,28 @@ import org.springframework.stereotype.Service;
 public class EmailService {
     private final JavaMailSender mailSender;
 
+    // 클라이언트로 전송할 발신 이메일
     @Value("${spring.mail.username}")
     private String fromEmail;
 
-
-    public void sendVerificationEmail(String toEmail) throws MessagingException {
+    // 인증 코드 메일 전송
+    public String sendVerificationEmail(String toEmail) throws MessagingException {
         MimeMessage message = mailSender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(message, "UTF-8");
 
-        helper.setTo(toEmail);
-        helper.setSubject("이메일 인증 코드 안내");
-        helper.setFrom(fromEmail);
+        helper.setTo(toEmail); // 목적지
+        helper.setSubject("이메일 인증 코드 안내"); // 타이틀
+        helper.setFrom(fromEmail); // 발신 이메일
 
         // HTML 템플릿에서 인증 코드를 치환
         String htmlContent = loadHtmlTemplate();
-        htmlContent.replace("${verificationCode}", String.valueOf(createNumber()));
+        String token = String.valueOf(createNumber());
 
-        helper.setText(htmlContent);
+        helper.setText(htmlContent.replace("${verificationCode}", token), true);
 
         mailSender.send(message);
+
+        return token;
     }
 
     public int createNumber() {

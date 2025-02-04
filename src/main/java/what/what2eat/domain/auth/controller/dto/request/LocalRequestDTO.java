@@ -50,4 +50,12 @@ public class LocalRequestDTO {
         private String userEmail;
 
     }
+
+    @Getter
+    @Builder
+    public static class VerifyTokenDTO {
+        private String userEmail;
+        private String token;
+
+    }
 }
