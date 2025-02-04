@@ -36,8 +36,8 @@ public class DiaryController {
     // 다이어리 목록 조회
     @GetMapping("")
     @Operation(summary = "다이어리 목록 조회", description = "다이어리 목록 조회를 처리하는 API 입니다.")
-    public ResponseEntity<ApiResponse<List<DiaryResponseDTO.GetDiaryThumbnailDTO>>> getAllDiaryThumbnail() {
-        List<DiaryResponseDTO.GetDiaryThumbnailDTO> allDiaryThumbnails = diaryService.getAllDiaryThumbnails();
+    public ResponseEntity<ApiResponse<List<DiaryResponseDTO.GetDiaryDTO>>> getAllDiaryThumbnail() {
+        List<DiaryResponseDTO.GetDiaryDTO> allDiaryThumbnails = diaryService.getDiary();
 
         return ResponseEntity.ok(ApiResponse.of(ResponseCode.SUCCESS, allDiaryThumbnails));
     }
@@ -51,14 +51,6 @@ public class DiaryController {
         return ResponseEntity.ok(ApiResponse.of(ResponseCode.SUCCESS));
     }
 
-    // 다이어리 상세 조회
-    @GetMapping("/{diaryId}")
-    @Operation(summary = "다이어리 상세 조회", description = "다이어리 상세 조회를 처리하는 API 입니다.")
-    public ResponseEntity<ApiResponse<DiaryResponseDTO.GetDiaryDTO>> getDiary(@PathVariable Long diaryId) {
-        DiaryResponseDTO.GetDiaryDTO getDiaryDTO = diaryService.getDiary(diaryId);
-
-        return ResponseEntity.ok(ApiResponse.of(ResponseCode.SUCCESS, getDiaryDTO));
-    }
 
     @DeleteMapping("")
     @Operation(summary = "다이어리 삭제", description = "다이어리 삭제를 처리하는 API 입니다.")

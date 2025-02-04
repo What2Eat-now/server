@@ -21,26 +21,6 @@ public class DiaryResponseDTO {
 
         private LocalDate visitDate;
 
-        private Integer rate;
-
-        private Integer markerNumber;
-
-        private List<String> uploadImgList;
-    }
-
-
-    @Builder
-    @Getter
-    public static class GetDiaryThumbnailDTO {
-
-        private Long diaryId;
-
-        private String title;
-
-        private String placeName;
-
-        private LocalDate visitDate;
-
         private Double latitude;
 
         private Double longitude;
@@ -51,6 +31,5 @@ public class DiaryResponseDTO {
 
         private List<String> uploadImgList;
     }
-
 
 }

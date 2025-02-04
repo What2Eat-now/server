@@ -134,34 +134,18 @@ public class DiaryService {
 
     }
 
-    // 다이어리 상세 정보 조회
-    public DiaryResponseDTO.GetDiaryDTO getDiary(Long diaryId) {
-        Diary diary = diaryRepository.findById(diaryId)
+    // 다이어리 목록 조회
+    public List<DiaryResponseDTO.GetDiaryDTO> getDiary() {
+        List<Diary> diary = diaryRepository.findAllByUserUserId(jwtProvider.extractUserId())
                 .orElseThrow(() -> new DiaryException(DiaryErrorCode.DIARY_NOT_FOUND));
 
-        DiaryResponseDTO.GetDiaryDTO getDiaryDTO = diaryConverter.toGetDiaryDTO(diary);
+        List<DiaryResponseDTO.GetDiaryDTO> diaryDTOList = diary.stream()
+                .map(diaryConverter::toGetDiaryDTO)
+                .collect(Collectors.toList());
 
         log.info("다이어리 조회 완료");
 
-        return getDiaryDTO;
-    }
-
-    // 다이어리 썸네일 데이터 목록 조회
-    public List<DiaryResponseDTO.GetDiaryThumbnailDTO> getAllDiaryThumbnails() {
-
-        // userId로 필터링 필요
-        List<Diary> diaryList = diaryRepository.findByUserUserId(jwtProvider.extractUserId());
-
-        // 다이어리 썸네일 목록 -> DTO 목록으로 변환
-        List<DiaryResponseDTO.GetDiaryThumbnailDTO> thumbnailDTOList = diaryList.stream()
-                .map(diaryConverter::diaryToThumbnailDTO)
-                .collect(Collectors.toList());
-
-        if (thumbnailDTOList.isEmpty()) {
-            throw new DiaryException(DiaryErrorCode.DIARY_NOT_FOUND);
-        }
-
-        return thumbnailDTOList;
+        return diaryDTOList;
     }
 
     private void uploadDiaryImages(Diary diary, List<MultipartFile> files, String filePath) {

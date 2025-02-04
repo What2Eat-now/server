@@ -5,9 +5,10 @@ import org.springframework.stereotype.Repository;
 import what.what2eat.domain.diary.entity.Diary;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface DiaryRepository extends JpaRepository<Diary, Long> {
 
-    List<Diary> findByUserUserId(Long userId);
+    Optional<List<Diary>> findAllByUserUserId(Long userId);
 }
