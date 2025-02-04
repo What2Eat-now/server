@@ -12,6 +12,7 @@ public class DiaryResponseDTO {
     @Builder
     @Getter
     public static class GetDiaryDTO {
+        private Long diaryId;
 
         private String title;
 
