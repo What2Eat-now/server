@@ -30,6 +30,7 @@ public class DiaryConverter {
     // 다이어리 정보 DTO로 변환
     public DiaryResponseDTO.GetDiaryDTO toGetDiaryDTO(Diary diary) {
         return DiaryResponseDTO.GetDiaryDTO.builder()
+                .diaryId(diary.getDiaryId())
                 .title(diary.getTitle())
                 .content(diary.getContent())
                 .placeName(diary.getPlaceName())
