@@ -27,31 +27,19 @@ public class DiaryConverter {
                 .build();
     }
 
-    // 다이어리 상세 정보 DTO로 변환
+    // 다이어리 정보 DTO로 변환
     public DiaryResponseDTO.GetDiaryDTO toGetDiaryDTO(Diary diary) {
         return DiaryResponseDTO.GetDiaryDTO.builder()
                 .title(diary.getTitle())
                 .content(diary.getContent())
                 .placeName(diary.getPlaceName())
                 .rate(diary.getRate())
+                .latitude(diary.getLocation().getX())
+                .longitude(diary.getLocation().getY())
                 .markerNumber(diary.getMarkerNumber())
                 .visitDate(diary.getVisitDate())
                 .uploadImgList(convertImagesToUrls(diary.getDiaryImageList()))
                 .build();
-    }
-
-    // 다이어리 목록 조회에 필요한 썸네일 DTO로 변환
-    public DiaryResponseDTO.GetDiaryThumbnailDTO diaryToThumbnailDTO(Diary diary) {
-        return DiaryResponseDTO.GetDiaryThumbnailDTO.builder()
-                .diaryId(diary.getDiaryId())
-                .title(diary.getTitle())
-                .latitude(diary.getLocation().getX())
-                .longitude(diary.getLocation().getY())
-                .rate(diary.getRate())
-                .markerNumber(diary.getMarkerNumber())
-                .placeName(diary.getPlaceName())
-                .uploadImgList(convertImagesToUrls(diary.getDiaryImageList()))
-                .visitDate(diary.getVisitDate()).build();
     }
 
     private List<String> convertImagesToUrls(List<DiaryImage> imageList) {
