@@ -46,11 +46,30 @@ public class CommonAuthController {
         return ResponseEntity.ok(ApiResponse.of(ResponseCode.CONFIRM));
     }
 
-    @PutMapping("/me")
-    @Operation(summary = "회원 정보 수정", description = "회원 정보 수정을 처리합니다. \n 응답 코드에 따른 자세한 결과는 PostMan API 명세서를 참고 부탁드립니다.")
-    public ResponseEntity<ApiResponse<ResponseCode>> updateUserInfo(@RequestBody CommonRequestDTO.UpdateInfoDTO request) {
+    @PutMapping("/me/email")
+    @Operation(summary = "회원 이메일 수정", description = "회원 이메일 수정을 처리합니다. \n 응답 코드에 따른 자세한 결과는 PostMan API 명세서를 참고 부탁드립니다.")
+    public ResponseEntity<ApiResponse<ResponseCode>> updateUserEmail(@RequestBody CommonRequestDTO.UpdateEmailDTO request) {
 
-        commonAuthService.updateUserInfo(request);
+        commonAuthService.updateUserEmail(request);
+
+        return ResponseEntity.ok(ApiResponse.of(ResponseCode.SUCCESS));
+    }
+
+
+    @PutMapping("/me/nickname")
+    @Operation(summary = "회원 닉네임 수정", description = "회원 닉네임 수정을 처리합니다. \n 응답 코드에 따른 자세한 결과는 PostMan API 명세서를 참고 부탁드립니다.")
+    public ResponseEntity<ApiResponse<ResponseCode>> updateUserNickName(@RequestBody CommonRequestDTO.UpdateNickNameDTO request) {
+
+        commonAuthService.updateUserNickName(request);
+
+        return ResponseEntity.ok(ApiResponse.of(ResponseCode.SUCCESS));
+    }
+
+    @PutMapping("/me/password")
+    @Operation(summary = "회원 비밀번호 수정", description = "회원 비밀번호 수정을 처리합니다. \n 응답 코드에 따른 자세한 결과는 PostMan API 명세서를 참고 부탁드립니다.")
+    public ResponseEntity<ApiResponse<ResponseCode>> updateUserPassword(@RequestBody CommonRequestDTO.UpdatePasswordDTO request) {
+
+        commonAuthService.updateUserPassword(request);
 
         return ResponseEntity.ok(ApiResponse.of(ResponseCode.SUCCESS));
     }

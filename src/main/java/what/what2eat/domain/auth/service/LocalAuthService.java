@@ -20,7 +20,6 @@ import what.what2eat.domain.auth.repository.EmailRepository;
 import what.what2eat.global.security.domain.CustomUserDetails;
 import what.what2eat.global.security.jwt.JwtProvider;
 
-
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -125,8 +124,6 @@ public class LocalAuthService {
             throw new Exception(e);
         }
     }
-
-
 
     /**
      * 검증 메서드
