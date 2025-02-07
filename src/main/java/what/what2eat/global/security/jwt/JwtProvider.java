@@ -12,8 +12,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import what.what2eat.domain.auth.exception.AuthErrorCode;
 import what.what2eat.domain.auth.exception.AuthException;
-import what.what2eat.global.exception.CommonErrorCode;
-import what.what2eat.global.exception.CustomException;
 import what.what2eat.global.security.domain.CustomUserDetails;
 
 import javax.crypto.SecretKey;
