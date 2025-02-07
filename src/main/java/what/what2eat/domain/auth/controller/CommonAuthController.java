@@ -48,11 +48,9 @@ public class CommonAuthController {
 
     @PutMapping("/me/email")
     @Operation(summary = "회원 이메일 수정", description = "회원 이메일 수정을 처리합니다. \n 응답 코드에 따른 자세한 결과는 PostMan API 명세서를 참고 부탁드립니다.")
-    public ResponseEntity<ApiResponse<ResponseCode>> updateUserEmail(@RequestBody CommonRequestDTO.UpdateEmailDTO request) {
+    public ResponseEntity<ApiResponse<LocalResponseDTO.LocalLoginResponseDTO>> updateUserEmail(@RequestBody CommonRequestDTO.UpdateEmailDTO request) {
 
-        commonAuthService.updateUserEmail(request);
-
-        return ResponseEntity.ok(ApiResponse.of(ResponseCode.SUCCESS));
+        return ResponseEntity.ok(ApiResponse.of(commonAuthService.updateUserEmail(request)));
     }
 
 

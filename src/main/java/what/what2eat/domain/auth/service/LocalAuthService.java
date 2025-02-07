@@ -20,6 +20,8 @@ import what.what2eat.domain.auth.repository.EmailRepository;
 import what.what2eat.global.security.domain.CustomUserDetails;
 import what.what2eat.global.security.jwt.JwtProvider;
 
+import java.time.LocalDateTime;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -36,7 +38,7 @@ public class LocalAuthService {
     // 회원가입 =>
     public void signUp(LocalRequestDTO.SignUpRequestDTO request){
         // 인증번호 엔티티에서 이메일과 인증 상태로 조회
-        EmailVerificationToken byUserEmail = emailRepository.findByUserEmailAndEmailStatus(request.getUserEmail(), true)
+        EmailVerificationCode byUserEmail = emailRepository.findByUserEmailAndEmailStatus(request.getUserEmail(), true)
                 .orElseThrow(() -> new AuthException(AuthErrorCode.NEED_VERIFICATION));
 
         // 인증 상태가 false인 경우
@@ -67,35 +69,40 @@ public class LocalAuthService {
     // 인증번호 이메일 전송
     public void sendEmail(String userEmail) throws MessagingException {
         // 이메일 전송 후 인증번호 반환
-        String token = emailService.sendVerificationEmail(userEmail);
+        String code = emailService.sendVerificationEmail(userEmail);
 
         // 이메일 정보 저장
-        emailRepository.save(EmailVerificationToken.builder()
+        emailRepository.save(EmailVerificationCode.builder()
                 .userEmail(userEmail)
                 .emailStatus(false)
-                .token(token)
+                .verificationCode(code)
+                .expiryDate(LocalDateTime.now().plusMinutes(10))
                 .build());
     }
 
     // 인증번호 검증
-    public void verifyToken(LocalRequestDTO.VerifyTokenDTO request) {
-        // 인증 번호와 이메일로 저장된 정보 찾기
-        EmailVerificationToken findToken = emailRepository.findByUserEmailAndTokenAndEmailStatus(request.getUserEmail(), request.getToken(), false)
-                .orElseThrow(() -> new AuthException(AuthErrorCode.USER_NOT_FOUND));
+    public void verifyCode(LocalRequestDTO.VerifyCodeDTO request) {
+        log.info("code = " + request.getCode());
 
         // 인증 토큰 검증
-        if (!findToken.getToken().equals(request.getToken())) {
-            throw new AuthException(AuthErrorCode.USER_NOT_FOUND);
+        if (!emailRepository.existsByVerificationCode(request.getCode())) {
+            throw new AuthException(AuthErrorCode.INVALID_CERTIFICATION_CODE);
+        }
+
+        // 인증 번호와 이메일로 저장된 정보 찾기
+        EmailVerificationCode findCode = emailRepository.findByUserEmailAndVerificationCodeAndEmailStatus(request.getUserEmail(), request.getCode(), false)
+                .orElseThrow(() -> new AuthException(AuthErrorCode.USER_NOT_FOUND));
+
+        // 인증 코드 시간 만료된 경우
+        if (findCode.getExpiryDate().isBefore(LocalDateTime.now())) {
+            throw new AuthException(AuthErrorCode.VERIFICATION_TOKEN_EXPIRED);
         }
 
         // 인증 상태 변경
-        findToken.changeStatus();
+        findCode.changeStatus();
     }
 
     public LocalResponseDTO.LocalLoginResponseDTO login(LocalRequestDTO.LoginRequestDTO request) throws Exception {
-
-        // 사용자 유효성 검증
-        validateMember(request.getUserEmail());
 
         try {
             // 인증 시도
@@ -135,9 +142,15 @@ public class LocalAuthService {
 
     // 로그인시
     public void validateMember(String userEmail) {
-        Boolean isExist = authRepository.existsByUserEmailAndUserStatus(userEmail, UserStatus.ACTIVE);
 
-        // 이메일이 존재하지 않으면 404 에러 반환
-        if(!isExist) throw new AuthException(AuthErrorCode.USER_NOT_FOUND);
+        // 사용자 조회
+        User user = authRepository.findByUserEmailAndUserStatus(userEmail, UserStatus.ACTIVE).orElseThrow(
+                () -> new AuthException(AuthErrorCode.USER_NOT_FOUND));
+
+        // 카카오 로그인으로 이미 가입된 경우
+        if (user.getProvider().equals(Provider.KAKAO)) {
+            throw new AuthException(AuthErrorCode.ALREADY_EXIST_SOCIAL_EMAIL);
+        }
+
     }
 }

@@ -12,11 +12,12 @@ spring:
   jpa:
     show-sql: true
     hibernate:
-      ddl-auto: update
+      ddl-auto: create
     properties:
       hibernate:
         dialect: org.hibernate.dialect.MySQLDialect
         format_sql: true
+        time_zone: UTC
   mail:
     host: smtp.gmail.com
     port: 587

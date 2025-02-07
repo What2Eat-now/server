@@ -12,8 +12,10 @@ import org.springframework.web.client.RestTemplate;
 import what.what2eat.domain.auth.controller.dto.request.KakaoRequestDTO;
 import what.what2eat.domain.auth.controller.dto.response.KakaoResponseDTO;
 import what.what2eat.domain.auth.converter.KakaoAuthConverter;
+import what.what2eat.domain.auth.entity.Provider;
 import what.what2eat.domain.auth.entity.User;
 import what.what2eat.domain.auth.entity.UserStatus;
+import what.what2eat.domain.auth.exception.AuthErrorCode;
 import what.what2eat.domain.auth.exception.AuthException;
 import what.what2eat.domain.auth.repository.AuthRepository;
 import what.what2eat.global.exception.CommonErrorCode;
@@ -53,6 +55,10 @@ public class KakaoAuthService {
 
         // 사용자 존재 유무 확인
         Optional<User> userOpt = findUserByEmail(userInfo.getKakaoAccount().getKakaoEmail());
+
+        if (userOpt.get().getProvider().equals(Provider.LOCAL)) {
+            throw new AuthException(AuthErrorCode.DUPLICATE_USER_EMAIL);
+        }
 
         if (userOpt.isEmpty()) {
             // 회원가입 필요 리다이렉트 처리

@@ -2,16 +2,17 @@ package what.what2eat.domain.auth.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
-import what.what2eat.domain.auth.entity.EmailVerificationToken;
-import what.what2eat.domain.auth.entity.User;
+import what.what2eat.domain.auth.entity.EmailVerificationCode;
 
 import java.util.Optional;
 
 @Repository
-public interface EmailRepository extends JpaRepository<EmailVerificationToken, Long> {
+public interface EmailRepository extends JpaRepository<EmailVerificationCode, Long> {
 
-    Optional<EmailVerificationToken> findByUserEmailAndTokenAndEmailStatus(String userEmail, String token, Boolean status);
+    Optional<EmailVerificationCode> findByUserEmailAndVerificationCodeAndEmailStatus(String userEmail, String code, Boolean status);
 
-    Optional<EmailVerificationToken> findByUserEmailAndEmailStatus(String userEmail,Boolean status);
+    Optional<EmailVerificationCode> findByUserEmailAndEmailStatus(String userEmail, Boolean status);
+
+    Boolean existsByVerificationCode(String verificationCode);
 
 }

@@ -26,7 +26,7 @@ public class LocalAuthController {
 
     @PostMapping("/signup/local")
     @Operation(summary = "로컬 회원가입", description = "로컬 회원가입을 처리합니다. 이메일, 비밀번호, 닉네임을 제공해야 합니다. \n 응답코드에 따른 결과값은 포스트맨 API 명세서를 참고 부탁드립니다.")
-    public ResponseEntity<ApiResponse<Void>> signUp(@Valid @RequestBody LocalRequestDTO.SignUpRequestDTO request) throws MessagingException {
+    public ResponseEntity<ApiResponse<ResponseCode>> signUp(@Valid @RequestBody LocalRequestDTO.SignUpRequestDTO request) throws MessagingException {
         localAuthService.signUp(request);
 
         return ResponseEntity.status(HttpStatus.CREATED)
@@ -42,8 +42,8 @@ public class LocalAuthController {
     }
 
     @PostMapping("/check-email")
-    @Operation(summary = "이메일 중복 체크", description = "이메일 중복 체크를 처리합니다. 이메일을 제공해야 합니다. \n 응답코드에 따른 결과값은 포스트맨 API 명세서를 참고 부탁드립니다.")
-    public ResponseEntity<ApiResponse<Boolean>> checkEmail(@RequestParam String userEmail) {
+    @Operation(summary = "이메일 중복 체크", description = "이메일 중복 체크 및 소셜 로그인 유무 확인을 처리합니다. 이메일을 제공해야 합니다. \n 응답코드에 따른 결과값은 포스트맨 API 명세서를 참고 부탁드립니다.")
+    public ResponseEntity<ApiResponse<ResponseCode>> checkEmail(@RequestParam String userEmail) {
         localAuthService.validateMember(userEmail);
 
         return ResponseEntity.ok(ApiResponse.of(ResponseCode.SUCCESS));
@@ -57,10 +57,10 @@ public class LocalAuthController {
         return ResponseEntity.ok(ApiResponse.of(ResponseCode.SUCCESS));
     }
 
-    @PostMapping("/verification-token")
+    @PostMapping("/verification-code")
     @Operation(summary = "인증번호 검증", description = "클라이언트로부터 전달받은 인증 번호 검증을 처리합니다. 이메일을 제공해야 합니다. \n 응답코드에 따른 결과값은 포스트맨 API 명세서를 참고 부탁드립니다.")
-    public ResponseEntity<ApiResponse<ResponseCode>> verifyToken(@RequestBody LocalRequestDTO.VerifyTokenDTO request) {
-        localAuthService.verifyToken(request);
+    public ResponseEntity<ApiResponse<ResponseCode>> verifyCode(@RequestBody LocalRequestDTO.VerifyCodeDTO request) {
+        localAuthService.verifyCode(request);
 
         return ResponseEntity.ok(ApiResponse.of(ResponseCode.SUCCESS));
 

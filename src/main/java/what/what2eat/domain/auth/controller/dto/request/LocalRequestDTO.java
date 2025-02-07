@@ -53,9 +53,9 @@ public class LocalRequestDTO {
 
     @Getter
     @Builder
-    public static class VerifyTokenDTO {
+    public static class VerifyCodeDTO {
         private String userEmail;
-        private String token;
+        private String code;
 
     }
 }

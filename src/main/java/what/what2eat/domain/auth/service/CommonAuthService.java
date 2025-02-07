@@ -4,6 +4,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,6 +20,7 @@ import what.what2eat.domain.auth.repository.AuthRepository;
 import what.what2eat.global.security.domain.CustomUserDetails;
 import what.what2eat.global.security.jwt.JwtProvider;
 
+import java.util.Collections;
 import java.util.List;
 @Service
 @RequiredArgsConstructor
@@ -94,12 +96,29 @@ public class CommonAuthService {
                 .build();
     }
 
-    public void updateUserEmail(CommonRequestDTO.UpdateEmailDTO request) {
+    public LocalResponseDTO.LocalLoginResponseDTO updateUserEmail(CommonRequestDTO.UpdateEmailDTO request) {
 
         User user = authRepository.findByUserIdAndUserStatus(jwtProvider.extractUserId(), UserStatus.ACTIVE)
                 .orElseThrow(() -> new AuthException(AuthErrorCode.USER_NOT_FOUND));
 
         user.updateEmail(request.getUserEmail());
+
+        CustomUserDetails userDetails = CustomUserDetails.builder()
+                .userId(user.getUserId())
+                .email(request.getUserEmail())
+                .password(user.getPassword())
+                .provider(user.getProvider())
+                .authorities(Collections.singletonList(new SimpleGrantedAuthority(user.getRole().name())))
+                .build();
+
+        String accessToken = jwtProvider.createAccessToken(userDetails);
+        String refreshToken = jwtProvider.createRefreshToken(request.getUserEmail());
+
+        return LocalResponseDTO.LocalLoginResponseDTO.builder()
+                .accessToken(accessToken)
+                .refreshToken(refreshToken)
+                .build();
+
     }
 
     public void updateUserNickName(CommonRequestDTO.UpdateNickNameDTO request) {
@@ -107,7 +126,11 @@ public class CommonAuthService {
         User user = authRepository.findByUserIdAndUserStatus(jwtProvider.extractUserId(), UserStatus.ACTIVE)
                 .orElseThrow(() -> new AuthException(AuthErrorCode.USER_NOT_FOUND));
 
-        user.updateNickName(request.getNickName());
+        // 이전 닉네임과 동일하지 않을경우 수정
+        if (!user.getNickName().equals(request.getNickName())) {
+            user.updateNickName(request.getNickName());
+        }
+
 
     }
 
@@ -121,7 +144,7 @@ public class CommonAuthService {
 
             // 변경 비밀번호, 변경 비밀번호 확인 서로 다를경우
             if (!request.getNewPassword().equals(request.getNewPasswordCheck())) {
-                throw new AuthException(AuthErrorCode.INVALID_PASSWORD);
+                throw new AuthException(AuthErrorCode.INVALID_PASSWORD); // 예외처리 필요
             }
 
             // 비밀번호 서식 틀렸을 경우 예외처리
@@ -129,7 +152,6 @@ public class CommonAuthService {
                     || !request.getNewPasswordCheck().matches("^(?=.*[A-Z])(?=.*[@$!%*?&]).{8,16}$") ) {
                 throw new AuthException(AuthErrorCode.INVALID_PASSWORD);
             }
-
 
             // 변경 전 비밀번호와 같을 경우 예외
             if (passwordEncoder.matches(request.getNewPassword(), user.getPassword())) {
