@@ -113,8 +113,16 @@ public class LocalAuthService {
                     )
             );
 
+
             // 인증 객체에서 사용자 정보 추출(Provider 추출 위해 작성)
             CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+
+            // 사용자 상태 검사 (회원 탈퇴 유무)
+            Boolean isExist = authRepository.existsByUserEmailAndUserStatus(userDetails.getEmail(), UserStatus.ACTIVE);
+
+            if (Boolean.FALSE.equals(isExist)) {
+                throw new AuthException(AuthErrorCode.USER_NOT_FOUND);
+            }
 
             String accessToken = jwtProvider.createAccessToken(userDetails);
 
