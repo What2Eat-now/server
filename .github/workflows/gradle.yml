@@ -8,8 +8,8 @@
 name: Java CI with Gradle
 
 on:
-#  push:
-#    branches: [ "develop" ]
+  push:
+    branches: [ "develop" ]
   pull_request:
     branches: [ "develop" ]
 
@@ -38,7 +38,14 @@ jobs:
 
     - name: Build with Gradle Wrapper
       run: ./gradlew build
-
+      
+      # artifact(jar 파일) 업로드
+    - name: Upload JAR artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: jar-artifact
+        path: build/libs/*.jar
+          
     # NOTE: The Gradle Wrapper is the default and recommended way to run Gradle (https://docs.gradle.org/current/userguide/gradle_wrapper.html).
     # If your project does not have the Gradle Wrapper configured, you can use the following configuration to run Gradle with a specified version.
     #
@@ -55,12 +62,20 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # artifact(jar 파일) 다운로드
+      - uses: actions/checkout@v4
+      - name: Download JAR artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: jar-artifact
+          path: build/libs
+    
       # SSH 키 생성
       - name: Prepare SSH Key
         env:
           SSH_PRIVATE_KEY: ${{ secrets.EC2_SSH_KEY }}
         run: |
-          echo $SSH_PRIVATE_KEY > private_key.pem
+          echo "$SSH_PRIVATE_KEY" > private_key.pem
           chmod 600 private_key.pem
 
       # jar 파일 빌드 후  EC2 환경으로 복사
@@ -69,20 +84,26 @@ jobs:
           EC2_HOST: ${{ secrets.EC2_HOST }}
           EC2_USER: ${{ secrets.EC2_USER }}
         run: |
-          scp -i private_key.pem -o StrictHostKeyChecking=no build/libs/*.jar $EC2_USER@$EC2_HOST:/home/$EC2_USER
+          scp -vvv -i private_key.pem -o StrictHostKeyChecking=no build/libs/*.jar $EC2_USER@$EC2_HOST:/home/$EC2_USER
 
       # 기존 실행중인 jar 파일 제거 후 환경 변수 적용 & jar 파일 재실행
       - name: Deploy on EC2
         env:
           EC2_HOST: ${{ secrets.EC2_HOST }}
           EC2_USER: ${{ secrets.EC2_USER }}
-        run:
-          # ssh 커널 접속
-          ssh -i private_key.pem -o StrictHostKeyChecking=no $EC2_USER@$EC2_HOST << 'EOF'
+        run: |
+          #ssh 커널 접속
+          ssh -i private_key.pem -o StrictHostKeyChecking=no $EC2_USER@$EC2_HOST << EOF
           
-            # 실행중인 jar 파일 중단
-            pkill -f 'java -jar' || true
-        
+            # 실행중인 jar 파일 중단(PID가 있을 경우 종료)
+            PID=$(ps aux | grep 'sudo -E nohup java -jar what2eat-0.0.1-SNAPSHOT.jar' | grep -v grep | head -n 1 | awk '{print $2}')
+            if [ -n "\$PID" ]; then
+            echo "Found PID: \$PID, killing process..."
+            kill \$PID
+            else
+            echo "No matching process found. Skipping kill command."
+            fi        
+          
             # 환경 변수 적용
             source .bashrc
         
