@@ -101,7 +101,7 @@ jobs:
           source ~/.bashrc
           mkdir -p /home/$EC2_USER/log
           sudo -E nohup java -jar /home/$EC2_USER/\$(ls -t /home/$EC2_USER | head -n 1) > /home/$EC2_USER/log/app.log 2>&1 &
-      EOF
+          EOF
   dependency-submission:
 
     runs-on: ubuntu-latest
