@@ -94,7 +94,6 @@ jobs:
         run: |
           #ssh 커널 접속
           ssh -i private_key.pem -o StrictHostKeyChecking=no $EC2_USER@$EC2_HOST << EOF
-          
             # 실행중인 jar 파일 중단(PID가 있을 경우 종료)
             PID=$(ps aux | grep 'sudo -E nohup java -jar what2eat-0.0.1-SNAPSHOT.jar' | grep -v grep | head -n 1 | awk '{print $2}')
             if [ -n "\$PID" ]; then
