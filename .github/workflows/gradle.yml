@@ -75,7 +75,7 @@ jobs:
         env:
           SSH_PRIVATE_KEY: ${{ secrets.EC2_SSH_KEY }}
         run: |
-          echo $SSH_PRIVATE_KEY > private_key.pem
+          echo "$SSH_PRIVATE_KEY" > private_key.pem
           chmod 600 private_key.pem
 
       # jar 파일 빌드 후  EC2 환경으로 복사
