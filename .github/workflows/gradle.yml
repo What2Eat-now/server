@@ -8,8 +8,8 @@
 name: Java CI with Gradle
 
 on:
-  push:
-    branches: [ "develop" ]
+#  push:
+#    branches: [ "develop" ]
   pull_request:
     branches: [ "develop" ]
 
@@ -33,6 +33,9 @@ jobs:
     - name: Setup Gradle
       uses: gradle/actions/setup-gradle@af1da67850ed9a4cedd57bfd976089dd991e2582 # v4.0.0
 
+    - name: Grant execute permission for gradlew
+      run: chmod +x gradlew
+
     - name: Build with Gradle Wrapper
       run: ./gradlew build
 
@@ -46,6 +49,45 @@ jobs:
     #
     # - name: Build with Gradle 8.9
     #   run: gradle build
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      # SSH 키 생성
+      - name: Prepare SSH Key
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.EC2_SSH_KEY }}
+        run: |
+          echo $SSH_PRIVATE_KEY > private_key.pem
+          chmod 600 private_key.pem
+
+      # jar 파일 빌드 후  EC2 환경으로 복사
+      - name: Transfer artifact to EC2
+        env:
+          EC2_HOST: ${{ secrets.EC2_HOST }}
+          EC2_USER: ${{ secrets.EC2_USER }}
+        run: |
+          scp -i private_key.pem -o StrictHostKeyChecking=no build/libs/*.jar $EC2_USER@$EC2_HOST:/home/$EC2_USER
+
+      # 기존 실행중인 jar 파일 제거 후 환경 변수 적용 & jar 파일 재실행
+      - name: Deploy on EC2
+        env:
+          EC2_HOST: ${{ secrets.EC2_HOST }}
+          EC2_USER: ${{ secrets.EC2_USER }}
+        run:
+          # ssh 커널 접속
+          ssh -i private_key.pem -o StrictHostKeyChecking=no $EC2_USER@$EC2_HOST << 'EOF'
+          
+            # 실행중인 jar 파일 중단
+            pkill -f 'java -jar' || true
+        
+            # 환경 변수 적용
+            source .bashrc
+        
+            # jar 파일 실행
+            sudo -E nohup java -jar /home/$EC2_USER/$(ls -t /home/$EC2_USER | head -n 1) > /home/$EC2_USER/log/app.log 2>&1 &
 
   dependency-submission:
 
