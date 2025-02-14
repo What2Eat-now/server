@@ -30,7 +30,7 @@ public class UserGroupService {
         }
 
         // user 객체 조회
-        User user = authRepository.findByUserEmailAndUserStatus(request.getUserEmail(), UserStatus.ACTIVE)
+        User user = authRepository.findByUserEmail(request.getUserEmail())
                 .orElseThrow(() -> new IllegalArgumentException(" 존재하지 않는 사용자입니다. "));
 
         // UserGroup 객체 build
@@ -53,7 +53,7 @@ public class UserGroupService {
         UserGroup userGroup = userGroupRepository.findById(groupId)
                 .orElseThrow(() -> new NoSuchElementException("존재하지 않는 그룹입니다."));
 
-        User user = authRepository.findByUserEmailAndUserStatus(request.getUserEmail(), UserStatus.ACTIVE)
+        User user = authRepository.findByUserEmail(request.getUserEmail())
                 .orElseThrow(() -> new NoSuchElementException("존재하지 않는 유저입니다."));
 
         // 가입 여부 검사

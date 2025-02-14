@@ -104,7 +104,7 @@ public class KakaoAuthService {
 
     // DB 조회
     private Optional<User> findUserByEmail(String email) {
-        return authRepository.findByUserEmailAndUserStatus(email, UserStatus.ACTIVE);
+        return authRepository.findByUserEmail(email);
     }
 
     // 카카오 사용자 정보 조회

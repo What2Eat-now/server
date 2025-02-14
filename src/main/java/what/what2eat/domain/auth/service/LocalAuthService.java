@@ -61,7 +61,6 @@ public class LocalAuthService {
             .nickName(request.getNickName())
             .role(Role.USER)
             .provider(Provider.LOCAL)
-            .userStatus(UserStatus.ACTIVE)
             .build());
 
         // 인증 객체 삭제
@@ -156,7 +155,7 @@ public class LocalAuthService {
     public void validateMember(String userEmail) {
 
         // 사용자 조회
-        User user = authRepository.findByUserEmailAndUserStatus(userEmail, UserStatus.ACTIVE).orElseThrow(
+        User user = authRepository.findByUserEmail(userEmail).orElseThrow(
                 () -> new AuthException(AuthErrorCode.USER_NOT_FOUND));
 
         // 카카오 로그인으로 이미 가입된 경우
