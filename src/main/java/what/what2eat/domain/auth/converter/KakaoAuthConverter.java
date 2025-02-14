@@ -16,7 +16,6 @@ public class KakaoAuthConverter {
                 .userEmail(request.getUserEmail())
                 .role(Role.USER)
                 .provider(Provider.KAKAO)
-                .userStatus(UserStatus.ACTIVE)
                 .build();
     }
 

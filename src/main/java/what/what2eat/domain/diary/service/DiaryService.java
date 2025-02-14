@@ -9,7 +9,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import what.what2eat.domain.auth.entity.User;
-import what.what2eat.domain.auth.entity.UserStatus;
 import what.what2eat.domain.auth.exception.AuthErrorCode;
 import what.what2eat.domain.auth.exception.AuthException;
 import what.what2eat.domain.auth.repository.AuthRepository;
@@ -44,7 +43,7 @@ public class DiaryService {
     public void writeDiary(DiaryRequestDTO.DiaryWriteDTO request){
 
         // 사용자 조회
-        User user = authRepository.findByUserIdAndUserStatus(jwtProvider.extractUserId(), UserStatus.ACTIVE)
+        User user = authRepository.findByUserId(jwtProvider.extractUserId())
                 .orElseThrow(() -> new AuthException(AuthErrorCode.USER_NOT_FOUND));
 
         // 위도,경도 -> Point 타입으로 변환

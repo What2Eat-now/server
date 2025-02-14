@@ -4,9 +4,12 @@ import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.InternalAuthenticationServiceException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -58,7 +61,6 @@ public class LocalAuthService {
             .nickName(request.getNickName())
             .role(Role.USER)
             .provider(Provider.LOCAL)
-            .userStatus(UserStatus.ACTIVE)
             .build());
 
         // 인증 객체 삭제
@@ -113,6 +115,7 @@ public class LocalAuthService {
                     )
             );
 
+
             // 인증 객체에서 사용자 정보 추출(Provider 추출 위해 작성)
             CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
 
@@ -125,7 +128,15 @@ public class LocalAuthService {
                     .refreshToken(refreshToken)
                     .build();
 
-        } catch (AuthenticationException e) {
+        } catch (InternalAuthenticationServiceException e) {
+            // 사용자를 찾을 수 없는 경우 (UsernameNotFoundException이 내부적으로 발생했을 때)
+            throw new AuthException(AuthErrorCode.USER_NOT_FOUND);
+        }
+        catch (BadCredentialsException e) {
+            // 비밀번호가 틀린 경우
+            throw new AuthException(AuthErrorCode.INVALID_PASSWORD);
+        }
+        catch (AuthenticationException e) {
             // 6. 인증 실패
             log.error("인증 실패 : " + e);
             throw new Exception(e);
@@ -144,7 +155,7 @@ public class LocalAuthService {
     public void validateMember(String userEmail) {
 
         // 사용자 조회
-        User user = authRepository.findByUserEmailAndUserStatus(userEmail, UserStatus.ACTIVE).orElseThrow(
+        User user = authRepository.findByUserEmail(userEmail).orElseThrow(
                 () -> new AuthException(AuthErrorCode.USER_NOT_FOUND));
 
         // 카카오 로그인으로 이미 가입된 경우

@@ -68,7 +68,7 @@ public class EmailService {
                 "      <div class=\"verification-code\">\n" +
                 "        ${verificationCode}\n" +
                 "      </div>\n" +
-                "      <p>이 코드는 24시간 동안 유효합니다.</p>\n" +
+                "      <p>이 코드는 10분 동안 유효합니다.</p>\n" +
                 "    </div>\n" +
                 "    <div class=\"footer\">\n" +
                 "      <p>© 2025 YourCompany. All rights reserved.</p>\n" +

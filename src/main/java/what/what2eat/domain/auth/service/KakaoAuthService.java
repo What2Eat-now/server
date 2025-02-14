@@ -56,7 +56,7 @@ public class KakaoAuthService {
         // 사용자 존재 유무 확인
         Optional<User> userOpt = findUserByEmail(userInfo.getKakaoAccount().getKakaoEmail());
 
-        if (userOpt.get().getProvider().equals(Provider.LOCAL)) {
+        if (userOpt.isPresent() && userOpt.get().getProvider().equals(Provider.LOCAL)) {
             throw new AuthException(AuthErrorCode.DUPLICATE_USER_EMAIL);
         }
 
@@ -68,7 +68,7 @@ public class KakaoAuthService {
                     .tokens(null)
                     .build();
         }
-
+// 107800
         // 로그인 성공
         User user = userOpt.get();
         Map<String, String> tokens = createTokens(user);
@@ -104,7 +104,7 @@ public class KakaoAuthService {
 
     // DB 조회
     private Optional<User> findUserByEmail(String email) {
-        return authRepository.findByUserEmailAndUserStatus(email, UserStatus.ACTIVE);
+        return authRepository.findByUserEmail(email);
     }
 
     // 카카오 사용자 정보 조회
