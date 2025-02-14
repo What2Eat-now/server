@@ -107,7 +107,7 @@ jobs:
           source .bashrc
       
           # jar 파일 실행
-          sudo -E nohup java -jar /home/$EC2_USER/$(ls -t /home/$EC2_USER | head -n 1) > /home/$EC2_USER/log/app.log 2>&1 &
+          sudo -E nohup java -jar /home/ubuntu/$(ls -t /home/ubuntu | head -n 1) > /home/ubuntu/log/app.log 2>&1 &
           EOF
   dependency-submission:
 
