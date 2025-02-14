@@ -89,7 +89,11 @@ jobs:
       # SSH 접속 후 기존 실행중인 jar 파일 제거
       - name: Deploy on EC2
         run: |
-          ssh -i private_key.pem -o StrictHostKeyChecking=no $EC2_USER@$EC2_HOST \
+          ssh -i private_key.pem -o StrictHostKeyChecking=no $EC2_USER@$EC2_HOST 
+          
+      # 실행중인 프로세스 제거
+      - name: kill process
+        run: |
           PID=$(ps aux | grep 'sudo -E nohup java -jar what2eat-0.0.1-SNAPSHOT.jar' | grep -v grep | head -n 1 | awk '{print $2}')
           if [ -n "\$PID" ]; then
           echo "Found PID: \$PID, killing process..."
@@ -97,7 +101,7 @@ jobs:
           else
           echo "No matching process found. Skipping kill command."
           fi    
-
+          
       # 환경 변수 적용
       - name: env Setting
         run: |
