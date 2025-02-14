@@ -76,14 +76,19 @@ jobs:
         env:
           EC2_HOST: ${{ secrets.EC2_HOST }}
           EC2_USER: ${{ secrets.EC2_USER }}
-        run:
-          # ssh 커널 접속
-          ssh -i private_key.pem -o StrictHostKeyChecking=no $EC2_USER@$EC2_HOST << 'EOF'
+        run: |
+          #ssh 커널 접속
+          ssh -i private_key.pem -o StrictHostKeyChecking=no $EC2_USER@$EC2_HOST << EOF
           
-            # 실행중인 jar 파일 중단
+            # 실행중인 jar 파일 중단(PID가 있을 경우 종료)
             PID=$(ps aux | grep 'sudo -E nohup java -jar what2eat-0.0.1-SNAPSHOT.jar' | grep -v grep | head -n 1 | awk '{print $2}')
-            kill $PID
-        
+            if [ -n "\$PID" ]; then
+            echo "Found PID: \$PID, killing process..."
+            kill \$PID
+            else
+            echo "No matching process found. Skipping kill command."
+            fi        
+          
             # 환경 변수 적용
             source .bashrc
         
