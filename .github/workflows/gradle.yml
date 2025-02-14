@@ -9,7 +9,7 @@ name: Java CI with Gradle
 
 on:
   push:
-    branches: [ "develop" ]
+    branches: [ "feature/ci-cd" ]
   pull_request:
     branches: [ "develop" ]
 
@@ -84,7 +84,8 @@ jobs:
           EC2_HOST: ${{ secrets.EC2_HOST }}
           EC2_USER: ${{ secrets.EC2_USER }}
         run: |
-          scp -vvv -i private_key.pem -o StrictHostKeyChecking=no build/libs/*.jar $EC2_USER@$EC2_HOST:/home/$EC2_USER
+#          scp -vvv -i private_key.pem -o StrictHostKeyChecking=no build/libs/*.jar $EC2_USER@$EC2_HOST:/home/$EC2_USER
+          rsync -avz -e "ssh -i private_key.pem -o StrictHostKeyChecking=no" build/libs/*.jar $EC2_USER@$EC2_HOST:/home/$EC2_USER/
 
       # 기존 실행중인 jar 파일 제거 후 환경 변수 적용 & jar 파일 재실행
       - name: Deploy on EC2
