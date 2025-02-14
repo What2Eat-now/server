@@ -61,6 +61,11 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
 
+    env:
+      EC2_HOST: ${{ secrets.EC2_HOST }}
+      EC2_USER: ${{ secrets.EC2_USER }}
+      SSH_PRIVATE_KEY: ${{ secrets.EC2_SSH_KEY }}
+
     steps:
       # artifact(jar 파일) 다운로드
       - uses: actions/checkout@v4
@@ -72,42 +77,35 @@ jobs:
     
       # SSH 키 생성
       - name: Prepare SSH Key
-        env:
-          SSH_PRIVATE_KEY: ${{ secrets.EC2_SSH_KEY }}
         run: |
           echo "$SSH_PRIVATE_KEY" > private_key.pem
           chmod 600 private_key.pem
 
       # jar 파일 빌드 후  EC2 환경으로 복사
       - name: Transfer artifact to EC2
-        env:
-          EC2_HOST: ${{ secrets.EC2_HOST }}
-          EC2_USER: ${{ secrets.EC2_USER }}
         run: |
           rsync -avz -e "ssh -i private_key.pem -o StrictHostKeyChecking=no" build/libs/*.jar $EC2_USER@$EC2_HOST:/home/$EC2_USER/
 
-      # 기존 실행중인 jar 파일 제거 후 환경 변수 적용 & jar 파일 재실행
+      # SSH 접속 후 기존 실행중인 jar 파일 제거
       - name: Deploy on EC2
-        env:
-          EC2_HOST: ${{ secrets.EC2_HOST }}
-          EC2_USER: ${{ secrets.EC2_USER }}
         run: |
-          #ssh 커널 접속
-          ssh -i private_key.pem -o StrictHostKeyChecking=no $EC2_USER@$EC2_HOST << EOF
-          
-            # 실행중인 jar 파일 중단(PID가 있을 경우 종료)
-            PID=$(ps aux | grep 'sudo -E nohup java -jar what2eat-0.0.1-SNAPSHOT.jar' | grep -v grep | head -n 1 | awk '{print $2}')
-            if [ -n "\$PID" ]; then
-            echo "Found PID: \$PID, killing process..."
-            kill \$PID
-            else
-            echo "No matching process found. Skipping kill command."
-            fi        
-          
-            # 환경 변수 적용
+          ssh -i private_key.pem -o StrictHostKeyChecking=no $EC2_USER@$EC2_HOST \
+          PID=$(ps aux | grep 'sudo -E nohup java -jar what2eat-0.0.1-SNAPSHOT.jar' | grep -v grep | head -n 1 | awk '{print $2}')
+          if [ -n "\$PID" ]; then
+          echo "Found PID: \$PID, killing process..."
+          kill \$PID
+          else
+          echo "No matching process found. Skipping kill command."
+          fi    
+
+      # 환경 변수 적용
+      - name: env Setting
+        run: |
             source .bashrc
-        
-            # jar 파일 실행
+
+      # jar 파일 실행
+      - name: Deploy on EC2
+        run: |
             sudo -E nohup java -jar /home/$EC2_USER/$(ls -t /home/$EC2_USER | head -n 1) > /home/$EC2_USER/log/app.log 2>&1 &
 
   dependency-submission:
