@@ -90,7 +90,6 @@ jobs:
       - name: Deploy on EC2
         run: |
           ssh -i private_key.pem -o StrictHostKeyChecking=no $EC2_USER@$EC2_HOST <<EOF
-          # 실행중인 파일 제거
           PID=\$(ps aux | grep 'sudo -E nohup java -jar what2eat-0.0.1-SNAPSHOT.jar' | grep -v grep | head -n 1 | awk '{print \$2}')
           if [ -n "\$PID" ]; then
             echo "Found PID: \$PID, killing process..."
@@ -99,13 +98,13 @@ jobs:
             echo "No matching process found. Skipping kill command."
           fi
           
-          # 환경 변수 적용
+        # 환경 변수 적용
           source .bashrc  
           
-          # 로그 파일 생성
+        # 로그 파일 생성
           mkdir -p /home/$EC2_USER/log
           
-          # 파일 실행
+        # 파일 실행
           sudo -E nohup java -jar /home/$EC2_USER/\$(ls -t /home/$EC2_USER | head -n 1) > /home/$EC2_USER/log/app.log 2>&1 &
           EOF
           EOF
