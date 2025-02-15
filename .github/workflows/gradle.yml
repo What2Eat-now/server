@@ -8,8 +8,8 @@
 name: Java CI with Gradle
 
 on:
-#  push:
-#    branches: [ "develop" ]
+  push:
+    branches: [ "feature/ci-cd" ]
   pull_request:
     branches: [ "develop" ]
 
@@ -100,9 +100,7 @@ jobs:
           fi
           
           source .bashrc  
-
-          rm log/app.log
-          
+          g
           mkdir -p /home/$EC2_USER/log
           
           sudo -E nohup java -jar /home/$EC2_USER/\$(ls -t /home/$EC2_USER | head -n 1) > /home/$EC2_USER/log/app.log 2>&1 &
