@@ -1,6 +1,5 @@
 package what.what2eat.domain.auth.service;
 
-import com.nimbusds.jose.jwk.ECKey;
 import com.nimbusds.jose.jwk.JWK;
 import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.RSAKey;
@@ -20,7 +19,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
+import what.what2eat.domain.auth.controller.dto.request.AppleRequestDTO;
 import what.what2eat.domain.auth.controller.dto.response.AppleResponseDTO;
+import what.what2eat.domain.auth.converter.AuthConverter;
 import what.what2eat.domain.auth.entity.Provider;
 import what.what2eat.domain.auth.entity.User;
 import what.what2eat.domain.auth.exception.AuthErrorCode;
@@ -63,6 +64,12 @@ public class AppleAuthService {
 
     private final AuthRepository authRepository;
     private final JwtProvider jwtProvider;
+    private final AuthConverter authConverter;
+
+    public void signup(AppleRequestDTO.AppleSignupDTO request) {
+        authRepository.save(authConverter.signupToAppleUserEntity(request));
+    }
+
 
     // 애플 로그인
     public AppleResponseDTO.AppleLoginResponseDTO login(String authorizationCode) throws Exception {
@@ -216,8 +223,10 @@ public class AppleAuthService {
     }
 
     private String extractEmailFromIdToken(String idToken) throws Exception {
+        // idToken -> jwt 형식으로 파싱
         SignedJWT signedJWT = SignedJWT.parse(idToken);
 
+        // 공개키로 id Token 인증후 email 조회
         Claims claims = Jwts.parser()
                 .setSigningKey(getApplePublicKey(signedJWT.getHeader().getKeyID()))  // 서명 검증을 위한 키
                 .build()
