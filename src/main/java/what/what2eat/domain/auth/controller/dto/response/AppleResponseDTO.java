@@ -38,6 +38,5 @@ public class AppleResponseDTO {
         private String accessToken;
         private String refreshToken;
 
-
     }
 }

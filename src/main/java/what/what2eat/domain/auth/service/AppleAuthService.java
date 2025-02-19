@@ -5,6 +5,7 @@ import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jwt.SignedJWT;
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtParser;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import lombok.RequiredArgsConstructor;
@@ -111,6 +112,7 @@ public class AppleAuthService {
                 .build();
     }
 
+    // AccessToken 생성
     private String createAccessToken(User user) {
         return jwtProvider.createAccessToken(CustomUserDetails.builder()
                 .userId(user.getUserId())
@@ -126,6 +128,9 @@ public class AppleAuthService {
 
         // 1. clientSecret 생성 (앞서 구현한 makeClientSecret() 메서드 사용)
         String clientSecret = createClientSecret();
+
+        // clientSecret 검증
+        validateClientSecret(clientSecret);
 
         // 2. 요청 파라미터 준비 (application/x-www-form-urlencoded)
         MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
@@ -151,14 +156,14 @@ public class AppleAuthService {
             return response.getBody();
         } else {
             // 에러 발생 시 로그 출력 및 예외 처리
-            throw new Exception("애플 토큰 요청 실패: " + response.getStatusCode());
+            throw new AuthException(AuthErrorCode.APPLE_AUTH_FAILED);
         }
     }
 
+    // clientSecret 생성
     private String createClientSecret() throws Exception {
         // 만료일 생성
         Date expirationDate = Date.from(LocalDateTime.now().plusDays(30).atZone(ZoneId.systemDefault()).toInstant());
-
 
         return Jwts.builder()
                 .setHeaderParam("kid", keyId)
@@ -172,6 +177,7 @@ public class AppleAuthService {
                 .compact();
     }
 
+    // ClientSecret에 사용할 privateKey 생성
     private PrivateKey getPrivateKey() throws Exception {
         // BouncyCastle Provider 추가 (이미 추가되어 있다면 생략 가능)
 
@@ -195,12 +201,13 @@ public class AppleAuthService {
         if (object instanceof PrivateKeyInfo privateKeyInfo) {
             privateKey = converter.getPrivateKey((privateKeyInfo));
         } else {
-            throw new IllegalArgumentException("지원하지 않는 키 형식: " + object.getClass().getName());
+            throw new AuthException(AuthErrorCode.APPLE_UNSUPPORTED_KEY_TYPE);
         }
 
         return privateKey;
     }
 
+    // 애플 공개키 파싱
     public PublicKey getApplePublicKey(String kid) throws Exception {
 
         // Apple 공개키 엔드포인트에서 JWKS 가져오기
@@ -215,13 +222,15 @@ public class AppleAuthService {
                 if (publicJwk instanceof RSAKey rsaKey) {
                     return rsaKey.toRSAPublicKey();
                 } else {
-                    throw new Exception("지원하지 않는 키 타입: " + publicJwk.getKeyType());
+                    throw new AuthException(AuthErrorCode.APPLE_INVALID_KEY_TYPE);
                 }
             }
         }
-        throw new Exception("kid에 해당하는 공개키를 찾을 수 없습니다: " + kid);
+        throw new AuthException(AuthErrorCode.APPLE_PUBLIC_KEY_NOT_FOUND);
     }
 
+
+    //IdToken에서 사용자 이메일 추출
     private String extractEmailFromIdToken(String idToken) throws Exception {
         // idToken -> jwt 형식으로 파싱
         SignedJWT signedJWT = SignedJWT.parse(idToken);
@@ -234,5 +243,31 @@ public class AppleAuthService {
                 .getBody();
 
         return claims.get("email", String.class);
+    }
+
+    // clientSecret 검증
+    private void validateClientSecret(String clientSecret) throws Exception {
+        try {
+            JwtParser parser = Jwts.parser()
+                    .setSigningKey(getPrivateKey()) // Apple 로그인에서 EC Private Key 사용
+                    .build();
+
+            Claims claims = parser.parseClaimsJws(clientSecret).getBody();
+
+            // **필수 값 검증**
+            if (!claims.getIssuer().equals(teamId)) {
+                throw new AuthException(AuthErrorCode.APPLE_INVALID_CLIENT_SECRET);
+            }
+            if (!claims.getSubject().equals(clientId)) {
+                throw new AuthException(AuthErrorCode.APPLE_INVALID_CLIENT_SECRET);
+            }
+            if (!claims.getAudience().contains("https://appleid.apple.com")) {
+                throw new AuthException(AuthErrorCode.APPLE_INVALID_CLIENT_SECRET);
+            }
+        } catch (Exception e) {
+            throw new AuthException(AuthErrorCode.APPLE_INVALID_CLIENT_SECRET);
+        }
+
+
     }
 }
