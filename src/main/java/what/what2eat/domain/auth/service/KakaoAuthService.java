@@ -54,6 +54,7 @@ public class KakaoAuthService {
         // 사용자 존재 유무 확인
         Optional<User> userOpt = authRepository.findByUserEmail(userInfo.getKakaoAccount().getKakaoEmail());
 
+        // 사용자가 존재하지만 로컬 or 애플로 가입된 회원인지 확인
         if (userOpt.isPresent() &&
                 (userOpt.get().getProvider().equals(Provider.LOCAL) ||
                         userOpt.get().getProvider().equals(Provider.APPLE))) {
@@ -108,9 +109,8 @@ public class KakaoAuthService {
     // 카카오 사용자 정보 조회
     private KakaoResponseDTO.KakaoUserInfoDTO getKakaoUserInfo(String kakaoAccessToken) {
         try {
-            return restTemplate.exchange(
+            return restTemplate.postForEntity(
                     "https://kapi.kakao.com/v2/user/me",
-                    HttpMethod.GET,
                     createKakaoRequestEntity(kakaoAccessToken),
                     KakaoResponseDTO.KakaoUserInfoDTO.class
             ).getBody();

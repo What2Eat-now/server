@@ -19,6 +19,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import what.what2eat.domain.auth.controller.dto.request.AppleRequestDTO;
 import what.what2eat.domain.auth.controller.dto.response.AppleResponseDTO;
@@ -67,13 +68,16 @@ public class AppleAuthService {
     private final AuthRepository authRepository;
     private final JwtProvider jwtProvider;
     private final AuthConverter authConverter;
+    private final RestTemplate restTemplate;
 
     public void signup(AppleRequestDTO.AppleSignupDTO request) {
         authRepository.save(authConverter.signupToAppleUserEntity(request));
     }
 
 
-    // 애플 로그인
+    /**
+     * 애플 로그인
+     */
     public CommonResponseDTO.LoginResponseDTO login(String authorizationCode) throws Exception {
 
         // 토큰 조회
@@ -85,6 +89,7 @@ public class AppleAuthService {
         // 사용자 존재 유무 확인
         Optional<User> userOpt = authRepository.findByUserEmail(userEmail);
 
+        // 사용자가 존재하지만 로컬 or 카카오로 가입된 회원인지 확인
         if (userOpt.isPresent() &&
                 (userOpt.get().getProvider().equals(Provider.LOCAL) ||
                         userOpt.get().getProvider().equals(Provider.KAKAO))) {
@@ -130,41 +135,41 @@ public class AppleAuthService {
                 .build();
     }
 
-
-
-
-    // 애플 토큰 요청
+    /**
+     * 애플 토큰 요청
+     */
     private AppleResponseDTO.AppleTokenInfoDTO requestAppleToken(String authorizationCode) throws Exception {
 
-        // 1. clientSecret 생성 (앞서 구현한 makeClientSecret() 메서드 사용)
+        // clientSecret 생성 (앞서 구현한 makeClientSecret() 메서드 사용)
         String clientSecret = createClientSecret();
 
-        // 2. 요청 파라미터 준비 (application/x-www-form-urlencoded)
+        try{
+            // 애플 토큰 엔드포인트에 POST 요청
+            return restTemplate.postForEntity(
+                    "https://appleid.apple.com/auth/token",
+                    createAppleRequestEntity(authorizationCode, clientSecret),
+                    AppleResponseDTO.AppleTokenInfoDTO.class).getBody();
+        } catch (HttpClientErrorException e){
+            // 에러 발생 시 로그 출력 및 예외 처리
+            log.error("Apple API 호출 실패: 상태 코드 {}, 응답 본문 {}", e.getStatusCode(), e.getResponseBodyAsString());
+            throw new AuthException(AuthErrorCode.APPLE_AUTH_FAILED);
+        }
+    }
+
+    // 요청 파라미터 준비 (application/x-www-form-urlencoded)
+    private HttpEntity<MultiValueMap<String, String>> createAppleRequestEntity(String authorizationCode, String clientSecret) {
         MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
         params.add("client_id", clientId);
         params.add("client_secret", clientSecret);
         params.add("code", authorizationCode);
         params.add("grant_type", "authorization_code");
 
-        // 3. 요청 헤더 설정
+        // 요청 헤더 설정
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 
         HttpEntity<MultiValueMap<String, String>> requestEntity = new HttpEntity<>(params, headers);
-
-        // 4. 애플 토큰 엔드포인트에 POST 요청
-        RestTemplate restTemplate = new RestTemplate();
-        ResponseEntity<AppleResponseDTO.AppleTokenInfoDTO> response = restTemplate.postForEntity(
-                "https://appleid.apple.com/auth/token",
-                requestEntity,
-                AppleResponseDTO.AppleTokenInfoDTO.class);
-
-        if (response.getStatusCode() == HttpStatus.OK) {
-            return response.getBody();
-        } else {
-            // 에러 발생 시 로그 출력 및 예외 처리
-            throw new AuthException(AuthErrorCode.APPLE_AUTH_FAILED);
-        }
+        return requestEntity;
     }
 
     // clientSecret 생성

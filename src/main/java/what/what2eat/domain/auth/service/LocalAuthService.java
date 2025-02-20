@@ -39,7 +39,9 @@ public class LocalAuthService {
     private final EmailRepository emailRepository;
     private final EmailService emailService;
 
-    // 회원가입 =>
+    /**
+     * 로컬 회원 가입
+     */
     public void signUp(LocalRequestDTO.SignUpRequestDTO request){
         // 인증번호 엔티티에서 이메일과 인증 상태로 조회
         EmailVerificationCode byUserEmail = emailRepository.findByUserEmailAndEmailStatus(request.getUserEmail(), true)
@@ -69,42 +71,9 @@ public class LocalAuthService {
 
     }
 
-    // 인증번호 이메일 전송
-    public void sendEmail(String userEmail) throws MessagingException {
-        // 이메일 전송 후 인증번호 반환
-        String code = emailService.sendVerificationEmail(userEmail);
-
-        // 이메일 정보 저장
-        emailRepository.save(EmailVerificationCode.builder()
-                .userEmail(userEmail)
-                .emailStatus(false)
-                .verificationCode(code)
-                .expiryDate(LocalDateTime.now().plusMinutes(10))
-                .build());
-    }
-
-    // 인증번호 검증
-    public void verifyCode(LocalRequestDTO.VerifyCodeDTO request) {
-        log.info("code = " + request.getCode());
-
-        // 인증 토큰 검증
-        if (!emailRepository.existsByVerificationCode(request.getCode())) {
-            throw new AuthException(AuthErrorCode.INVALID_CERTIFICATION_CODE);
-        }
-
-        // 인증 번호와 이메일로 저장된 정보 찾기
-        EmailVerificationCode findCode = emailRepository.findByUserEmailAndVerificationCodeAndEmailStatus(request.getUserEmail(), request.getCode(), false)
-                .orElseThrow(() -> new AuthException(AuthErrorCode.USER_NOT_FOUND));
-
-        // 인증 코드 시간 만료된 경우
-        if (findCode.getExpiryDate().isBefore(LocalDateTime.now())) {
-            throw new AuthException(AuthErrorCode.VERIFICATION_TOKEN_EXPIRED);
-        }
-
-        // 인증 상태 변경
-        findCode.changeStatus();
-    }
-
+    /**
+     * 로컬 로그인
+     */
     public CommonResponseDTO.LoginResponseDTO login(LocalRequestDTO.LoginRequestDTO request) throws Exception {
 
         try {
@@ -146,12 +115,49 @@ public class LocalAuthService {
     }
 
     /**
+     * 인증번호 이메일 전송
+     */
+    public void sendEmail(String userEmail) throws MessagingException {
+        // 이메일 전송 후 인증번호 반환
+        String code = emailService.sendVerificationEmail(userEmail);
+
+        // 이메일 정보 저장
+        emailRepository.save(EmailVerificationCode.builder()
+                .userEmail(userEmail)
+                .emailStatus(false)
+                .verificationCode(code)
+                .expiryDate(LocalDateTime.now().plusMinutes(10))
+                .build());
+    }
+
+    /**
+     * 인증번호 검증
+     */
+    public void verifyCode(LocalRequestDTO.VerifyCodeDTO request) {
+        // 인증 토큰 검증
+        if (Boolean.FALSE.equals(emailRepository.existsByVerificationCode(request.getCode()))) {
+            throw new AuthException(AuthErrorCode.INVALID_CERTIFICATION_CODE);
+        }
+
+        // 인증 번호와 이메일로 저장된 정보 찾기
+        EmailVerificationCode findCode = emailRepository.findByUserEmailAndVerificationCodeAndEmailStatus(request.getUserEmail(), request.getCode(), false)
+                .orElseThrow(() -> new AuthException(AuthErrorCode.USER_NOT_FOUND));
+
+        // 인증 코드 시간 만료된 경우
+        if (findCode.getExpiryDate().isBefore(LocalDateTime.now())) {
+            throw new AuthException(AuthErrorCode.VERIFICATION_TOKEN_EXPIRED);
+        }
+
+        // 인증 상태 변경
+        findCode.changeStatus();
+    }
+
+    /**
      * 검증 메서드
      */
     private boolean isValidPassword(String password) {
         return password.matches("^(?=.*[A-Z])(?=.*[@$!%*?&]).{8,16}$");
     }
-
 
     // 로그인시
     public void validateMember(String userEmail) {
@@ -160,8 +166,8 @@ public class LocalAuthService {
         User user = authRepository.findByUserEmail(userEmail).orElseThrow(
                 () -> new AuthException(AuthErrorCode.USER_NOT_FOUND));
 
-        // 카카오 로그인으로 이미 가입된 경우
-        if (user.getProvider().equals(Provider.KAKAO)) {
+        // 카카오 or 애플 로그인으로 이미 가입된 경우
+        if (user.getProvider().equals(Provider.KAKAO) || user.getProvider().equals(Provider.APPLE)) {
             throw new AuthException(AuthErrorCode.ALREADY_EXIST_SOCIAL_EMAIL);
         }
 
