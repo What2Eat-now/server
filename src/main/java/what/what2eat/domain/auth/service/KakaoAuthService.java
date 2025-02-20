@@ -10,6 +10,7 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import what.what2eat.domain.auth.controller.dto.request.KakaoRequestDTO;
+import what.what2eat.domain.auth.controller.dto.response.CommonResponseDTO;
 import what.what2eat.domain.auth.controller.dto.response.KakaoResponseDTO;
 import what.what2eat.domain.auth.converter.AuthConverter;
 import what.what2eat.domain.auth.entity.Provider;
@@ -37,7 +38,6 @@ public class KakaoAuthService {
     private final AuthRepository authRepository;
     private final JwtProvider jwtProvider;
 
-
     // 회원가입
     public void signup(KakaoRequestDTO.KakaoSignupDTO request) {
         //객체 변환후 저장
@@ -46,35 +46,38 @@ public class KakaoAuthService {
     }
 
     // 토큰으로 사용자 정보 조회
-
-    public KakaoResponseDTO.KakaoLoginResponseDTO login(String kakaoAccessToken) {
+    public CommonResponseDTO.LoginResponseDTO login(String kakaoAccessToken) {
 
         // 사용자 정보 조회
         KakaoResponseDTO.KakaoUserInfoDTO userInfo = getKakaoUserInfo(kakaoAccessToken);
 
         // 사용자 존재 유무 확인
-        Optional<User> userOpt = findUserByEmail(userInfo.getKakaoAccount().getKakaoEmail());
+        Optional<User> userOpt = authRepository.findByUserEmail(userInfo.getKakaoAccount().getKakaoEmail());
 
-        if (userOpt.isPresent() && userOpt.get().getProvider().equals(Provider.LOCAL)) {
+        // 사용자가 존재하지만 로컬 or 애플로 가입된 회원인지 확인
+        if (userOpt.isPresent() &&
+                (userOpt.get().getProvider().equals(Provider.LOCAL) ||
+                        userOpt.get().getProvider().equals(Provider.APPLE))) {
             throw new AuthException(AuthErrorCode.DUPLICATE_USER_EMAIL);
         }
 
+        // 사용자 존재하지 않을경우 회원 가입으로 리다이렉트 처리
         if (userOpt.isEmpty()) {
-            // 회원가입 필요 리다이렉트 처리
-            return KakaoResponseDTO.KakaoLoginResponseDTO.builder()
+            return CommonResponseDTO.LoginResponseDTO.builder()
                     .requiresSignup(true)
-                    .kakaoEmail(userInfo.getKakaoAccount().getKakaoEmail())
+                    .email(userInfo.getKakaoAccount().getKakaoEmail())
                     .tokens(null)
                     .build();
         }
-// 107800
+
         // 로그인 성공
         User user = userOpt.get();
-        Map<String, String> tokens = createTokens(user);
 
-        return KakaoResponseDTO.KakaoLoginResponseDTO.builder()
+        CommonResponseDTO.TokenDTO tokens = createTokens(user);
+
+        return CommonResponseDTO.LoginResponseDTO.builder()
                 .requiresSignup(false)
-                .kakaoEmail(null)
+                .email(null)
                 .tokens(tokens)
                 .build();
     }
@@ -82,36 +85,32 @@ public class KakaoAuthService {
     /**
      * AccessToken 및 RefreshToken 생성
      */
-    private Map<String, String> createTokens(User user) {
-        CustomUserDetails userDetails = new CustomUserDetails(
-                user.getUserId(),
-                user.getUserEmail(),
-                null,
-                user.getNickName(),
-                user.getProvider(),
-                List.of(new SimpleGrantedAuthority(user.getRole().name()))
-        );
+    private CommonResponseDTO.TokenDTO createTokens(User user) {
+
+        CustomUserDetails userDetails = CustomUserDetails.builder()
+                .userId(user.getUserId())
+                .email(user.getUserEmail())
+                .password(null)
+                .nickName(user.getNickName())
+                .provider(user.getProvider())
+                .authorities(List.of(new SimpleGrantedAuthority(user.getRole().name())))
+                .build();
 
         String accessToken = jwtProvider.createAccessToken(userDetails);
         String refreshToken = jwtProvider.createRefreshToken(user.getUserEmail());
 
-        return Map.of(
-                "accessToken", accessToken,
-                "refreshToken", refreshToken
-        );
+        return CommonResponseDTO.TokenDTO.builder()
+                .accessToken(accessToken)
+                .refreshToken(refreshToken)
+                .build();
     }
 
-    // DB 조회
-    private Optional<User> findUserByEmail(String email) {
-        return authRepository.findByUserEmail(email);
-    }
 
     // 카카오 사용자 정보 조회
     private KakaoResponseDTO.KakaoUserInfoDTO getKakaoUserInfo(String kakaoAccessToken) {
         try {
-            return restTemplate.exchange(
+            return restTemplate.postForEntity(
                     "https://kapi.kakao.com/v2/user/me",
-                    HttpMethod.POST,
                     createKakaoRequestEntity(kakaoAccessToken),
                     KakaoResponseDTO.KakaoUserInfoDTO.class
             ).getBody();

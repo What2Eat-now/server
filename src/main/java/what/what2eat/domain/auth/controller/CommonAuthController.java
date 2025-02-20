@@ -73,6 +73,7 @@ public class CommonAuthController {
     }
 
     @GetMapping("/me")
+    @Operation(summary = "회원 정보 조회", description = "회원 정보 조회를 처리합니다. \n 응답 코드에 따른 자세한 결과는 PostMan API 명세서를 참고 부탁드립니다.")
     public ResponseEntity<ApiResponse<CommonResponseDTO.GetUserInfoDTO>> getUserInfo(HttpServletRequest request) {
         return ResponseEntity.ok(ApiResponse.of(commonAuthService.getUserInfo(request)));
     }
