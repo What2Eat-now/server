@@ -11,10 +11,9 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import what.what2eat.domain.auth.controller.dto.request.KakaoRequestDTO;
 import what.what2eat.domain.auth.controller.dto.response.KakaoResponseDTO;
-import what.what2eat.domain.auth.converter.KakaoAuthConverter;
+import what.what2eat.domain.auth.converter.AuthConverter;
 import what.what2eat.domain.auth.entity.Provider;
 import what.what2eat.domain.auth.entity.User;
-import what.what2eat.domain.auth.entity.UserStatus;
 import what.what2eat.domain.auth.exception.AuthErrorCode;
 import what.what2eat.domain.auth.exception.AuthException;
 import what.what2eat.domain.auth.repository.AuthRepository;
@@ -34,15 +33,14 @@ import java.util.Optional;
 public class KakaoAuthService {
 
     private final RestTemplate restTemplate;
-    private final KakaoAuthConverter kakaoAuthConverter;
+    private final AuthConverter authConverter;
     private final AuthRepository authRepository;
     private final JwtProvider jwtProvider;
-
 
     // 회원가입
     public void signup(KakaoRequestDTO.KakaoSignupDTO request) {
         //객체 변환후 저장
-        authRepository.save(kakaoAuthConverter.signupToUserEntity(request));
+        authRepository.save(authConverter.signupToKakaoUserEntity(request));
 
     }
 
@@ -68,7 +66,7 @@ public class KakaoAuthService {
                     .tokens(null)
                     .build();
         }
-// 107800
+
         // 로그인 성공
         User user = userOpt.get();
         Map<String, String> tokens = createTokens(user);
