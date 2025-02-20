@@ -7,6 +7,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import what.what2eat.domain.auth.controller.dto.request.AppleRequestDTO;
 import what.what2eat.domain.auth.controller.dto.response.AppleResponseDTO;
+import what.what2eat.domain.auth.controller.dto.response.CommonResponseDTO;
+import what.what2eat.domain.auth.controller.dto.response.LocalResponseDTO;
 import what.what2eat.domain.auth.service.AppleAuthService;
 import what.what2eat.global.response.ApiResponse;
 import what.what2eat.global.response.ResponseCode;
@@ -19,10 +21,10 @@ public class AppleAuthController {
     private final AppleAuthService appleAuthService;
 
     @PostMapping("/login/apple")
-    public ResponseEntity<ApiResponse<AppleResponseDTO.AppleLoginResponseDTO>> login(@RequestParam String authorizationCode) throws Exception {
-        AppleResponseDTO.AppleLoginResponseDTO result = appleAuthService.login(authorizationCode);
+    public ResponseEntity<ApiResponse<CommonResponseDTO.LoginResponseDTO>> login(@RequestParam String authorizationCode) throws Exception {
+        CommonResponseDTO.LoginResponseDTO result = appleAuthService.login(authorizationCode);
 
-        if (result.isRequireSignup()) {
+        if (result.isRequiresSignup()) {
             return ResponseEntity.status(HttpStatus.TEMPORARY_REDIRECT)
                     .body(ApiResponse.of(ResponseCode.NEED_SIGNUP, result));
         }

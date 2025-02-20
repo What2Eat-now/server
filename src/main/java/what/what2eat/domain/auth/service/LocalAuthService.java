@@ -14,6 +14,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import what.what2eat.domain.auth.controller.dto.request.LocalRequestDTO;
+import what.what2eat.domain.auth.controller.dto.response.CommonResponseDTO;
 import what.what2eat.domain.auth.controller.dto.response.LocalResponseDTO;
 import what.what2eat.domain.auth.entity.*;
 import what.what2eat.domain.auth.exception.AuthErrorCode;
@@ -104,7 +105,7 @@ public class LocalAuthService {
         findCode.changeStatus();
     }
 
-    public LocalResponseDTO.LocalLoginResponseDTO login(LocalRequestDTO.LoginRequestDTO request) throws Exception {
+    public CommonResponseDTO.LoginResponseDTO login(LocalRequestDTO.LoginRequestDTO request) throws Exception {
 
         try {
             // 인증 시도
@@ -115,7 +116,6 @@ public class LocalAuthService {
                     )
             );
 
-
             // 인증 객체에서 사용자 정보 추출(Provider 추출 위해 작성)
             CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
 
@@ -123,9 +123,11 @@ public class LocalAuthService {
 
             String refreshToken = jwtProvider.createRefreshToken(request.getUserEmail());
 
-            return LocalResponseDTO.LocalLoginResponseDTO.builder()
-                    .accessToken(accessToken)
-                    .refreshToken(refreshToken)
+            return CommonResponseDTO.LoginResponseDTO.builder()
+                    .tokens(CommonResponseDTO.TokenDTO.builder()
+                            .accessToken(accessToken)
+                            .refreshToken(refreshToken)
+                            .build())
                     .build();
 
         } catch (InternalAuthenticationServiceException e) {

@@ -5,7 +5,6 @@ import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jwt.SignedJWT;
 import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.JwtParser;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import lombok.RequiredArgsConstructor;
@@ -16,12 +15,14 @@ import org.bouncycastle.openssl.PEMParser;
 import org.bouncycastle.openssl.jcajce.JcaPEMKeyConverter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 import what.what2eat.domain.auth.controller.dto.request.AppleRequestDTO;
 import what.what2eat.domain.auth.controller.dto.response.AppleResponseDTO;
+import what.what2eat.domain.auth.controller.dto.response.CommonResponseDTO;
 import what.what2eat.domain.auth.converter.AuthConverter;
 import what.what2eat.domain.auth.entity.Provider;
 import what.what2eat.domain.auth.entity.User;
@@ -73,7 +74,7 @@ public class AppleAuthService {
 
 
     // 애플 로그인
-    public AppleResponseDTO.AppleLoginResponseDTO login(String authorizationCode) throws Exception {
+    public CommonResponseDTO.LoginResponseDTO login(String authorizationCode) throws Exception {
 
         // 토큰 조회
         AppleResponseDTO.AppleTokenInfoDTO loginResponse = requestAppleToken(authorizationCode);
@@ -84,44 +85,53 @@ public class AppleAuthService {
         // 사용자 존재 유무 확인
         Optional<User> userOpt = authRepository.findByUserEmail(userEmail);
 
-        if (userOpt.isPresent() && userOpt.get().getProvider().equals(Provider.LOCAL)) {
+        if (userOpt.isPresent() &&
+                (userOpt.get().getProvider().equals(Provider.LOCAL) ||
+                        userOpt.get().getProvider().equals(Provider.KAKAO))) {
             throw new AuthException(AuthErrorCode.DUPLICATE_USER_EMAIL);
         }
 
         // 사용자 존재하지 않을경우 회원 가입으로 리다이렉트 처리
         if (userOpt.isEmpty()) {
-            return AppleResponseDTO.AppleLoginResponseDTO.builder()
-                    .appleEmail(userEmail)
-                    .requireSignup(true)
-                    .accessToken(null)
-                    .refreshToken(null)
+            return CommonResponseDTO.LoginResponseDTO.builder()
+                    .email(userEmail)
+                    .requiresSignup(true)
                     .build();
         }
 
         User user = userOpt.get();
 
-        String accessToken = createAccessToken(user);
-
-        String refreshToken = jwtProvider.createRefreshToken(user.getUserEmail());
-
-        return AppleResponseDTO.AppleLoginResponseDTO.builder()
-                .requireSignup(false)
-                .accessToken(accessToken)
-                .refreshToken(refreshToken)
-                .appleEmail(null)
+        return CommonResponseDTO.LoginResponseDTO.builder()
+                .requiresSignup(false)
+                .email(null)
+                .tokens(createTokens(user))
                 .build();
     }
 
-    // AccessToken 생성
-    private String createAccessToken(User user) {
-        return jwtProvider.createAccessToken(CustomUserDetails.builder()
+    // AccessToken, RefreshToken 생성
+    private CommonResponseDTO.TokenDTO createTokens(User user) {
+
+        CustomUserDetails userDetails = CustomUserDetails.builder()
                 .userId(user.getUserId())
                 .email(user.getUserEmail())
                 .password(null)
                 .provider(user.getProvider())
                 .nickName(user.getNickName())
-                .build());
+                .authorities(List.of(new SimpleGrantedAuthority(user.getRole().name())))
+                .build();
+
+        String accessToken = jwtProvider.createAccessToken(userDetails);
+
+        String refreshToken = jwtProvider.createRefreshToken(user.getUserEmail());
+
+        return CommonResponseDTO.TokenDTO.builder()
+                .accessToken(accessToken)
+                .refreshToken(refreshToken)
+                .build();
     }
+
+
+
 
     // 애플 토큰 요청
     private AppleResponseDTO.AppleTokenInfoDTO requestAppleToken(String authorizationCode) throws Exception {

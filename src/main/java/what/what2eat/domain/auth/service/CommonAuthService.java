@@ -83,8 +83,6 @@ public class CommonAuthService {
 
         // 회원 탈퇴 처리
         authRepository.delete(user);
-
-
     }
 
     // 사용자 정보 조회
