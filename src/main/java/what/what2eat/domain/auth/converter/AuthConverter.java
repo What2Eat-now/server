@@ -19,10 +19,10 @@ public class AuthConverter {
                 .build();
     }
 
-    public User signupToAppleUserEntity(AppleRequestDTO.AppleSignupDTO request) {
+    public User userEmailToAppleUserEntity(String userEmail) {
         return User.builder()
-                .nickName(request.getNickName())
-                .userEmail(request.getUserEmail())
+                .nickName("이름을 변경해주세요")
+                .userEmail(userEmail)
                 .role(Role.USER)
                 .provider(Provider.APPLE)
                 .build();

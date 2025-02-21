@@ -26,17 +26,9 @@ public class AppleAuthController {
 
         if (result.isRequiresSignup()) {
             return ResponseEntity.status(HttpStatus.TEMPORARY_REDIRECT)
-                    .body(ApiResponse.of(ResponseCode.NEED_SIGNUP, result));
+                    .body(ApiResponse.of(ResponseCode.NEED_UPDATE_NICKNAME, result));
         }
 
         return ResponseEntity.ok(ApiResponse.of(ResponseCode.SUCCESS, result));
-    }
-
-    @PostMapping("/signup/apple")
-    public ResponseEntity<ApiResponse<ResponseCode>> signup(@RequestBody AppleRequestDTO.AppleSignupDTO request) {
-        appleAuthService.signup(request);
-
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ApiResponse.of(ResponseCode.CREATED));
     }
 }

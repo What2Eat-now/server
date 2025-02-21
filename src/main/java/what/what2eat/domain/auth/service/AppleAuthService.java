@@ -70,11 +70,6 @@ public class AppleAuthService {
     private final AuthConverter authConverter;
     private final RestTemplate restTemplate;
 
-    public void signup(AppleRequestDTO.AppleSignupDTO request) {
-        authRepository.save(authConverter.signupToAppleUserEntity(request));
-    }
-
-
     /**
      * 애플 로그인
      */
@@ -98,9 +93,13 @@ public class AppleAuthService {
 
         // 사용자 존재하지 않을경우 회원 가입으로 리다이렉트 처리
         if (userOpt.isEmpty()) {
+            // 회원 가입 처리
+            User savedUser = authRepository.save(authConverter.userEmailToAppleUserEntity(userEmail));
+
             return CommonResponseDTO.LoginResponseDTO.builder()
-                    .email(userEmail)
+                    .email(null)
                     .requiresSignup(true)
+                    .tokens(createTokens(savedUser))
                     .build();
         }
 
