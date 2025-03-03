@@ -19,9 +19,11 @@ import what.what2eat.domain.auth.exception.AuthErrorCode;
 import what.what2eat.domain.auth.exception.AuthException;
 import what.what2eat.domain.auth.repository.AuthRepository;
 import what.what2eat.global.exception.CommonErrorCode;
+import what.what2eat.global.s3.S3Service;
 import what.what2eat.global.security.domain.CustomUserDetails;
 import what.what2eat.global.security.jwt.JwtProvider;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -37,6 +39,7 @@ public class KakaoAuthService {
     private final AuthConverter authConverter;
     private final AuthRepository authRepository;
     private final JwtProvider jwtProvider;
+    private final S3Service s3Service;
 
     // 회원가입
     public void signup(KakaoRequestDTO.KakaoSignupDTO request) {
@@ -105,6 +108,39 @@ public class KakaoAuthService {
                 .build();
     }
 
+    /**
+     * 카카오 회원 탈퇴
+     */
+    public void delete(String accessToken) {
+        // 카카오 연결 해제
+        unlinkKakaoAccount(accessToken);
+
+        User user = authRepository.findById(jwtProvider.extractUserId()).orElseThrow(
+                () -> new AuthException(AuthErrorCode.USER_NOT_FOUND));
+
+        // s3 이미지 삭제
+        s3Service.deleteUserImgList(user);
+
+        // user 삭제
+        authRepository.delete(user);
+    }
+
+    /**
+     * 카카오 연결 해제(약관 동의 회수)
+     */
+    private void unlinkKakaoAccount(String accessToken) {
+        try {
+            restTemplate.postForEntity(
+                    "https://kapi.kakao.com/v1/user/unlink",
+                    createKakaoRequestEntity(accessToken),
+                    String.class
+            ).getBody();
+
+        } catch (HttpClientErrorException e) {
+            log.error("Kakao 연결 해제 API 호출 실패: 상태 코드 {}, 응답 본문 {}", e.getStatusCode(), e.getResponseBodyAsString());
+            throw new AuthException(CommonErrorCode.BAD_REQUEST);
+        }
+    }
 
     // 카카오 사용자 정보 조회
     private KakaoResponseDTO.KakaoUserInfoDTO getKakaoUserInfo(String kakaoAccessToken) {
@@ -115,7 +151,7 @@ public class KakaoAuthService {
                     KakaoResponseDTO.KakaoUserInfoDTO.class
             ).getBody();
         } catch (HttpClientErrorException e) {
-            log.error("Kakao API 호출 실패: 상태 코드 {}, 응답 본문 {}", e.getStatusCode(), e.getResponseBodyAsString());
+            log.error("Kakao 사용자 정보 조회 API 호출 실패: 상태 코드 {}, 응답 본문 {}", e.getStatusCode(), e.getResponseBodyAsString());
             throw new AuthException(CommonErrorCode.BAD_REQUEST);
         }
     }

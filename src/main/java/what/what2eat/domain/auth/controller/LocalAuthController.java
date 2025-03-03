@@ -42,6 +42,14 @@ public class LocalAuthController {
         return ResponseEntity.ok(ApiResponse.of(login));
     }
 
+    @DeleteMapping("/local")
+    @Operation(summary = "로컬 회원탈퇴", description = "회원탈퇴를 처리합니다. Authorization 헤더에 accessToken을 첨부해서 요청하시면 됩니다. \n 응답 코드에 따른 자세한 결과는 PostMan API 명세서를 참고 부탁드립니다.")
+    public ResponseEntity<ApiResponse<ResponseCode>> withdrawal() {
+        localAuthService.delete();
+
+        return ResponseEntity.ok(ApiResponse.of(ResponseCode.SUCCESS));
+    }
+
     @PostMapping("/check-email")
     @Operation(summary = "이메일 중복 체크", description = "이메일 중복 체크 및 소셜 로그인 유무 확인을 처리합니다. 이메일을 제공해야 합니다. \n 응답코드에 따른 결과값은 포스트맨 API 명세서를 참고 부탁드립니다.")
     public ResponseEntity<ApiResponse<ResponseCode>> checkEmail(@RequestParam String userEmail) {

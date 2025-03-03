@@ -10,6 +10,7 @@ import org.springframework.web.multipart.MultipartFile;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.*;
+import what.what2eat.domain.auth.entity.User;
 import what.what2eat.global.exception.CommonErrorCode;
 import what.what2eat.global.exception.CustomException;
 
@@ -101,6 +102,22 @@ public class S3Service {
 
     }
 
+    /**
+     * 파라미터로 받은 사용자의 다이어리 이미지 찾아서 삭제
+     * @param user
+     */
+    public void deleteUserImgList(User user) {
+        List<String> imgList = user.getDiaries().stream()
+                .flatMap(diary -> diary.getDiaryImageList().stream())
+                .map(diaryImage -> diaryImage.getImageUrl())
+                .collect(Collectors.toList());
+
+        if (!imgList.isEmpty()) {
+            deleteFiles(imgList);
+            log.info("탈퇴한 유저의 이미지 삭제 완료");
+        }
+
+    }
 
     /**
      * 고유한 파일명을 생성
