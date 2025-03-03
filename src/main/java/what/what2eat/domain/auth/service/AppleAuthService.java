@@ -30,6 +30,7 @@ import what.what2eat.domain.auth.entity.User;
 import what.what2eat.domain.auth.exception.AuthErrorCode;
 import what.what2eat.domain.auth.exception.AuthException;
 import what.what2eat.domain.auth.repository.AuthRepository;
+import what.what2eat.global.s3.S3Service;
 import what.what2eat.global.security.domain.CustomUserDetails;
 import what.what2eat.global.security.jwt.JwtProvider;
 
@@ -69,11 +70,7 @@ public class AppleAuthService {
     private final JwtProvider jwtProvider;
     private final AuthConverter authConverter;
     private final RestTemplate restTemplate;
-
-    public void signup(AppleRequestDTO.AppleSignupDTO request) {
-        authRepository.save(authConverter.signupToAppleUserEntity(request));
-    }
-
+    private final S3Service s3Service;
 
     /**
      * 애플 로그인
@@ -98,9 +95,13 @@ public class AppleAuthService {
 
         // 사용자 존재하지 않을경우 회원 가입으로 리다이렉트 처리
         if (userOpt.isEmpty()) {
+            // 회원 가입 처리
+            User savedUser = authRepository.save(authConverter.userEmailToAppleUserEntity(userEmail));
+
             return CommonResponseDTO.LoginResponseDTO.builder()
-                    .email(userEmail)
+                    .email(null)
                     .requiresSignup(true)
+                    .tokens(createTokens(savedUser))
                     .build();
         }
 
@@ -113,7 +114,7 @@ public class AppleAuthService {
                 .build();
     }
 
-    // AccessToken, RefreshToken 생성
+    // 서버 자체 AccessToken, RefreshToken 생성
     private CommonResponseDTO.TokenDTO createTokens(User user) {
 
         CustomUserDetails userDetails = CustomUserDetails.builder()
@@ -151,7 +152,40 @@ public class AppleAuthService {
                     AppleResponseDTO.AppleTokenInfoDTO.class).getBody();
         } catch (HttpClientErrorException e){
             // 에러 발생 시 로그 출력 및 예외 처리
-            log.error("Apple API 호출 실패: 상태 코드 {}, 응답 본문 {}", e.getStatusCode(), e.getResponseBodyAsString());
+            log.error("Apple Request Token API 호출 실패: 상태 코드 {}, 응답 본문 {}", e.getStatusCode(), e.getResponseBodyAsString());
+            throw new AuthException(AuthErrorCode.APPLE_AUTH_FAILED);
+        }
+    }
+
+    /**
+     * 애플 연결 해제 (토큰 회수)
+     */
+    public void revokeAppleToken(String authorizationCode) throws Exception {
+        String clientSecret = createClientSecret();
+
+        // apple refreshToken 발급
+        String refreshToken = requestAppleToken(authorizationCode).getRefreshToken();
+
+        // Apple 토큰
+        try {
+            HttpEntity<MultiValueMap<String, String>> appleRequestEntity = createAppleRequestEntity(authorizationCode, clientSecret);
+
+            // token 헤더 추가
+            appleRequestEntity.getHeaders().add("token", refreshToken);
+
+            // user 삭제
+            deleteUser();
+
+            // revoke 요청
+            restTemplate.postForEntity(
+                    "https://appleid.apple.com/auth/revoke",
+                    appleRequestEntity,
+                    String.class
+            );
+
+
+        } catch (HttpClientErrorException e) {
+            log.error("Apple revoke API 호출 실패: 상태 코드 {}, 응답 본문 {}", e.getStatusCode(), e.getResponseBodyAsString());
             throw new AuthException(AuthErrorCode.APPLE_AUTH_FAILED);
         }
     }
@@ -211,7 +245,7 @@ public class AppleAuthService {
         PrivateKey privateKey;
 
         if (object instanceof PrivateKeyInfo privateKeyInfo) {
-            privateKey = converter.getPrivateKey((privateKeyInfo));
+            privateKey = converter.getPrivateKey(privateKeyInfo);
         } else {
             throw new AuthException(AuthErrorCode.APPLE_UNSUPPORTED_KEY_TYPE);
         }
@@ -257,4 +291,15 @@ public class AppleAuthService {
         return claims.get("email", String.class);
     }
 
+
+    private void deleteUser() {
+        User user = authRepository.findById(jwtProvider.extractUserId()).orElseThrow(
+                () -> new AuthException(AuthErrorCode.USER_NOT_FOUND));
+
+        // s3에 저장된 user의 이미지 삭제
+        s3Service.deleteUserImgList(user);
+
+        // DB 유저 삭제
+        authRepository.delete(user);
+    }
 }

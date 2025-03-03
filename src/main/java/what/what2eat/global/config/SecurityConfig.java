@@ -83,7 +83,10 @@ public class SecurityConfig {
                 antMatcher("/api/v1/diary/**"),
                 antMatcher("/api/v1/auth/me/**"),
                 antMatcher(HttpMethod.PUT ,"/api/v1/auth"),
-                antMatcher(HttpMethod.DELETE, "/api/v1/auth")
+                antMatcher(HttpMethod.DELETE, "/api/v1/auth"),
+                antMatcher("/api/v1/auth/kakao"),
+                antMatcher("/api/v1/auth/apple"),
+                antMatcher("/api/v1/auth/local")
 
         );
 

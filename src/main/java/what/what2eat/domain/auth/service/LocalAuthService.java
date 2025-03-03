@@ -21,10 +21,13 @@ import what.what2eat.domain.auth.exception.AuthErrorCode;
 import what.what2eat.domain.auth.exception.AuthException;
 import what.what2eat.domain.auth.repository.AuthRepository;
 import what.what2eat.domain.auth.repository.EmailRepository;
+import what.what2eat.global.s3.S3Service;
 import what.what2eat.global.security.domain.CustomUserDetails;
 import what.what2eat.global.security.jwt.JwtProvider;
 
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -38,6 +41,7 @@ public class LocalAuthService {
     private final JwtProvider jwtProvider;
     private final EmailRepository emailRepository;
     private final EmailService emailService;
+    private final S3Service s3Service;
 
     /**
      * 로컬 회원 가입
@@ -112,6 +116,21 @@ public class LocalAuthService {
             log.error("인증 실패 : " + e);
             throw new Exception(e);
         }
+    }
+
+    /**
+     * 회원 탈퇴
+     */
+    public void delete() {
+
+        User user = authRepository.findByUserId(jwtProvider.extractUserId())
+                .orElseThrow(() -> new AuthException(AuthErrorCode.USER_NOT_FOUND));
+
+        // 탈퇴 회원이 저장한 사진 전체 삭제
+        s3Service.deleteUserImgList(user);
+
+        // 회원 탈퇴 처리
+        authRepository.delete(user);
     }
 
     /**
