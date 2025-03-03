@@ -93,26 +93,38 @@ jobs:
         run: |
           ssh -i private_key.pem -o StrictHostKeyChecking=no $EC2_USER@$EC2_HOST <<EOF
             echo "🔄 기존 실행 중인 애플리케이션 종료 중..."
-            PID=\$(pgrep -f 'java -jar /home/$EC2_USER/what2eat-0.0.1-SNAPSHOT.jar')
+            
+            # 실행 중인 Java 프로세스 찾기
+            PID=\$(sudo pgrep -fa "java -jar" | awk '{print \$1}')
             if [ -n "\$PID" ]; then
-              echo "✅ 기존 프로세스 종료: \$PID"
-              kill -9 \$PID
+            echo "✅ 기존 프로세스 종료: \$PID"
+            sudo kill -9 \$PID
             else
-              echo "⚠️ 실행 중인 프로세스 없음, 계속 진행..."
+            echo "⚠️ 실행 중인 프로세스 없음, 계속 진행..."
             fi
           
             echo "📂 로그 디렉토리 생성 (없으면 생성)"
             mkdir -p /home/$EC2_USER/log
-
+          
             echo "🆕 최신 JAR 파일 찾기..."
             LATEST_JAR=\$(ls -t /home/$EC2_USER/*.jar | head -n 1)
-
+          
+            # 새로운 애플리케이션 실행 전에 기존 프로세스가 완전히 종료되었는지 확인
+            sleep 3
+            STILL_RUNNING_PID=\$(sudo pgrep -fa "java -jar" | awk '{print \$1}')
+            if [ -n "\$STILL_RUNNING_PID" ]; then
+            echo "❌ 기존 프로세스가 종료되지 않음! 강제 종료."
+            sudo kill -9 \$STILL_RUNNING_PID
+            sleep 2
+            fi
+          
             echo "🚀 새 애플리케이션 실행: \$LATEST_JAR"
             sudo -E nohup java -jar "\$LATEST_JAR" > /home/$EC2_USER/log/app.log 2>&1 &
-
+          
             echo "✅ 배포 완료!"
           EOF
-  dependency-submission:
+
+dependency-submission:
 
     runs-on: ubuntu-latest
     permissions:
@@ -130,3 +142,4 @@ jobs:
       # See: https://github.com/gradle/actions/blob/main/dependency-submission/README.md
       - name: Generate and submit dependency graph
         uses: gradle/actions/dependency-submission@af1da67850ed9a4cedd57bfd976089dd991e2582 # v4.0.0
+
