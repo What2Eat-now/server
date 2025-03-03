@@ -44,7 +44,9 @@ public class CommonAuthService {
         return null;
     }
 
-    // 로그 아웃
+    /**
+     * 사용자 로그 아웃
+     */
     public void logout(HttpServletRequest request) {
         String token = resolveToken(request);
 
@@ -57,7 +59,9 @@ public class CommonAuthService {
         jwtProvider.addTokenToBlackList(token);
     }
 
-    // 토큰 검증
+    /**
+     * 토큰 검증
+     */
     public void validateToken(HttpServletRequest request) {
         String token = resolveToken(request);
 
@@ -66,28 +70,10 @@ public class CommonAuthService {
         }
     }
 
-    // 회원 탈퇴
-    public void delete() {
 
-        User user = authRepository.findByUserId(jwtProvider.extractUserId())
-                .orElseThrow(() -> new AuthException(AuthErrorCode.USER_NOT_FOUND));
-
-        // 탈퇴 회원이 저장한 사진 URL 리스트 조회
-        List<String> imgUrlList = user.getDiaries().stream()
-                .flatMap(diary -> diary.getDiaryImageList().stream())
-                .map(diaryImage -> diaryImage.getImageUrl())
-                .collect(Collectors.toList());
-
-        // 탈퇴 회원이 저장한 사진 전체 삭제
-        s3Service.deleteFiles(imgUrlList);
-
-        // 회원 탈퇴 처리
-        authRepository.delete(user);
-
-
-    }
-
-    // 사용자 정보 조회
+    /**
+     * 사용자 정보 조회
+     */
     public CommonResponseDTO.GetUserInfoDTO getUserInfo(HttpServletRequest request) {
 
         // 토큰 검증
@@ -106,6 +92,9 @@ public class CommonAuthService {
                 .build();
     }
 
+    /**
+     * 사용자 이메일 수정
+     */
     public LocalResponseDTO.LocalLoginResponseDTO updateUserEmail(CommonRequestDTO.UpdateEmailDTO request) {
 
         User user = authRepository.findByUserId(jwtProvider.extractUserId())
@@ -131,6 +120,9 @@ public class CommonAuthService {
 
     }
 
+    /**
+     * 사용자 닉네임 수정
+     */
     public void updateUserNickName(CommonRequestDTO.UpdateNickNameDTO request) {
 
         User user = authRepository.findByUserId(jwtProvider.extractUserId())
@@ -140,10 +132,11 @@ public class CommonAuthService {
         if (!user.getNickName().equals(request.getNickName())) {
             user.updateNickName(request.getNickName());
         }
-
-
     }
 
+    /**
+     * 사용자 비밀번호 수정
+     */
     public void updateUserPassword(CommonRequestDTO.UpdatePasswordDTO request) {
 
         User user = authRepository.findByUserId(jwtProvider.extractUserId())
@@ -173,6 +166,9 @@ public class CommonAuthService {
         }
     }
 
+    /**
+     * refresh Token으로 Access Token 재발급
+     */
     public LocalResponseDTO.LocalLoginResponseDTO refreshToken(CommonRequestDTO.TokenRefreshDTO request) {
         // refresh token 검증
         jwtProvider.validateToken(request.getRefreshToken());

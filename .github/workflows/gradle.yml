@@ -8,8 +8,8 @@
 name: Java CI with Gradle
 
 on:
-#  push:
-#    branches: [ "develop" ]
+  push:
+    branches: [ "feature/ci-cd" ]
   pull_request:
     branches: [ "develop" ]
 
@@ -93,17 +93,24 @@ jobs:
           ssh -i private_key.pem -o StrictHostKeyChecking=no $EC2_USER@$EC2_HOST <<EOF
           PID=\$(pgrep -f 'java -jar /home/$EC2_USER/what2eat-0.0.1-SNAPSHOT.jar')
           if [ -n "\$PID" ]; then
-          echo "Found PID: \$PID, killing process..."
-          kill \$PID
+          echo "✅ 기존 프로세스 종료: \$PID"
+          kill -9 \$PID
           else
-          echo "No matching process found. Skipping kill command."
+          echo "⚠️ 실행 중인 프로세스 없음, 계속 진행..."
           fi
           
           source .bashrc  
-          g
+          
+          echo "📂 로그 디렉토리 생성 (없으면 생성)"
           mkdir -p /home/$EC2_USER/log
           
-          sudo -E nohup java -jar /home/$EC2_USER/\$(ls -t /home/$EC2_USER | head -n 1) > /home/$EC2_USER/log/app.log 2>&1 &
+          echo "🆕 최신 JAR 파일 찾기..."
+          LATEST_JAR=\$(ls -t /home/$EC2_USER/*.jar | head -n 1)
+          
+          echo "🚀 새 애플리케이션 실행: \$LATEST_JAR"
+          sudo -E nohup java -jar "\$LATEST_JAR" > /home/$EC2_USER/log/app.log 2>&1 &
+          
+          echo "✅ 배포 완료!"
           EOF
   dependency-submission:
 

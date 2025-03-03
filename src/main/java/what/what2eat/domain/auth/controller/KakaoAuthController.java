@@ -9,6 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import what.what2eat.domain.auth.controller.dto.request.KakaoRequestDTO;
+import what.what2eat.domain.auth.controller.dto.response.CommonResponseDTO;
 import what.what2eat.domain.auth.controller.dto.response.KakaoResponseDTO;
 import what.what2eat.domain.auth.service.KakaoAuthService;
 import what.what2eat.global.response.ApiResponse;
@@ -25,14 +26,15 @@ public class KakaoAuthController {
     // 카카오 로그인 후 토큰과 사용자 정보 반환받음
     @PostMapping("/login/kakao")
     @Operation(summary = "카카오 소셜 로그인", description = "카카오 소셜 로그인을 처리합니다. kakaoAccessToken을 제공해야 합니다.")
-    public ResponseEntity<ApiResponse<Object>> login(@RequestParam String kakaoAccessToken) {
-        KakaoResponseDTO.KakaoLoginResponseDTO loginResult = kakaoAuthService.login(kakaoAccessToken);
+    public ResponseEntity<ApiResponse<CommonResponseDTO.LoginResponseDTO>> login(@RequestParam String kakaoAccessToken) {
+        CommonResponseDTO.LoginResponseDTO loginResult = kakaoAuthService.login(kakaoAccessToken);
 
         if (loginResult.isRequiresSignup()) {
-            return ResponseEntity.ok(ApiResponse.of(ResponseCode.NEED_SIGNUP,loginResult.getKakaoEmail()));
+            return ResponseEntity.status(HttpStatus.TEMPORARY_REDIRECT)
+                    .body(ApiResponse.of(ResponseCode.NEED_SIGNUP,loginResult));
         }
 
-        return ResponseEntity.ok(ApiResponse.of(loginResult.getTokens()));
+        return ResponseEntity.ok(ApiResponse.of(loginResult));
     }
 
     @PostMapping("/signup/kakao")
@@ -41,6 +43,14 @@ public class KakaoAuthController {
         kakaoAuthService.signup(request);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.of(ResponseCode.CREATED));
+    }
+
+    @DeleteMapping("/kakao")
+    @Operation(summary = "카카오 회원 탈퇴", description = "카카오 소셜 회원 탈퇴(연결 해제)를 처리합니다. kakaoAccessToken을 제공해야 합니다.")
+    public ResponseEntity<ApiResponse<ResponseCode>> delete(@RequestParam String accessToken) {
+        kakaoAuthService.delete(accessToken);
+
+        return ResponseEntity.ok(ApiResponse.of(ResponseCode.SUCCESS));
     }
 
 }
