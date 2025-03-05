@@ -26,6 +26,10 @@ public class LocalRequestDTO {
         @Size(max = 20, message = "닉네임은 최대 20자까지 가능합니다.")
         private String nickName;
 
+        @NotBlank(message = "핸드폰 번호는 필수 입력 항목입니다.")
+        @Size(max = 25, message = "핸드폰 번호는 최대 25자까지 가능합니다.")
+        private String phoneNumber;
+
         private String userImgUrl;
 
     }

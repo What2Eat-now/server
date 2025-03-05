@@ -59,12 +59,13 @@ public class LocalAuthService {
 
         // 유저 정보 저장
         authRepository.save(User.builder()
-            .userEmail(request.getUserEmail())
-            .password(passwordEncoder.encode(request.getPassword()))
-            .nickName(request.getNickName())
-            .role(Role.USER)
-            .provider(Provider.LOCAL)
-            .build());
+                .userEmail(request.getUserEmail())
+                .password(passwordEncoder.encode(request.getPassword()))
+                .phoneNumber(request.getPhoneNumber())
+                .nickName(request.getNickName())
+                .role(Role.USER)
+                .provider(Provider.LOCAL)
+                .build());
 
         // 인증 객체 삭제
         emailRepository.delete(byUserEmail);

@@ -31,8 +31,8 @@ public class User extends BaseEntity {
     @Column(name = "nick_name", nullable = false, length = 20)
     private String nickName;
 
-    @Column(name = "user_img", length = 100)
-    private String userImg;
+    @Column(name = "phone_number", nullable = false, length = 25)
+    private String phoneNumber;
 
     @Column(name = "password", length = 100)
     private String password;
@@ -40,6 +40,7 @@ public class User extends BaseEntity {
     @Column(name = "provider", nullable = false)
     @Enumerated(EnumType.STRING)
     private Provider provider;
+
 
     @Column(name = "role")
     @Enumerated(EnumType.STRING)
