@@ -9,7 +9,7 @@ name: Java CI with Gradle
 
 on:
 #  push:
-#    branches: [ "develop" ]
+#    branches: [ "feature/ci-cd" ]
   pull_request:
     branches: [ "develop" ]
 
@@ -57,6 +57,7 @@ jobs:
     # - name: Build with Gradle 8.9
     #   run: gradle build
 
+# 한글 인코딩 테스트
   deploy:
     needs: build
     runs-on: ubuntu-latest
@@ -91,35 +92,54 @@ jobs:
       - name: Deploy on EC2
         run: |
           ssh -i private_key.pem -o StrictHostKeyChecking=no $EC2_USER@$EC2_HOST <<EOF
-          PID=\$(pgrep -f 'java -jar /home/$EC2_USER/what2eat-0.0.1-SNAPSHOT.jar')
-          if [ -n "\$PID" ]; then
-          echo "Found PID: \$PID, killing process..."
-          kill \$PID
-          else
-          echo "No matching process found. Skipping kill command."
-          fi
+            echo "🔄 기존 실행 중인 애플리케이션 종료 중..."
+            
+            # 실행 중인 Java 프로세스 찾기
+            PID=\$(sudo pgrep -fa "java -jar" | awk '{print \$1}')
+            if [ -n "\$PID" ]; then
+            echo "✅ 기존 프로세스 종료: \$PID"
+            sudo kill -9 \$PID
+            else
+            echo "⚠️ 실행 중인 프로세스 없음, 계속 진행..."
+            fi
           
-          source .bashrc  
-
-          mkdir -p /home/$EC2_USER/log
+            echo "📂 로그 디렉토리 생성 (없으면 생성)"
+            mkdir -p /home/$EC2_USER/log
           
-          sudo -E nohup java -jar /home/$EC2_USER/\$(ls -t /home/$EC2_USER | head -n 1) > /home/$EC2_USER/log/app.log 2>&1 &
+            echo "🆕 최신 JAR 파일 찾기..."
+            LATEST_JAR=\$(ls -t /home/$EC2_USER/*.jar | head -n 1)
+          
+            # 새로운 애플리케이션 실행 전에 기존 프로세스가 완전히 종료되었는지 확인
+            sleep 3
+            STILL_RUNNING_PID=\$(sudo pgrep -fa "java -jar" | awk '{print \$1}')
+            if [ -n "\$STILL_RUNNING_PID" ]; then
+            echo "❌ 기존 프로세스가 종료되지 않음! 강제 종료."
+            sudo kill -9 \$STILL_RUNNING_PID
+            sleep 2
+            fi
+          
+            echo "🚀 새 애플리케이션 실행: \$LATEST_JAR"
+            sudo -E nohup java -jar "\$LATEST_JAR" > /home/$EC2_USER/log/app.log 2>&1 &
+          
+            echo "✅ 배포 완료!"
           EOF
+
   dependency-submission:
 
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
+      runs-on: ubuntu-latest
+      permissions:
+        contents: write
 
-    steps:
-      - uses: actions/checkout@v4
-      - name: Set up JDK 21
-        uses: actions/setup-java@v4
-        with:
-          java-version: '21'
-          distribution: 'temurin'
+      steps:
+        - uses: actions/checkout@v4
+        - name: Set up JDK 21
+          uses: actions/setup-java@v4
+          with:
+            java-version: '21'
+            distribution: 'temurin'
 
-      # Generates and submits a dependency graph, enabling Dependabot Alerts for all project dependencies.
-      # See: https://github.com/gradle/actions/blob/main/dependency-submission/README.md
-      - name: Generate and submit dependency graph
-        uses: gradle/actions/dependency-submission@af1da67850ed9a4cedd57bfd976089dd991e2582 # v4.0.0
+        # Generates and submits a dependency graph, enabling Dependabot Alerts for all project dependencies.
+        # See: https://github.com/gradle/actions/blob/main/dependency-submission/README.md
+        - name: Generate and submit dependency graph
+          uses: gradle/actions/dependency-submission@af1da67850ed9a4cedd57bfd976089dd991e2582 # v4.0.0
+
