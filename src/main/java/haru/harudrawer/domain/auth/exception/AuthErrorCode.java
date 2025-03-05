@@ -19,6 +19,7 @@ public enum AuthErrorCode implements BaseErrorCode {
     DUPLICATE_USER_EMAIL("409", HttpStatus.CONFLICT, "이미 존재하는 이메일입니다."),
     DUPLICATE_USER_NICKNAME("409", HttpStatus.CONFLICT, "이미 존재하는 닉네임입니다."),
     INVALID_PASSWORD("422", HttpStatus.UNPROCESSABLE_ENTITY, "비밀번호 형식이 잘못되었습니다."),
+    PASSWORD_MISMATCH("422", HttpStatus.UNPROCESSABLE_ENTITY, "새로운 비밀번호와 확인 비밀번호가 일치하지 않습니다."),
     ALREADY_EXIST_SOCIAL_EMAIL("409", HttpStatus.CONFLICT, "소셜 계정으로 가입된 이메일입니다."),
     DUPLICATE_PASSWORD("409", HttpStatus.CONFLICT, "변경 전 비밀번호와 동일합니다."),
     INVALID_CERTIFICATION_CODE("400", HttpStatus.BAD_REQUEST, "인증 코드가 유효하지 않습니다."),

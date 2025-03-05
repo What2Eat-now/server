@@ -8,6 +8,8 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
+import java.security.SecureRandom;
+
 @Service
 @RequiredArgsConstructor
 public class EmailService {
@@ -28,7 +30,7 @@ public class EmailService {
 
         // HTML 템플릿에서 인증 코드를 치환
         String htmlContent = loadHtmlTemplate();
-        String token = String.valueOf(createNumber());
+        String token = String.valueOf(generateVerificationCode());
 
         helper.setText(htmlContent.replace("${verificationCode}", token), true);
 
@@ -37,8 +39,11 @@ public class EmailService {
         return token;
     }
 
-    public int createNumber() {
-        return (int) ((Math.random() * (90000)) + 100000);
+
+    // 인증 코드 생성
+    private int generateVerificationCode() {
+        SecureRandom secureRandom = new SecureRandom();
+        return 100000 + secureRandom.nextInt(900000);
     }
 
     private String loadHtmlTemplate() {
