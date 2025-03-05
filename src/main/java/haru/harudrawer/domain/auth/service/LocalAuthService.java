@@ -23,7 +23,9 @@ import haru.harudrawer.global.s3.S3Service;
 import haru.harudrawer.global.security.domain.CustomUserDetails;
 import haru.harudrawer.global.security.jwt.JwtProvider;
 
+import java.security.SecureRandom;
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -89,6 +91,11 @@ public class LocalAuthService {
             // 인증 객체에서 사용자 정보 추출(Provider 추출 위해 작성)
             CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
 
+            // 로컬로 가입한 유저가 아닐경우 에러 처리
+            if (!userDetails.getProvider().equals(Provider.LOCAL)) {
+                throw new AuthException(AuthErrorCode.ALREADY_EXIST_SOCIAL_EMAIL);
+            }
+
             String accessToken = jwtProvider.createAccessToken(userDetails);
 
             String refreshToken = jwtProvider.createRefreshToken(request.getUserEmail());
@@ -130,10 +137,14 @@ public class LocalAuthService {
         authRepository.delete(user);
     }
 
+
+
+
     /**
      * 인증번호 이메일 전송
      */
     public void sendEmail(String userEmail) throws MessagingException {
+
         // 이메일 전송 후 인증번호 반환
         String code = emailService.sendVerificationEmail(userEmail);
 
@@ -175,17 +186,23 @@ public class LocalAuthService {
         return password.matches("^(?=.*[A-Z])(?=.*[@$!%*?&]).{8,16}$");
     }
 
-    // 로그인시
-    public void validateMember(String userEmail) {
+    // 회원 가입시 이메일 중복 검사
+    public void validateEmailForSignup(String userEmail) {
+        if (authRepository.existsByUserEmail(userEmail)) {
+            throw new AuthException(AuthErrorCode.DUPLICATE_USER_EMAIL);
+        }
+    }
 
-        // 사용자 조회
+    // 비밀번호 찾기 시 이메일 유효성 검사
+    public void validateEmailForRecovery(String userEmail) {
         User user = authRepository.findByUserEmail(userEmail).orElseThrow(
                 () -> new AuthException(AuthErrorCode.USER_NOT_FOUND));
 
-        // 카카오 or 애플 로그인으로 이미 가입된 경우
-        if (user.getProvider().equals(Provider.KAKAO) || user.getProvider().equals(Provider.APPLE)) {
+        // 소셜 로그인으로 진행된 이메일인 경우
+        if (user.getProvider().equals(Provider.APPLE) || user.getProvider().equals(Provider.KAKAO)) {
             throw new AuthException(AuthErrorCode.ALREADY_EXIST_SOCIAL_EMAIL);
         }
-
     }
+
+
 }

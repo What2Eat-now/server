@@ -49,10 +49,18 @@ public class LocalAuthController {
         return ResponseEntity.ok(ApiResponse.of(ResponseCode.SUCCESS));
     }
 
-    @PostMapping("/check-email")
-    @Operation(summary = "이메일 중복 체크", description = "이메일 중복 체크 및 소셜 로그인 유무 확인을 처리합니다. 이메일을 제공해야 합니다. \n 응답코드에 따른 결과값은 포스트맨 API 명세서를 참고 부탁드립니다.")
-    public ResponseEntity<ApiResponse<ResponseCode>> checkEmail(@RequestParam String userEmail) {
-        localAuthService.validateMember(userEmail);
+    @PostMapping("/check-email/signup")
+    @Operation(summary = "이메일 중복 체크(회원가입)", description = "이메일 중복 체크 및 소셜 로그인 유무 확인을 처리합니다. 이메일을 제공해야 합니다. \n 응답코드에 따른 결과값은 포스트맨 API 명세서를 참고 부탁드립니다.")
+    public ResponseEntity<ApiResponse<ResponseCode>> checkEmailForSignup(@RequestParam String userEmail) {
+        localAuthService.validateEmailForSignup(userEmail);
+
+        return ResponseEntity.ok(ApiResponse.of(ResponseCode.SUCCESS));
+    }
+
+    @PostMapping("/check-email/recovery")
+    @Operation(summary = "이메일 중복 체크(비밀번호 찾기)", description = "이메일 중복 체크 및 소셜 로그인 유무 확인을 처리합니다. 이메일을 제공해야 합니다. \n 응답코드에 따른 결과값은 포스트맨 API 명세서를 참고 부탁드립니다.")
+    public ResponseEntity<ApiResponse<ResponseCode>> checkEmailForRecovery(@RequestParam String userEmail) {
+        localAuthService.validateEmailForRecovery(userEmail);
 
         return ResponseEntity.ok(ApiResponse.of(ResponseCode.SUCCESS));
     }
@@ -71,7 +79,12 @@ public class LocalAuthController {
         localAuthService.verifyCode(request);
 
         return ResponseEntity.ok(ApiResponse.of(ResponseCode.SUCCESS));
-
     }
 
+    @PostMapping("/local/find-email")
+    public ResponseEntity<ApiResponse<String>> findEmail(@RequestParam String phoneNumber) {
+        String userEmail = localAuthService.findUserEmail(phoneNumber);
+
+        return ResponseEntity.ok(ApiResponse.of(userEmail));
+    }
 }
