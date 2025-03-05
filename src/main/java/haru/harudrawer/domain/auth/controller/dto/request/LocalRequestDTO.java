@@ -48,11 +48,15 @@ public class LocalRequestDTO {
 
     @Getter
     @Builder
-    public static class CheckEmailRequestDTO{
-        @NotBlank(message = "이메일은 필수 입력 항목입니다.")
-        @Email(message = "이메일 형식이 올바르지 않습니다.")
+    public static class ResetPasswordDTO{
+        @NotBlank(message = "사용자 이메일은 필수 입력 항목입니다.")
         private String userEmail;
 
+        @NotBlank(message = "변경 비밀번호는 필수 입력 항목입니다.")
+        private String newPassword;
+
+        @NotBlank(message = "변경 확인 비밀번호는 필수 입력 항목입니다.")
+        private String newPasswordCheck;
     }
 
     @Getter

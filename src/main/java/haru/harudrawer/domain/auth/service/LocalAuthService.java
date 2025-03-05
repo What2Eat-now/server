@@ -45,14 +45,8 @@ public class LocalAuthService {
      * 로컬 회원 가입
      */
     public void signUp(LocalRequestDTO.SignUpRequestDTO request){
-        // 인증번호 엔티티에서 이메일과 인증 상태로 조회
-        EmailVerificationCode byUserEmail = emailRepository.findByUserEmailAndEmailStatus(request.getUserEmail(), true)
-                .orElseThrow(() -> new AuthException(AuthErrorCode.NEED_VERIFICATION));
 
-        // 인증 상태가 false인 경우
-        if (!byUserEmail.isEmailStatus()) {
-            throw new AuthException(AuthErrorCode.NEED_VERIFICATION);
-        }
+        checkEmailVerification(request.getUserEmail());
 
         // 비밀번호 형식 확인
         if (!isValidPassword(request.getPassword())) {
@@ -68,9 +62,6 @@ public class LocalAuthService {
                 .role(Role.USER)
                 .provider(Provider.LOCAL)
                 .build());
-
-        // 인증 객체 삭제
-        emailRepository.delete(byUserEmail);
 
     }
 
@@ -137,7 +128,60 @@ public class LocalAuthService {
         authRepository.delete(user);
     }
 
+    /**
+     * 아이디 찾기
+     */
+    public String findUserEmail(String phoneNumber) {
+        User user = authRepository.findByPhoneNumber(phoneNumber).orElseThrow(
+                () -> new AuthException(AuthErrorCode.USER_NOT_FOUND)
+        );
 
+        return user.getUserEmail();
+    }
+
+    /**
+     * 비밀번호 찾기
+     */
+    public void resetPassword(LocalRequestDTO.ResetPasswordDTO request) {
+
+        // 이메일 인증 상태 검사
+        checkEmailVerification(request.getUserEmail());
+
+        // 변경 비밀번호와 변경 확인 비밀번호가 다를 경우
+        if (!request.getNewPassword().equals(request.getNewPasswordCheck())) {
+            throw new AuthException(AuthErrorCode.PASSWORD_MISMATCH);
+        }
+
+        // 비밀번호 형식이 맞지 않는 경우
+        if (!isValidPassword(request.getNewPassword())) {
+            throw new AuthException(AuthErrorCode.INVALID_PASSWORD);
+        }
+
+        User user = authRepository.findByUserEmail(request.getUserEmail()).orElseThrow(
+                () -> new AuthException(AuthErrorCode.USER_NOT_FOUND)
+        );
+
+        // 비밀번호 변경
+        user.updatePassword(passwordEncoder.encode(request.getNewPassword()));
+
+    }
+
+    /**
+      * 이메일 인증 상태 조회 및 삭제
+      */
+    private void checkEmailVerification(String userEmail) {
+        // 인증번호 엔티티에서 이메일과 인증 상태로 조회
+        EmailVerificationCode byUserEmail = emailRepository.findByUserEmailAndEmailStatus(userEmail, true)
+                .orElseThrow(() -> new AuthException(AuthErrorCode.NEED_VERIFICATION));
+
+        // 인증 상태가 false인 경우
+        if (!byUserEmail.isEmailStatus()) {
+            throw new AuthException(AuthErrorCode.NEED_VERIFICATION);
+        }
+
+        // 인증된 객체 삭제
+        emailRepository.delete(byUserEmail);
+    }
 
 
     /**

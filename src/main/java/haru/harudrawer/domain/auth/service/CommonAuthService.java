@@ -146,7 +146,7 @@ public class CommonAuthService {
 
             // 변경 비밀번호, 변경 비밀번호 확인 서로 다를경우
             if (!request.getNewPassword().equals(request.getNewPasswordCheck())) {
-                throw new AuthException(AuthErrorCode.INVALID_PASSWORD); // 예외처리 필요
+                throw new AuthException(AuthErrorCode.PASSWORD_MISMATCH);
             }
 
             // 비밀번호 서식 틀렸을 경우 예외처리

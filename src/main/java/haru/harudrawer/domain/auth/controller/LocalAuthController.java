@@ -1,5 +1,10 @@
 package haru.harudrawer.domain.auth.controller;
 
+import haru.harudrawer.domain.auth.controller.dto.request.LocalRequestDTO;
+import haru.harudrawer.domain.auth.controller.dto.response.CommonResponseDTO;
+import haru.harudrawer.domain.auth.service.LocalAuthService;
+import haru.harudrawer.global.response.ApiResponse;
+import haru.harudrawer.global.response.ResponseCode;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.mail.MessagingException;
@@ -9,11 +14,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import haru.harudrawer.domain.auth.controller.dto.request.LocalRequestDTO;
-import haru.harudrawer.domain.auth.controller.dto.response.CommonResponseDTO;
-import haru.harudrawer.domain.auth.service.LocalAuthService;
-import haru.harudrawer.global.response.ApiResponse;
-import haru.harudrawer.global.response.ResponseCode;
+
+import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
@@ -82,9 +84,19 @@ public class LocalAuthController {
     }
 
     @PostMapping("/local/find-email")
-    public ResponseEntity<ApiResponse<String>> findEmail(@RequestParam String phoneNumber) {
+    @Operation(summary = "아이디(이메일) 찾기", description = "전화번호를 통해 잃어버린 이메일을 조회합니다. \n 응답코드에 따른 결과값은 포스트맨 API 명세서를 참고 부탁드립니다.")
+    public ResponseEntity<ApiResponse<Map<String, String>>> findEmail(@RequestParam String phoneNumber) {
         String userEmail = localAuthService.findUserEmail(phoneNumber);
 
-        return ResponseEntity.ok(ApiResponse.of(userEmail));
+        return ResponseEntity.ok(ApiResponse.of(Map.of("userEmail", userEmail)));
     }
+
+    @PostMapping("/local/reset-password")
+    @Operation(summary = "인증번호 검증", description = "이메일을 통해 잃어버린 비밀번호를 변경합니다. \n 응답코드에 따른 결과값은 포스트맨 API 명세서를 참고 부탁드립니다.")
+    public ResponseEntity<ApiResponse<ResponseCode>> resetPassword(@RequestBody LocalRequestDTO.ResetPasswordDTO request) {
+        localAuthService.resetPassword(request);
+
+        return ResponseEntity.ok(ApiResponse.of(ResponseCode.SUCCESS));
+    }
+
 }
