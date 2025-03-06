@@ -4,6 +4,7 @@ import com.nimbusds.jose.jwk.JWK;
 import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jwt.SignedJWT;
+import haru.harudrawer.global.redis.RedisService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -70,6 +71,7 @@ public class AppleAuthService {
     private final AuthConverter authConverter;
     private final RestTemplate restTemplate;
     private final S3Service s3Service;
+    private final RedisService redisService;
 
     /**
      * 애플 로그인
@@ -128,6 +130,8 @@ public class AppleAuthService {
         String accessToken = jwtProvider.createAccessToken(userDetails);
 
         String refreshToken = jwtProvider.createRefreshToken(user.getUserEmail());
+
+        redisService.saveRefreshToken(user.getUserEmail(), refreshToken);
 
         return CommonResponseDTO.TokenDTO.builder()
                 .accessToken(accessToken)
