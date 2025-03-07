@@ -139,7 +139,23 @@ public class LocalAuthService {
                 () -> new AuthException(AuthErrorCode.USER_NOT_FOUND)
         );
 
-        return user.getUserEmail();
+        return maskEmail(user);
+    }
+
+    /**
+     * 이메일 마스킹
+     */
+    public String maskEmail(User user) {
+        String localPart = user.getUserEmail().split("@")[0];
+        String domainPart = user.getUserEmail().split("@")[1];
+
+        // 이메일의 절반만 마스킹
+        int visibleChars = Math.min(localPart.length() / 2, localPart.length());
+
+        String maskedLocalPart = localPart.substring(0, visibleChars) +
+                "*".repeat(Math.max(0, localPart.length() - visibleChars));
+
+        return maskedLocalPart + "@" + domainPart;
     }
 
     /**
