@@ -34,8 +34,12 @@ import haru.harudrawer.global.s3.S3Service;
 import haru.harudrawer.global.security.domain.CustomUserDetails;
 import haru.harudrawer.global.security.jwt.JwtProvider;
 
+import java.io.IOException;
 import java.io.StringReader;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.Security;
@@ -57,18 +61,17 @@ public class AppleAuthService {
     @Value("${apple.client-id}")
     private String clientId;
 
-    @Value("${apple.private-key-id}")
-    private String privateKeyId;
-
     @Value("${apple.public-key-url}")
     private String publicKeyUrl;
 
     @Value("${apple.team-id}")
     private String teamId;
 
+    @Value("${private-key-url}")
+    private String privateKeyFileUrl;
+
     private final AuthRepository authRepository;
     private final JwtProvider jwtProvider;
-    private final AuthConverter authConverter;
     private final RestTemplate restTemplate;
     private final S3Service s3Service;
     private final RedisService redisService;
@@ -238,9 +241,7 @@ public class AppleAuthService {
             Security.addProvider(new BouncyCastleProvider());
         }
 
-        // PEM 파싱 가능하도록 \n 문자 추가
-        privateKeyId = privateKeyId.replace("-----BEGIN PRIVATE KEY-----", "-----BEGIN PRIVATE KEY-----\n")
-                .replace("-----END PRIVATE KEY-----", "\n-----END PRIVATE KEY-----");
+        String privateKeyId = readFile();
 
         // PEMParser를 사용해 PEM 문자열을 파싱합니다.
         PEMParser pemParser = new PEMParser(new StringReader(privateKeyId));
@@ -308,5 +309,18 @@ public class AppleAuthService {
 
         // DB 유저 삭제
         authRepository.delete(user);
+    }
+
+    public String readFile() throws IOException {
+        List<String> lines = Files.readAllLines(Paths.get(privateKeyFileUrl), StandardCharsets.UTF_8);
+
+        StringBuilder sb = new StringBuilder();
+
+        for (String line : lines) {
+            sb.append(line);
+            sb.append("\n");
+        }
+
+        return String.valueOf(sb);
     }
 }
