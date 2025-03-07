@@ -58,8 +58,7 @@ public class CommonAuthService {
 
         redisService.deleteRefreshToken(jwtProvider.getUserEmail(token));
 
-        // 토큰 블랙리스트에 추가
-        jwtProvider.addTokenToBlackList(token);
+
     }
 
     /**
