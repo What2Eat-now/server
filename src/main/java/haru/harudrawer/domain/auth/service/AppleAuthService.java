@@ -4,7 +4,17 @@ import com.nimbusds.jose.jwk.JWK;
 import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jwt.SignedJWT;
+import haru.harudrawer.domain.auth.controller.dto.response.AppleResponseDTO;
+import haru.harudrawer.domain.auth.controller.dto.response.CommonResponseDTO;
+import haru.harudrawer.domain.auth.entity.Provider;
+import haru.harudrawer.domain.auth.entity.User;
+import haru.harudrawer.domain.auth.exception.AuthErrorCode;
+import haru.harudrawer.domain.auth.exception.AuthException;
+import haru.harudrawer.domain.auth.repository.AuthRepository;
 import haru.harudrawer.global.redis.RedisService;
+import haru.harudrawer.global.s3.S3Service;
+import haru.harudrawer.global.security.domain.CustomUserDetails;
+import haru.harudrawer.global.security.jwt.JwtProvider;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -15,24 +25,15 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.openssl.PEMParser;
 import org.bouncycastle.openssl.jcajce.JcaPEMKeyConverter;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.*;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
-import haru.harudrawer.domain.auth.controller.dto.response.AppleResponseDTO;
-import haru.harudrawer.domain.auth.controller.dto.response.CommonResponseDTO;
-import haru.harudrawer.domain.auth.converter.AuthConverter;
-import haru.harudrawer.domain.auth.entity.Provider;
-import haru.harudrawer.domain.auth.entity.User;
-import haru.harudrawer.domain.auth.exception.AuthErrorCode;
-import haru.harudrawer.domain.auth.exception.AuthException;
-import haru.harudrawer.domain.auth.repository.AuthRepository;
-import haru.harudrawer.global.s3.S3Service;
-import haru.harudrawer.global.security.domain.CustomUserDetails;
-import haru.harudrawer.global.security.jwt.JwtProvider;
 
 import java.io.IOException;
 import java.io.StringReader;
@@ -67,7 +68,7 @@ public class AppleAuthService {
     @Value("${apple.team-id}")
     private String teamId;
 
-    @Value("${private-key-url}")
+    @Value("${apple.private-key-url}")
     private String privateKeyFileUrl;
 
     private final AuthRepository authRepository;
