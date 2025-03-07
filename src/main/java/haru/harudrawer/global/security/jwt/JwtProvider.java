@@ -33,8 +33,6 @@ public class JwtProvider {
     @Value("${jwt.refresh-token-expiration}")
     private long refreshTokenValidity; // 7일
 
-    private Set<String> blackList = new HashSet<>();
-
     // Access Token 생성
     public String createAccessToken(CustomUserDetails userDetails) {
         Instant now = Instant.now();
@@ -64,10 +62,6 @@ public class JwtProvider {
     }
 
     public boolean validateToken(String token) {
-        if (isTokenBlackListed(token)) {
-            throw new AuthException(AuthErrorCode.ALREADY_BLACK_LIST);
-        }
-
         try {
             Jwts.parser()
                     .verifyWith(extractSecretKey())
@@ -114,14 +108,4 @@ public class JwtProvider {
         return Keys.hmacShaKeyFor(Decoders.BASE64.decode(secretKey));
     }
 
-    // token blackList 추가
-    public void addTokenToBlackList(String token) {
-        blackList.add(token);
-    }
-
-
-    // blackList에 토큰 있는지 검사
-    public boolean isTokenBlackListed(String token) {
-        return blackList.contains(token);
-    }
 }

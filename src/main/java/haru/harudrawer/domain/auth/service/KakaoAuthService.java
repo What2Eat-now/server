@@ -1,5 +1,6 @@
 package haru.harudrawer.domain.auth.service;
 
+import haru.harudrawer.global.redis.RedisService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.*;
@@ -38,6 +39,7 @@ public class KakaoAuthService {
     private final AuthRepository authRepository;
     private final JwtProvider jwtProvider;
     private final S3Service s3Service;
+    private final RedisService redisService;
 
     // 회원가입
     public void signup(KakaoRequestDTO.KakaoSignupDTO request) {
@@ -75,6 +77,9 @@ public class KakaoAuthService {
         User user = userOpt.get();
 
         CommonResponseDTO.TokenDTO tokens = createTokens(user);
+
+        // redis에 refresh token 저장
+        redisService.saveRefreshToken(user.getUserEmail(), tokens.getRefreshToken());
 
         return CommonResponseDTO.LoginResponseDTO.builder()
                 .requiresSignup(false)

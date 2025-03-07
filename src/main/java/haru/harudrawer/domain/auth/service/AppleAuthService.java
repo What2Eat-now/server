@@ -4,6 +4,7 @@ import com.nimbusds.jose.jwk.JWK;
 import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jwt.SignedJWT;
+import haru.harudrawer.global.redis.RedisService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -70,6 +71,7 @@ public class AppleAuthService {
     private final AuthConverter authConverter;
     private final RestTemplate restTemplate;
     private final S3Service s3Service;
+    private final RedisService redisService;
 
     /**
      * 애플 로그인
@@ -95,21 +97,25 @@ public class AppleAuthService {
         // 사용자 존재하지 않을경우 회원 가입으로 리다이렉트 처리
         if (userOpt.isEmpty()) {
             // 회원 가입 처리
-            User savedUser = authRepository.save(authConverter.userEmailToAppleUserEntity(userEmail));
 
             return CommonResponseDTO.LoginResponseDTO.builder()
                     .email(null)
                     .requiresSignup(true)
-                    .tokens(createTokens(savedUser))
+                    .tokens(null)
                     .build();
         }
 
         User user = userOpt.get();
 
+        // 토큰 생성 후 redis에 저장
+        CommonResponseDTO.TokenDTO tokens = createTokens(user);
+
+        redisService.saveRefreshToken(userEmail, tokens.getRefreshToken());
+
         return CommonResponseDTO.LoginResponseDTO.builder()
                 .requiresSignup(false)
                 .email(null)
-                .tokens(createTokens(user))
+                .tokens(tokens)
                 .build();
     }
 
@@ -128,6 +134,8 @@ public class AppleAuthService {
         String accessToken = jwtProvider.createAccessToken(userDetails);
 
         String refreshToken = jwtProvider.createRefreshToken(user.getUserEmail());
+
+        redisService.saveRefreshToken(user.getUserEmail(), refreshToken);
 
         return CommonResponseDTO.TokenDTO.builder()
                 .accessToken(accessToken)
