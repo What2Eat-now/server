@@ -6,6 +6,7 @@ import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jwt.SignedJWT;
 import haru.harudrawer.domain.auth.controller.dto.response.AppleResponseDTO;
 import haru.harudrawer.domain.auth.controller.dto.response.CommonResponseDTO;
+import haru.harudrawer.domain.auth.converter.AuthConverter;
 import haru.harudrawer.domain.auth.entity.Provider;
 import haru.harudrawer.domain.auth.entity.User;
 import haru.harudrawer.domain.auth.exception.AuthErrorCode;
@@ -76,6 +77,8 @@ public class AppleAuthService {
     private final RestTemplate restTemplate;
     private final S3Service s3Service;
     private final RedisService redisService;
+    private final AuthConverter authConverter;
+
 
     /**
      * 애플 로그인
@@ -88,42 +91,60 @@ public class AppleAuthService {
         // idToken에서 사용자 이메일 조회
         String userEmail = extractEmailFromIdToken(loginResponse.getIdToken());
 
-        // 사용자 존재 유무 확인
+        // 사용자 존재 여부 확인
         Optional<User> userOpt = authRepository.findByUserEmail(userEmail);
 
-        // 사용자가 존재하지만 로컬 or 카카오로 가입된 회원인지 확인
-        if (userOpt.isPresent() &&
-                (userOpt.get().getProvider().equals(Provider.LOCAL) ||
-                        userOpt.get().getProvider().equals(Provider.KAKAO))) {
-            throw new AuthException(AuthErrorCode.DUPLICATE_USER_EMAIL);
+        if (userOpt.isPresent()) {
+            User existingUser = userOpt.get();
+
+            // 로컬 또는 카카오로 가입된 사용자라면 예외 발생
+            if (existingUser.getProvider() == Provider.LOCAL || existingUser.getProvider() == Provider.KAKAO) {
+                throw new AuthException(AuthErrorCode.DUPLICATE_USER_EMAIL);
+            }
+
+            // 기존 애플 계정 사용자라면 로그인 진행
+            return createLoginResponse(existingUser);
         }
 
-        // 사용자 존재하지 않을경우 회원 가입으로 리다이렉트 처리
-        if (userOpt.isEmpty()) {
-            // 회원 가입 처리
+        // 사용자가 존재하지 않으면 회원가입 후 로그인 진행
+        User newUser = authConverter.userEmailToAppleUserEntity(userEmail);
+        authRepository.save(newUser);
 
-            return CommonResponseDTO.LoginResponseDTO.builder()
-                    .email(null)
-                    .requiresSignup(true)
-                    .tokens(null)
-                    .build();
-        }
+        return createLoginResponse(newUser);
+    }
 
-        User user = userOpt.get();
-
-        // 토큰 생성 후 redis에 저장
+    /**
+     * 토큰 생성 및 로그인 응답 생성
+     */
+    private CommonResponseDTO.LoginResponseDTO createLoginResponse(User user) {
+        // 토큰 생성 후 Redis에 저장
         CommonResponseDTO.TokenDTO tokens = createTokens(user);
-
-        redisService.saveRefreshToken(userEmail, tokens.getRefreshToken());
+        redisService.saveRefreshToken(user.getUserEmail(), tokens.getRefreshToken());
 
         return CommonResponseDTO.LoginResponseDTO.builder()
                 .requiresSignup(false)
-                .email(null)
+                .email(user.getUserEmail())
                 .tokens(tokens)
                 .build();
     }
 
-    // 서버 자체 AccessToken, RefreshToken 생성
+    /**
+     * 애플 회원 탈퇴
+     */
+    private void deleteUser() {
+        User user = authRepository.findById(jwtProvider.extractUserId()).orElseThrow(
+                () -> new AuthException(AuthErrorCode.USER_NOT_FOUND));
+
+        // s3에 저장된 user의 이미지 삭제
+        s3Service.deleteUserImgList(user);
+
+        // DB 유저 삭제
+        authRepository.delete(user);
+    }
+
+    /**
+     * 서버 자체 AccessToken, RefreshToken 생성
+      */
     private CommonResponseDTO.TokenDTO createTokens(User user) {
 
         CustomUserDetails userDetails = CustomUserDetails.builder()
@@ -146,6 +167,11 @@ public class AppleAuthService {
                 .refreshToken(refreshToken)
                 .build();
     }
+
+
+    /*
+     * Apple 요청 메소드
+     */
 
     /**
      * 애플 토큰 요청
@@ -201,7 +227,9 @@ public class AppleAuthService {
         }
     }
 
-    // 요청 파라미터 준비 (application/x-www-form-urlencoded)
+    /**
+      * 요청 파라미터 준비 (application/x-www-form-urlencoded)
+      */
     private HttpEntity<MultiValueMap<String, String>> createAppleRequestEntity(String authorizationCode, String clientSecret) {
         MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
         params.add("client_id", clientId);
@@ -217,7 +245,13 @@ public class AppleAuthService {
         return requestEntity;
     }
 
-    // clientSecret 생성
+    /*
+     Apple 요청을 위한 Client Secret 생성 및 관련 메소드
+     */
+
+    /**
+     * client Secret 생성
+     */
     private String createClientSecret() throws Exception {
         // 만료일 생성
         Date expirationDate = Date.from(LocalDateTime.now().plusDays(30).atZone(ZoneId.systemDefault()).toInstant());
@@ -234,7 +268,10 @@ public class AppleAuthService {
                 .compact();
     }
 
-    // ClientSecret에 사용할 privateKey 생성
+
+    /**
+     * ClientSecret에 사용할 privateKey 생성
+     */
     private PrivateKey getPrivateKey() throws Exception {
         // BouncyCastle Provider 추가 (이미 추가되어 있다면 생략 가능)
 
@@ -285,7 +322,10 @@ public class AppleAuthService {
     }
 
 
-    //IdToken에서 사용자 이메일 추출
+    /**
+     * AppleIdToken에서 사용자 이메일 추출
+     *
+     */
     private String extractEmailFromIdToken(String idToken) throws Exception {
         // idToken -> jwt 형식으로 파싱
         SignedJWT signedJWT = SignedJWT.parse(idToken);
@@ -301,17 +341,9 @@ public class AppleAuthService {
     }
 
 
-    private void deleteUser() {
-        User user = authRepository.findById(jwtProvider.extractUserId()).orElseThrow(
-                () -> new AuthException(AuthErrorCode.USER_NOT_FOUND));
-
-        // s3에 저장된 user의 이미지 삭제
-        s3Service.deleteUserImgList(user);
-
-        // DB 유저 삭제
-        authRepository.delete(user);
-    }
-
+    /**
+     * 파일 읽기
+     */
     public String readFile() throws IOException {
         List<String> lines = Files.readAllLines(Paths.get(privateKeyFileUrl), StandardCharsets.UTF_8);
 

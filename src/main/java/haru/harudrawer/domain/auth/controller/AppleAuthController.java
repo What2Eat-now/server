@@ -23,11 +23,6 @@ public class AppleAuthController {
     public ResponseEntity<ApiResponse<CommonResponseDTO.LoginResponseDTO>> login(@RequestParam String authorizationCode) throws Exception {
         CommonResponseDTO.LoginResponseDTO result = appleAuthService.login(authorizationCode);
 
-        if (result.isRequiresSignup()) {
-            return ResponseEntity.status(HttpStatus.TEMPORARY_REDIRECT)
-                    .body(ApiResponse.of(ResponseCode.NEED_UPDATE_NICKNAME, result));
-        }
-
         return ResponseEntity.ok(ApiResponse.of(ResponseCode.SUCCESS, result));
     }
 
