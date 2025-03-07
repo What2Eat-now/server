@@ -78,6 +78,7 @@ public class KakaoAuthService {
 
         CommonResponseDTO.TokenDTO tokens = createTokens(user);
 
+        // redis에 refresh token 저장
         redisService.saveRefreshToken(user.getUserEmail(), tokens.getRefreshToken());
 
         return CommonResponseDTO.LoginResponseDTO.builder()
