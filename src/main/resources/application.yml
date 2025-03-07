@@ -56,7 +56,7 @@ aws:
 apple:
   key-id: ${APPLE_KEY_ID}
   client-id: ${APPLE_CLIENT_ID}
-  private-key-id: ${APPLE_PRIVATE_KEY_ID}
+  private-key-url: ${APPLE_PRIVATE_KEY_URL}
   public-key-url: ${APPLE_PUBLIC_KEY_URL}
   team-id: ${APPLE_TEAM_ID}
 
