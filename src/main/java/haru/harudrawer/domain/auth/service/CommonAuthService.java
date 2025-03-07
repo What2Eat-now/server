@@ -90,6 +90,7 @@ public class CommonAuthService {
         return CommonResponseDTO.GetUserInfoDTO.builder()
                 .nickName(findUser.getNickName())
                 .userEmail(findUser.getUserEmail())
+                .phoneNumber(findUser.getPhoneNumber())
                 .provider(findUser.getProvider())
                 .build();
     }

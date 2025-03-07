@@ -10,12 +10,16 @@ public class CommonResponseDTO {
 
     @Getter
     @Builder
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     public static class GetUserInfoDTO {
         private String userEmail;
 
         private String nickName;
 
+        private String phoneNumber;
+
         private Provider provider;
+
     }
 
     @Getter
