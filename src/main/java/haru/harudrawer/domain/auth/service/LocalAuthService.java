@@ -1,5 +1,6 @@
 package haru.harudrawer.domain.auth.service;
 
+import haru.harudrawer.global.redis.RedisService;
 import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -40,11 +41,12 @@ public class LocalAuthService {
     private final EmailRepository emailRepository;
     private final EmailService emailService;
     private final S3Service s3Service;
+    private final RedisService redisService;
 
     /**
      * 로컬 회원 가입
      */
-    public void signUp(LocalRequestDTO.SignUpRequestDTO request){
+    public void signUp(LocalRequestDTO.SignUpRequestDTO request) {
 
         checkEmailVerification(request.getUserEmail());
 
@@ -91,6 +93,9 @@ public class LocalAuthService {
 
             String refreshToken = jwtProvider.createRefreshToken(request.getUserEmail());
 
+            // redis에 refresh token 저장
+            redisService.saveRefreshToken(request.getUserEmail(), refreshToken);
+
             return CommonResponseDTO.LoginResponseDTO.builder()
                     .tokens(CommonResponseDTO.TokenDTO.builder()
                             .accessToken(accessToken)
@@ -101,12 +106,10 @@ public class LocalAuthService {
         } catch (InternalAuthenticationServiceException e) {
             // 사용자를 찾을 수 없는 경우 (UsernameNotFoundException이 내부적으로 발생했을 때)
             throw new AuthException(AuthErrorCode.USER_NOT_FOUND);
-        }
-        catch (BadCredentialsException e) {
+        } catch (BadCredentialsException e) {
             // 비밀번호가 틀린 경우
             throw new AuthException(AuthErrorCode.INVALID_PASSWORD);
-        }
-        catch (AuthenticationException e) {
+        } catch (AuthenticationException e) {
             // 6. 인증 실패
             log.error("인증 실패 : " + e);
             throw new Exception(e);
@@ -167,8 +170,8 @@ public class LocalAuthService {
     }
 
     /**
-      * 이메일 인증 상태 조회 및 삭제
-      */
+     * 이메일 인증 상태 조회 및 삭제
+     */
     private void checkEmailVerification(String userEmail) {
         // 인증번호 엔티티에서 이메일과 인증 상태로 조회
         EmailVerificationCode byUserEmail = emailRepository.findByUserEmailAndEmailStatus(userEmail, true)

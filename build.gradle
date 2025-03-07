@@ -1,3 +1,5 @@
+import java.beans.PropertyEditorSupport
+
 plugins {
     id 'java'
     id 'org.springframework.boot' version '3.4.0'
@@ -49,7 +51,11 @@ dependencies {
     implementation 'io.jsonwebtoken:jjwt-api:0.12.3'
     implementation 'io.jsonwebtoken:jjwt-impl:0.12.3'
     implementation 'io.jsonwebtoken:jjwt-jackson:0.12.3'
-    implementation 'com.nimbusds:nimbus-jose-jwt:9.31' // 최신 버전으로 변경
+    implementation 'com.nimbusds:nimbus-jose-jwt:9.37.2' // 최신 버전으로 변경
+
+    // Redis
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+
 
     // bouncycastle
     implementation 'org.bouncycastle:bcprov-jdk15on:1.70' // 최신 버전으로 변경

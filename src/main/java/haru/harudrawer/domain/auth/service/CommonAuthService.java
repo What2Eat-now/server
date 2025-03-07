@@ -1,12 +1,5 @@
 package haru.harudrawer.domain.auth.service;
 
-import jakarta.servlet.http.HttpServletRequest;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import haru.harudrawer.domain.auth.controller.dto.request.CommonRequestDTO;
 import haru.harudrawer.domain.auth.controller.dto.response.CommonResponseDTO;
 import haru.harudrawer.domain.auth.controller.dto.response.LocalResponseDTO;
@@ -15,12 +8,21 @@ import haru.harudrawer.domain.auth.exception.AuthErrorCode;
 import haru.harudrawer.domain.auth.exception.AuthException;
 import haru.harudrawer.domain.auth.repository.AuthRepository;
 import haru.harudrawer.domain.diary.repository.DiaryRepository;
+import haru.harudrawer.global.redis.RedisService;
 import haru.harudrawer.global.s3.S3Service;
 import haru.harudrawer.global.security.domain.CustomUserDetails;
 import haru.harudrawer.global.security.jwt.JwtProvider;
+import jakarta.servlet.http.HttpServletRequest;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -31,8 +33,8 @@ public class CommonAuthService {
     private final JwtProvider jwtProvider;
     private final AuthRepository authRepository;
     private final PasswordEncoder passwordEncoder;
-    private final DiaryRepository diaryRepository;
-    private final S3Service s3Service;
+    private final RedisService redisService;
+
 
     // Authorization 헤더에서 실제 JWT 토큰 문자열만 추출
     private String resolveToken(HttpServletRequest request) {
@@ -53,6 +55,8 @@ public class CommonAuthService {
         if (!jwtProvider.validateToken(token)) {
             throw new AuthException(AuthErrorCode.ALREADY_LOGOUT_USER);
         }
+
+        redisService.deleteRefreshToken(jwtProvider.getUserEmail(token));
 
         // 토큰 블랙리스트에 추가
         jwtProvider.addTokenToBlackList(token);
@@ -169,11 +173,16 @@ public class CommonAuthService {
      * refresh Token으로 Access Token 재발급
      */
     public LocalResponseDTO.LocalLoginResponseDTO refreshToken(CommonRequestDTO.TokenRefreshDTO request) {
-        // refresh token 검증
-        jwtProvider.validateToken(request.getRefreshToken());
-
         // 사용자 이메일 조회
         String userEmail = jwtProvider.getUserEmail(request.getRefreshToken());
+
+        // redis에서 refresh token 조회
+        Optional<String> findTokenOpt = redisService.getRefreshToken(userEmail);
+
+        // refresh token 검증
+        if (findTokenOpt.isEmpty() || !findTokenOpt.get().equals(request.getRefreshToken())) {
+            throw new AuthException(AuthErrorCode.INVALID_TOKEN);
+        }
 
         // 이메일로 사용자 정보 DB 조회
         User user = authRepository.findByUserEmail(userEmail).orElseThrow(
@@ -189,11 +198,14 @@ public class CommonAuthService {
                 List.of(new SimpleGrantedAuthority(user.getRole().name()))
         );
 
-        // 현재 refreshToken 블랙 리스트에 추가
-        jwtProvider.addTokenToBlackList(request.getRefreshToken());
-
         String accessToken = jwtProvider.createAccessToken(userDetails);
         String refreshToken = jwtProvider.createRefreshToken(userDetails.getEmail());
+
+        // redis에서 사용된 refresh token삭제
+        redisService.deleteRefreshToken(userEmail);
+
+        // 새로운 refresh token 저장
+        redisService.saveRefreshToken(userEmail, refreshToken);
 
         return LocalResponseDTO.LocalLoginResponseDTO.builder()
                 .accessToken(accessToken)
