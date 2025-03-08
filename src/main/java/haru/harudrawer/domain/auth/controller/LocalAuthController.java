@@ -85,8 +85,8 @@ public class LocalAuthController {
 
     @PostMapping("/local/find-email")
     @Operation(summary = "아이디(이메일) 찾기", description = "전화번호를 통해 잃어버린 이메일을 조회합니다. \n 응답코드에 따른 결과값은 포스트맨 API 명세서를 참고 부탁드립니다.")
-    public ResponseEntity<ApiResponse<Map<String, String>>> findEmail(@RequestParam String phoneNumber) {
-        String userEmail = localAuthService.findUserEmail(phoneNumber);
+    public ResponseEntity<ApiResponse<Map<String, String>>> findEmail(@RequestBody LocalRequestDTO.FindEmailDTO request) {
+        String userEmail = localAuthService.findUserEmail(request);
 
         return ResponseEntity.ok(ApiResponse.of(Map.of("userEmail", userEmail)));
     }
