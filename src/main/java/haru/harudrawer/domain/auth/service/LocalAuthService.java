@@ -61,6 +61,7 @@ public class LocalAuthService {
                 .password(passwordEncoder.encode(request.getPassword()))
                 .phoneNumber(request.getPhoneNumber())
                 .nickName(request.getNickName())
+                .userName(request.getUserName())
                 .role(Role.USER)
                 .provider(Provider.LOCAL)
                 .build());
@@ -134,9 +135,9 @@ public class LocalAuthService {
     /**
      * 아이디 찾기
      */
-    public String findUserEmail(String phoneNumber) {
-        User user = authRepository.findByPhoneNumber(phoneNumber).orElseThrow(
-                () -> new AuthException(AuthErrorCode.USER_NOT_FOUND)
+    public String findUserEmail(LocalRequestDTO.FindEmailDTO request) {
+        User user = authRepository.findByPhoneNumberAndUserName(request.getPhoneNumber(), request.getUserName())
+                .orElseThrow(() -> new AuthException(AuthErrorCode.USER_NOT_FOUND)
         );
 
         return maskEmail(user);

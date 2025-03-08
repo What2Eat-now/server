@@ -26,6 +26,10 @@ public class LocalRequestDTO {
         @Size(max = 20, message = "닉네임은 최대 20자까지 가능합니다.")
         private String nickName;
 
+        @NotBlank(message = "이름은 필수 입력 항목입니다.")
+        @Size(max = 10, message = "이름은 최대 10자까지 가능합니다.")
+        private String userName;
+
         @NotBlank(message = "핸드폰 번호는 필수 입력 항목입니다.")
         @Size(max = 25, message = "핸드폰 번호는 최대 25자까지 가능합니다.")
         private String phoneNumber;
@@ -64,6 +68,13 @@ public class LocalRequestDTO {
     public static class VerifyCodeDTO {
         private String userEmail;
         private String code;
-
     }
+
+    @Getter
+    @Builder
+    public static class FindEmailDTO {
+        private String userName;
+        private String phoneNumber;
+    }
+
 }

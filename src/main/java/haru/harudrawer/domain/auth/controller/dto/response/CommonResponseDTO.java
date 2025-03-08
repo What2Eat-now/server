@@ -16,9 +16,12 @@ public class CommonResponseDTO {
 
         private String nickName;
 
+        private String userName;
+
         private String phoneNumber;
 
         private Provider provider;
+
 
     }
 
