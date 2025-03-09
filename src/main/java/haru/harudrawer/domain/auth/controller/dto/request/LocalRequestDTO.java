@@ -73,7 +73,7 @@ public class LocalRequestDTO {
     @Getter
     @Builder
     public static class FindEmailDTO {
-        private String userName;
+        private String nickName;
         private String phoneNumber;
     }
 
