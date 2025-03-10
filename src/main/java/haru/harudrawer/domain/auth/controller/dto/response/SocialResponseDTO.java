@@ -8,16 +8,35 @@ import lombok.Getter;
 import java.util.Date;
 import java.util.Map;
 
-public class KakaoResponseDTO {
+public class SocialResponseDTO {
 
+    /**
+     * APPLE DTO
+     */
     @Getter
     @Builder
-    public static class KakaoLoginResponseDTO {
-        private boolean requiresSignup;
-        private String kakaoEmail;
-        private Map<String, String> tokens;
+    public static class AppleTokenInfoDTO{
+
+        @JsonProperty("access_token")
+        private String accessToken;
+
+        @JsonProperty("expires_in")
+        private int expiresIn;
+
+        @JsonProperty("id_token")
+        private String idToken;
+
+        @JsonProperty("refresh_token")
+        private String refreshToken;
+
+        @JsonProperty("token_type")
+        private String tokenType;
     }
 
+
+    /**
+     * KAKAO DTO
+     */
     @Getter
     @Builder
     public static class KakaoTokenDTO{
@@ -63,11 +82,11 @@ public class KakaoResponseDTO {
 
         //uuid 등 추가 정보
         @JsonProperty("for_partner")
-        private KakaoResponseDTO.Partner partner;
+        private SocialResponseDTO.Partner partner;
 
         //사용자 이메일 정보
         @JsonProperty("kakao_account")
-        private KakaoResponseDTO.KakaoAccount kakaoAccount;
+        private SocialResponseDTO.KakaoAccount kakaoAccount;
     }
 
     @Getter
@@ -86,5 +105,4 @@ public class KakaoResponseDTO {
         @JsonProperty("uuid")
         private String uuid;
     }
-
 }

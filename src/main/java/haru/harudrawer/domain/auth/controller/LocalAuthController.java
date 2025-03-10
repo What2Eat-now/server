@@ -2,6 +2,7 @@ package haru.harudrawer.domain.auth.controller;
 
 import haru.harudrawer.domain.auth.controller.dto.request.LocalRequestDTO;
 import haru.harudrawer.domain.auth.controller.dto.response.CommonResponseDTO;
+import haru.harudrawer.domain.auth.service.CommonAuthService;
 import haru.harudrawer.domain.auth.service.LocalAuthService;
 import haru.harudrawer.global.response.ApiResponse;
 import haru.harudrawer.global.response.ResponseCode;
@@ -9,6 +10,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.mail.MessagingException;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Email;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -25,6 +27,7 @@ import java.util.Map;
 public class LocalAuthController {
 
     private final LocalAuthService localAuthService;
+    private final CommonAuthService commonAuthService;
 
     @PostMapping("/signup/local")
     @Operation(summary = "로컬 회원가입", description = "로컬 회원가입을 처리합니다. 이메일, 비밀번호, 닉네임을 제공해야 합니다. \n 응답코드에 따른 결과값은 포스트맨 API 명세서를 참고 부탁드립니다.")
@@ -46,7 +49,7 @@ public class LocalAuthController {
     @DeleteMapping("/local")
     @Operation(summary = "로컬 회원탈퇴", description = "회원탈퇴를 처리합니다. Authorization 헤더에 accessToken을 첨부해서 요청하시면 됩니다. \n 응답 코드에 따른 자세한 결과는 PostMan API 명세서를 참고 부탁드립니다.")
     public ResponseEntity<ApiResponse<ResponseCode>> withdrawal() {
-        localAuthService.delete();
+        commonAuthService.deleteUser();
 
         return ResponseEntity.ok(ApiResponse.of(ResponseCode.SUCCESS));
     }
@@ -69,7 +72,7 @@ public class LocalAuthController {
 
     @PostMapping("/send-verification")
     @Operation(summary = "인증 번호 이메일 전송", description = "이메일로 인증 번호 전송을 처리합니다. 이메일을 제공해야 합니다. \n 응답코드에 따른 결과값은 포스트맨 API 명세서를 참고 부탁드립니다.")
-    public ResponseEntity<ApiResponse<ResponseCode>> sendEmail(@RequestParam("userEmail") String userEmail) throws MessagingException {
+    public ResponseEntity<ApiResponse<ResponseCode>> sendEmail(@RequestParam @Email String userEmail) throws MessagingException {
         localAuthService.sendEmail(userEmail);
 
         return ResponseEntity.ok(ApiResponse.of(ResponseCode.SUCCESS));

@@ -5,11 +5,4 @@ import lombok.Getter;
 
 public class LocalResponseDTO {
 
-    @Getter
-    @Builder
-    public static class LocalLoginResponseDTO{
-        private String accessToken;
-        private String refreshToken;
-    }
-
 }

@@ -34,22 +34,15 @@ public class CommonAuthService {
     private final AuthRepository authRepository;
     private final PasswordEncoder passwordEncoder;
     private final RedisService redisService;
+    private final TokenService tokenService;
+    private final S3Service s3Service;
 
-
-    // Authorization 헤더에서 실제 JWT 토큰 문자열만 추출
-    private String resolveToken(HttpServletRequest request) {
-        String bearerToken = request.getHeader("Authorization");
-        if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
-            return bearerToken.substring(7);
-        }
-        return null;
-    }
 
     /**
      * 사용자 로그 아웃
      */
     public void logout(HttpServletRequest request) {
-        String token = resolveToken(request);
+        String token = tokenService.resolveToken(request);
 
         // 토큰 유효성 검사
         if (!jwtProvider.validateToken(token)) {
@@ -57,19 +50,6 @@ public class CommonAuthService {
         }
 
         redisService.deleteRefreshToken(jwtProvider.getUserEmail(token));
-
-
-    }
-
-    /**
-     * 토큰 검증
-     */
-    public void validateToken(HttpServletRequest request) {
-        String token = resolveToken(request);
-
-        if (!jwtProvider.validateToken(token)) {
-            throw new AuthException(AuthErrorCode.INVALID_TOKEN);
-        }
     }
 
 
@@ -79,10 +59,10 @@ public class CommonAuthService {
     public CommonResponseDTO.GetUserInfoDTO getUserInfo(HttpServletRequest request) {
 
         // 토큰 검증
-        validateToken(request);
+        tokenService.validateToken(request);
 
         // 토큰을 통해 사용자 이메일 조회
-        String userEmail = jwtProvider.getUserEmail(resolveToken(request));
+        String userEmail = jwtProvider.getUserEmail(tokenService.resolveToken(request));
 
         User findUser = authRepository.findByUserEmail(userEmail).orElseThrow(
                 () -> new AuthException(AuthErrorCode.USER_NOT_FOUND));
@@ -99,27 +79,17 @@ public class CommonAuthService {
     /**
      * 사용자 이메일 수정
      */
-    public LocalResponseDTO.LocalLoginResponseDTO updateUserEmail(CommonRequestDTO.UpdateEmailDTO request) {
+    public CommonResponseDTO.LoginResponseDTO updateUserEmail(CommonRequestDTO.UpdateEmailDTO request) {
 
         User user = authRepository.findByUserId(jwtProvider.extractUserId())
                 .orElseThrow(() -> new AuthException(AuthErrorCode.USER_NOT_FOUND));
 
         user.updateEmail(request.getUserEmail());
 
-        CustomUserDetails userDetails = CustomUserDetails.builder()
-                .userId(user.getUserId())
-                .email(request.getUserEmail())
-                .password(user.getPassword())
-                .provider(user.getProvider())
-                .authorities(Collections.singletonList(new SimpleGrantedAuthority(user.getRole().name())))
-                .build();
+        CommonResponseDTO.TokenDTO tokens = tokenService.createTokens(user);
 
-        String accessToken = jwtProvider.createAccessToken(userDetails);
-        String refreshToken = jwtProvider.createRefreshToken(request.getUserEmail());
-
-        return LocalResponseDTO.LocalLoginResponseDTO.builder()
-                .accessToken(accessToken)
-                .refreshToken(refreshToken)
+        return CommonResponseDTO.LoginResponseDTO.builder()
+                .tokens(tokens)
                 .build();
 
     }
@@ -156,7 +126,7 @@ public class CommonAuthService {
 
             // 비밀번호 서식 틀렸을 경우 예외처리
             if (!request.getNewPassword().matches("^(?=.*[A-Z])(?=.*[@$!%*?&]).{8,16}$")
-                    || !request.getNewPasswordCheck().matches("^(?=.*[A-Z])(?=.*[@$!%*?&]).{8,16}$") ) {
+                    || !request.getNewPasswordCheck().matches("^(?=.*[A-Z])(?=.*[@$!%*?&]).{8,16}$")) {
                 throw new AuthException(AuthErrorCode.INVALID_PASSWORD);
             }
 
@@ -170,50 +140,16 @@ public class CommonAuthService {
         }
     }
 
-    /**
-     * refresh Token으로 Access Token 재발급
-     */
-    public LocalResponseDTO.LocalLoginResponseDTO refreshToken(CommonRequestDTO.TokenRefreshDTO request) {
-        // 사용자 이메일 조회
-        String userEmail = jwtProvider.getUserEmail(request.getRefreshToken());
-
-        // redis에서 refresh token 조회
-        Optional<String> findTokenOpt = redisService.getRefreshToken(userEmail);
-
-        // refresh token 검증
-        if (findTokenOpt.isEmpty() || !findTokenOpt.get().equals(request.getRefreshToken())) {
-            throw new AuthException(AuthErrorCode.INVALID_TOKEN);
-        }
-
-        // 이메일로 사용자 정보 DB 조회
-        User user = authRepository.findByUserEmail(userEmail).orElseThrow(
+    public void deleteUser() {
+        User user = authRepository.findById(jwtProvider.extractUserId()).orElseThrow(
                 () -> new AuthException(AuthErrorCode.USER_NOT_FOUND));
 
-        // 유저 객체 생성
-        CustomUserDetails userDetails = new CustomUserDetails(
-                user.getUserId(),
-                user.getUserEmail(),
-                null,
-                user.getNickName(),
-                user.getProvider(),
-                List.of(new SimpleGrantedAuthority(user.getRole().name()))
-        );
+        s3Service.deleteUserImgList(user);
 
-        String accessToken = jwtProvider.createAccessToken(userDetails);
-        String refreshToken = jwtProvider.createRefreshToken(userDetails.getEmail());
+        authRepository.delete(user);
 
-        // redis에서 사용된 refresh token삭제
-        redisService.deleteRefreshToken(userEmail);
-
-        // 새로운 refresh token 저장
-        redisService.saveRefreshToken(userEmail, refreshToken);
-
-        return LocalResponseDTO.LocalLoginResponseDTO.builder()
-                .accessToken(accessToken)
-                .refreshToken(refreshToken)
-                .build();
+        redisService.deleteRefreshToken(user.getUserEmail());
     }
-
 
 
 }

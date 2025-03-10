@@ -1,7 +1,7 @@
 package haru.harudrawer.domain.auth.converter;
 
+import haru.harudrawer.domain.auth.controller.dto.request.SocialRequestDTO;
 import org.springframework.stereotype.Component;
-import haru.harudrawer.domain.auth.controller.dto.request.KakaoRequestDTO;
 import haru.harudrawer.domain.auth.entity.Provider;
 import haru.harudrawer.domain.auth.entity.Role;
 import haru.harudrawer.domain.auth.entity.User;
@@ -9,7 +9,7 @@ import haru.harudrawer.domain.auth.entity.User;
 @Component
 public class AuthConverter {
 
-    public User signupToKakaoUserEntity(KakaoRequestDTO.KakaoSignupDTO request) {
+    public User signupToKakaoUserEntity(SocialRequestDTO.SocialSignupDTO request) {
         return User.builder()
                 .nickName(request.getNickName())
                 .userEmail(request.getUserEmail())
