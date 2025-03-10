@@ -92,7 +92,7 @@ public class LocalAuthController {
     }
 
     @PostMapping("/local/reset-password")
-    @Operation(summary = "인증번호 검증", description = "이메일을 통해 잃어버린 비밀번호를 변경합니다. \n 응답코드에 따른 결과값은 포스트맨 API 명세서를 참고 부탁드립니다.")
+    @Operation(summary = "비밀번호 찾기 및 변경", description = "이메일을 통해 잃어버린 비밀번호를 변경합니다. \n 응답코드에 따른 결과값은 포스트맨 API 명세서를 참고 부탁드립니다.")
     public ResponseEntity<ApiResponse<ResponseCode>> resetPassword(@RequestBody LocalRequestDTO.ResetPasswordDTO request) {
         localAuthService.resetPassword(request);
 
