@@ -208,16 +208,24 @@ public class LocalAuthService {
      */
     public void sendEmail(String userEmail) throws MessagingException {
 
+        Optional<EmailVerificationCode> existingVerificationCode = emailRepository.findByUserEmail(userEmail);
+
         // 이메일 전송 후 인증번호 반환
         String code = emailService.sendVerificationEmail(userEmail);
 
-        // 이메일 정보 저장
-        emailRepository.save(EmailVerificationCode.builder()
-                .userEmail(userEmail)
-                .emailStatus(false)
-                .verificationCode(code)
-                .expiryDate(LocalDateTime.now().plusMinutes(10))
-                .build());
+        if (existingVerificationCode.isPresent()) {
+            EmailVerificationCode emailVerificationCode = existingVerificationCode.get();
+
+            emailVerificationCode.updateCode(code);
+        } else {
+            // 이메일 정보 저장
+            emailRepository.save(EmailVerificationCode.builder()
+                    .userEmail(userEmail)
+                    .emailStatus(false)
+                    .verificationCode(code)
+                    .expiryDate(LocalDateTime.now().plusMinutes(10))
+                    .build());
+        }
     }
 
     /**

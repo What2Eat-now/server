@@ -37,4 +37,10 @@ public class EmailVerificationCode {
     public void changeStatus() {
         this.emailStatus = true;
     }
+
+    public void updateCode(String verificationCode) {
+        this.verificationCode = verificationCode;
+        this.expiryDate = LocalDateTime.now().plusMinutes(10);
+        this.emailStatus = false;
+    }
 }
