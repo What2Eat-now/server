@@ -8,14 +8,18 @@ import haru.harudrawer.domain.auth.controller.dto.response.CommonResponseDTO;
 import haru.harudrawer.domain.auth.controller.dto.response.SocialResponseDTO;
 import haru.harudrawer.domain.auth.converter.AuthConverter;
 import haru.harudrawer.domain.auth.entity.Provider;
+import haru.harudrawer.domain.auth.entity.TokenType;
 import haru.harudrawer.domain.auth.entity.User;
 import haru.harudrawer.domain.auth.exception.AuthErrorCode;
 import haru.harudrawer.domain.auth.exception.AuthException;
 import haru.harudrawer.domain.auth.repository.AuthRepository;
 import haru.harudrawer.global.redis.RedisService;
+import haru.harudrawer.global.security.jwt.JwtProvider;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import jakarta.annotation.Nullable;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
@@ -74,6 +78,7 @@ public class AppleAuthService {
     private final AuthConverter authConverter;
     private final TokenService tokenService;
     private final CommonAuthService commonAuthService;
+    private final JwtProvider jwtProvider;
 
 
     /**
@@ -123,9 +128,9 @@ public class AppleAuthService {
      * 토큰 생성 및 로그인 응답 생성
      */
     private CommonResponseDTO.LoginResponseDTO createLoginResponse(User user) {
+
         // 토큰 생성 후 Redis에 저장
         CommonResponseDTO.TokenDTO tokens = tokenService.createTokens(user);
-        redisService.saveRefreshToken(user.getUserEmail(), tokens.getRefreshToken());
 
         return CommonResponseDTO.LoginResponseDTO.builder()
                 .requiresSignup(false)
@@ -133,7 +138,6 @@ public class AppleAuthService {
                 .tokens(tokens)
                 .build();
     }
-
 
     /*
      * Apple 요청 메소드
@@ -149,10 +153,17 @@ public class AppleAuthService {
 
         try{
             // 애플 토큰 엔드포인트에 POST 요청
-            return restTemplate.postForEntity(
+            SocialResponseDTO.AppleTokenInfoDTO response = restTemplate.postForEntity(
                     "https://appleid.apple.com/auth/token",
-                    createAppleRequestEntity(authorizationCode, clientSecret),
+                    createAppleRequestEntity(Optional.of(authorizationCode), clientSecret, Optional.empty()),
                     SocialResponseDTO.AppleTokenInfoDTO.class).getBody();
+
+            String userEmail = extractEmailFromIdToken(response.getIdToken());
+
+            // APPLE Refresh token -> redis에 저장
+            redisService.saveToken(userEmail, response.getRefreshToken(), Provider.APPLE, TokenType.REFRESH);
+
+            return response;
         } catch (HttpClientErrorException e){
             // 에러 발생 시 로그 출력 및 예외 처리
             log.error("Apple Request Token API 호출 실패: 상태 코드 {}, 응답 본문 {}", e.getStatusCode(), e.getResponseBodyAsString());
@@ -163,21 +174,21 @@ public class AppleAuthService {
     /**
      * 애플 연결 해제 (토큰 회수)
      */
-    public void revokeAppleToken(String authorizationCode) throws Exception {
+    public void revokeAppleToken(HttpServletRequest request) throws Exception {
         String clientSecret = createClientSecret();
 
-        // apple refreshToken 발급
-        String refreshToken = requestAppleToken(authorizationCode).getRefreshToken();
+        String userEmail = jwtProvider.getUserEmail(tokenService.resolveToken(request));
+
+        Optional<String> refreshToken = redisService.getToken(userEmail, Provider.APPLE, TokenType.REFRESH);
+
+        if (refreshToken.isEmpty()) {
+            throw new AuthException(AuthErrorCode.INVALID_TOKEN);
+        }
 
         // Apple 토큰
         try {
-            HttpEntity<MultiValueMap<String, String>> appleRequestEntity = createAppleRequestEntity(authorizationCode, clientSecret);
-
-            // token 헤더 추가
-            appleRequestEntity.getHeaders().add("token", refreshToken);
-
-            // user 삭제
-            commonAuthService.deleteUser();
+            HttpEntity<MultiValueMap<String, String>> appleRequestEntity =
+                    createAppleRequestEntity(Optional.empty(), clientSecret, refreshToken);
 
             // revoke 요청
             restTemplate.postForEntity(
@@ -185,6 +196,11 @@ public class AppleAuthService {
                     appleRequestEntity,
                     String.class
             );
+
+            // user 삭제
+            commonAuthService.deleteUser();
+
+            log.info("apple 요청 성공");
 
         } catch (HttpClientErrorException e) {
             log.error("Apple revoke API 호출 실패: 상태 코드 {}, 응답 본문 {}", e.getStatusCode(), e.getResponseBodyAsString());
@@ -195,17 +211,23 @@ public class AppleAuthService {
     /**
       * 요청 파라미터 준비 (application/x-www-form-urlencoded)
       */
-    private HttpEntity<MultiValueMap<String, String>> createAppleRequestEntity(String authorizationCode, String clientSecret) {
+    private HttpEntity<MultiValueMap<String, String>> createAppleRequestEntity(Optional<String> authorizationCode, String clientSecret, Optional<String> refreshToken) {
         MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
         params.add("client_id", clientId);
         params.add("client_secret", clientSecret);
-        params.add("code", authorizationCode);
         params.add("grant_type", "authorization_code");
+
+        authorizationCode.ifPresent(code -> params.add("code", code));
+
+        refreshToken.ifPresent(token -> {
+            params.add("token", token);
+            params.add("token_type_hint", "refresh_token");
+            log.info(token);
+        });
 
         // 요청 헤더 설정
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-
         HttpEntity<MultiValueMap<String, String>> requestEntity = new HttpEntity<>(params, headers);
         return requestEntity;
     }

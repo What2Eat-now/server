@@ -4,6 +4,7 @@ import haru.harudrawer.domain.auth.controller.dto.request.CommonRequestDTO;
 import haru.harudrawer.domain.auth.controller.dto.response.CommonResponseDTO;
 import haru.harudrawer.domain.auth.controller.dto.response.LocalResponseDTO;
 import haru.harudrawer.domain.auth.entity.Provider;
+import haru.harudrawer.domain.auth.entity.TokenType;
 import haru.harudrawer.domain.auth.entity.User;
 import haru.harudrawer.domain.auth.exception.AuthErrorCode;
 import haru.harudrawer.domain.auth.exception.AuthException;
@@ -41,7 +42,7 @@ public class TokenService {
         String accessToken = jwtProvider.createAccessToken(userDetails);
         String refreshToken = jwtProvider.createRefreshToken(user.getUserEmail());
 
-        redisService.saveRefreshToken(user.getUserEmail(), refreshToken);
+        redisService.saveToken(user.getUserEmail(), refreshToken, user.getProvider(), TokenType.SERVER);
 
         return CommonResponseDTO.TokenDTO.builder()
                 .accessToken(accessToken)
@@ -49,31 +50,34 @@ public class TokenService {
                 .build();
     }
 
-    public void deleteRefreshToken(String refreshToken) {
-        redisService.deleteRefreshToken(refreshToken);
+    /**
+     * 서버 자체 Refresh Token 삭제
+     */
+    public void deleteRefreshToken(String refreshToken, User user) {
+        redisService.deleteRefreshToken(refreshToken, user.getProvider(), TokenType.SERVER);
     }
 
     /**
-     * refresh Token으로 Access Token 재발급
+     * 서버 자체 refresh Token으로 Access Token 재발급
      */
     public CommonResponseDTO.LoginResponseDTO refreshToken(CommonRequestDTO.TokenRefreshDTO request) {
         // 사용자 이메일 조회
         String userEmail = jwtProvider.getUserEmail(request.getRefreshToken());
 
+        // 이메일로 사용자 정보 DB 조회
+        User user = authRepository.findByUserEmail(userEmail).orElseThrow(
+                () -> new AuthException(AuthErrorCode.USER_NOT_FOUND));
+
         // redis에서 refresh token 조회
-        Optional<String> findTokenOpt = redisService.getRefreshToken(userEmail);
+        Optional<String> findTokenOpt = redisService.getToken(userEmail, user.getProvider(), TokenType.SERVER);
 
         // refresh token 검증
         if (findTokenOpt.isEmpty() || !findTokenOpt.get().equals(request.getRefreshToken())) {
             throw new AuthException(AuthErrorCode.INVALID_TOKEN);
         }
 
-        // 이메일로 사용자 정보 DB 조회
-        User user = authRepository.findByUserEmail(userEmail).orElseThrow(
-                () -> new AuthException(AuthErrorCode.USER_NOT_FOUND));
-
         // redis에서 만료된 RefreshToken 삭제
-        deleteRefreshToken(request.getRefreshToken());
+        deleteRefreshToken(request.getRefreshToken(), user);
 
         // 새 토큰 생성
         CommonResponseDTO.TokenDTO tokens = createTokens(user);

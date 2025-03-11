@@ -2,6 +2,7 @@ package haru.harudrawer.domain.auth.service;
 
 import haru.harudrawer.domain.auth.controller.dto.request.SocialRequestDTO;
 import haru.harudrawer.domain.auth.controller.dto.response.SocialResponseDTO;
+import haru.harudrawer.domain.auth.entity.TokenType;
 import haru.harudrawer.global.redis.RedisService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -73,9 +74,6 @@ public class KakaoAuthService{
 
         CommonResponseDTO.TokenDTO tokens = tokenService.createTokens(user);
 
-        // redis에 refresh token 저장
-        redisService.saveRefreshToken(user.getUserEmail(), tokens.getRefreshToken());
-
         return CommonResponseDTO.LoginResponseDTO.builder()
                 .requiresSignup(false)
                 .userEmail(null)
@@ -86,9 +84,9 @@ public class KakaoAuthService{
     /**
      * 카카오 회원 탈퇴
      */
-    public void delete(String kakaoAccessToken) {
+    public void delete() {
         // 카카오 연결 해제
-        unlinkKakaoAccount(kakaoAccessToken);
+//        unlinkKakaoAccount(kakaoAccessToken);
 
         // 회원 삭제
         commonAuthService.deleteUser();

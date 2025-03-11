@@ -94,7 +94,7 @@ public class LocalAuthService {
             String refreshToken = jwtProvider.createRefreshToken(request.getUserEmail());
 
             // redis에 refresh token 저장
-            redisService.saveRefreshToken(request.getUserEmail(), refreshToken);
+            redisService.saveToken(request.getUserEmail(), refreshToken, userDetails.getProvider(), TokenType.SERVER);
 
             return CommonResponseDTO.LoginResponseDTO.builder()
                     .tokens(CommonResponseDTO.TokenDTO.builder()

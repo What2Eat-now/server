@@ -1,5 +1,7 @@
 package haru.harudrawer.global.redis;
 
+import haru.harudrawer.domain.auth.entity.Provider;
+import haru.harudrawer.domain.auth.entity.TokenType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -22,18 +24,20 @@ public class RedisService {
     /**
      *  Refresh Token 저장 (기본 만료 시간 적용)
      */
-    public void saveRefreshToken(String userEmail, String refreshToken) {
-        String key = "refresh:" + userEmail; // Redis Key
+    public void saveToken(String userEmail, String token, Provider provider, TokenType tokenType) {
+        String key = (tokenType == TokenType.SERVER ? "SERVER_REFRESH:" : provider.name() + "_" + tokenType.name() + ":") + userEmail;
+
         ValueOperations<String, Object> values = redisTemplate.opsForValue();
-        values.set(key, refreshToken, refreshTokenValidity, TimeUnit.SECONDS);
+        values.set(key, token, refreshTokenValidity, TimeUnit.SECONDS);
     }
 
     /**
-     *  Refresh Token 조회 (Optional 반환)
+     * Refresh Token 조회 (Optional 반환)
      */
     @Transactional(readOnly = true)
-    public Optional<String> getRefreshToken(String userEmail) {
-        String key = "refresh:" + userEmail;
+    public Optional<String> getToken(String userEmail, Provider provider, TokenType tokenType) {
+        String key = (tokenType == TokenType.SERVER ? "SERVER_REFRESH:" : provider.name() + "_" + tokenType.name() + ":") + userEmail;
+
         ValueOperations<String, Object> values = redisTemplate.opsForValue();
         String token = (String) values.get(key);
         return Optional.ofNullable(token);
@@ -42,8 +46,8 @@ public class RedisService {
     /**
      *  Refresh Token 삭제 (로그아웃 시)
      */
-    public void deleteRefreshToken(String userEmail) {
-        String key = "refresh:" + userEmail;
+    public void deleteRefreshToken(String userEmail, Provider provider, TokenType tokenType) {
+        String key = (tokenType == TokenType.SERVER ? "SERVER_REFRESH:" : provider.name() + "_" + tokenType.name() + ":") + userEmail;
         redisTemplate.delete(key);
     }
 

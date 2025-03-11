@@ -3,6 +3,8 @@ package haru.harudrawer.domain.auth.service;
 import haru.harudrawer.domain.auth.controller.dto.request.CommonRequestDTO;
 import haru.harudrawer.domain.auth.controller.dto.response.CommonResponseDTO;
 import haru.harudrawer.domain.auth.controller.dto.response.LocalResponseDTO;
+import haru.harudrawer.domain.auth.entity.Provider;
+import haru.harudrawer.domain.auth.entity.TokenType;
 import haru.harudrawer.domain.auth.entity.User;
 import haru.harudrawer.domain.auth.exception.AuthErrorCode;
 import haru.harudrawer.domain.auth.exception.AuthException;
@@ -49,7 +51,7 @@ public class CommonAuthService {
             throw new AuthException(AuthErrorCode.ALREADY_LOGOUT_USER);
         }
 
-        redisService.deleteRefreshToken(jwtProvider.getUserEmail(token));
+        redisService.deleteRefreshToken(jwtProvider.getUserEmail(token), Provider.LOCAL, TokenType.SERVER);
     }
 
 
@@ -148,7 +150,23 @@ public class CommonAuthService {
 
         authRepository.delete(user);
 
-        redisService.deleteRefreshToken(user.getUserEmail());
+        Provider provider = user.getProvider();
+        String userEmail = user.getUserEmail();
+
+        // 소셜 타입인 경우 로컬, 소셜 타입의 Refresh Token 모두 삭제
+        if (provider.equals(Provider.LOCAL)) {
+            redisService.deleteRefreshToken(userEmail, provider, TokenType.SERVER);
+        }
+        else if (provider.equals(Provider.APPLE)) {
+            redisService.deleteRefreshToken(userEmail, provider, TokenType.SERVER);
+            redisService.deleteRefreshToken(userEmail, provider, TokenType.REFRESH);
+        }
+        else if (provider.equals(Provider.KAKAO)) {
+            redisService.deleteRefreshToken(userEmail, provider, TokenType.SERVER);
+            redisService.deleteRefreshToken(userEmail, provider, TokenType.REFRESH);
+        }
+
+
     }
 
 

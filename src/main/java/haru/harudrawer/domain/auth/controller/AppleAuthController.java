@@ -1,6 +1,7 @@
 package haru.harudrawer.domain.auth.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -28,8 +29,8 @@ public class AppleAuthController {
 
     @DeleteMapping("/apple")
     @Operation(summary = "애플 회원 탈퇴", description = "애플 회원 탈퇴(토큰 회수)를 처리합니다. \n 응답 코드에 따른 자세한 결과는 PostMan API 명세서를 참고 부탁드립니다.")
-    public ResponseEntity<ApiResponse<ResponseCode>> delete(@RequestParam String authorizationCode) throws Exception {
-        appleAuthService.revokeAppleToken(authorizationCode);
+    public ResponseEntity<ApiResponse<ResponseCode>> delete(HttpServletRequest request) throws Exception {
+        appleAuthService.revokeAppleToken(request);
 
         return ResponseEntity.ok(ApiResponse.of(ResponseCode.SUCCESS));
     }
