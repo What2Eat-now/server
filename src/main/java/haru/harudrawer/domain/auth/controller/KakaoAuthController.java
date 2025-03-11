@@ -45,7 +45,7 @@ public class KakaoAuthController {
     }
 
     @DeleteMapping("/kakao")
-    @Operation(summary = "카카오 회원 탈퇴", description = "카카오 소셜 회원 탈퇴(연결 해제)를 처리합니다. kakaoAccessToken을 제공해야 합니다.")
+    @Operation(summary = "카카오 회원 탈퇴", description = "카카오 소셜 회원 탈퇴(연결 해제)를 처리합니다.")
     public ResponseEntity<ApiResponse<ResponseCode>> delete() {
         kakaoAuthService.delete();
 

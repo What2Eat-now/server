@@ -73,8 +73,8 @@ public class CommonAuthController {
 
     @PostMapping("/reissue")
     @Operation(summary = "Access Token 재발급", description = "Access Token 재발급을 처리합니다. \n 응답 코드에 따른 자세한 결과는 PostMan API 명세서를 참고 부탁드립니다.")
-    public ResponseEntity<ApiResponse<CommonResponseDTO.LoginResponseDTO>> refreshAccessToken(@RequestBody CommonRequestDTO.TokenRefreshDTO request) {
-        CommonResponseDTO.LoginResponseDTO token = tokenService.refreshToken(request);
+    public ResponseEntity<ApiResponse<CommonResponseDTO.LoginResponseDTO>> refreshAccessToken(@RequestParam String refreshToken ) {
+        CommonResponseDTO.LoginResponseDTO token = tokenService.refreshToken(refreshToken);
 
         return ResponseEntity.ok(ApiResponse.of(token));
 
