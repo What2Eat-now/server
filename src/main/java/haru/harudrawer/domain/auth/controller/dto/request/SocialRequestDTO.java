@@ -6,11 +6,11 @@ import jakarta.validation.constraints.Size;
 import lombok.Builder;
 import lombok.Getter;
 
-public class KakaoRequestDTO {
+public class SocialRequestDTO {
 
     @Builder
     @Getter
-    public static class KakaoSignupDTO {
+    public static class SocialSignupDTO {
 
         @NotBlank(message = "이메일은 필수 입력 항목입니다.")
         @Email(message = "이메일 형식이 올바르지 않습니다.")
@@ -22,7 +22,4 @@ public class KakaoRequestDTO {
         private String nickName;
 
     }
-    ///////////////////////////////////////////////////////////////////
-
-
 }

@@ -94,6 +94,8 @@ public class JwtProvider {
 
     // 토큰에서 클레임 파싱
     private Claims parseClaims(String token) {
+        validateToken(token);
+
         return Jwts.parser()
                 .verifyWith(extractSecretKey())
                 .build()

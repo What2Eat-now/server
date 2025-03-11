@@ -1,6 +1,7 @@
 package haru.harudrawer.domain.auth.controller;
 
 
+import haru.harudrawer.domain.auth.controller.dto.request.SocialRequestDTO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -8,7 +9,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import haru.harudrawer.domain.auth.controller.dto.request.KakaoRequestDTO;
 import haru.harudrawer.domain.auth.controller.dto.response.CommonResponseDTO;
 import haru.harudrawer.domain.auth.service.KakaoAuthService;
 import haru.harudrawer.global.response.ApiResponse;
@@ -38,7 +38,7 @@ public class KakaoAuthController {
 
     @PostMapping("/signup/kakao")
     @Operation(summary = "카카오 회원가입", description = "카카오 소셜 회원가입을 처리합니다. 이메일, 닉네임을 제공해야 합니다.")
-    public ResponseEntity<ApiResponse<ResponseCode>> signup(@RequestBody KakaoRequestDTO.KakaoSignupDTO request) {
+    public ResponseEntity<ApiResponse<ResponseCode>> signup(@RequestBody SocialRequestDTO.SocialSignupDTO request) {
         kakaoAuthService.signup(request);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.of(ResponseCode.CREATED));
@@ -46,8 +46,8 @@ public class KakaoAuthController {
 
     @DeleteMapping("/kakao")
     @Operation(summary = "카카오 회원 탈퇴", description = "카카오 소셜 회원 탈퇴(연결 해제)를 처리합니다. kakaoAccessToken을 제공해야 합니다.")
-    public ResponseEntity<ApiResponse<ResponseCode>> delete(@RequestParam String accessToken) {
-        kakaoAuthService.delete(accessToken);
+    public ResponseEntity<ApiResponse<ResponseCode>> delete() {
+        kakaoAuthService.delete();
 
         return ResponseEntity.ok(ApiResponse.of(ResponseCode.SUCCESS));
     }

@@ -22,7 +22,6 @@ public class CommonResponseDTO {
 
         private Provider provider;
 
-
     }
 
     @Getter
@@ -30,9 +29,10 @@ public class CommonResponseDTO {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public static class LoginResponseDTO {
 
+        @JsonInclude(JsonInclude.Include.NON_DEFAULT)
         private boolean requiresSignup;
 
-        private String email;
+        private String userEmail;
 
         private TokenDTO tokens;
     }
