@@ -60,9 +60,9 @@ public class TokenService {
     /**
      * 서버 자체 refresh Token으로 Access Token 재발급
      */
-    public CommonResponseDTO.LoginResponseDTO refreshToken(CommonRequestDTO.TokenRefreshDTO request) {
+    public CommonResponseDTO.LoginResponseDTO refreshToken(String refreshToken) {
         // 사용자 이메일 조회
-        String userEmail = jwtProvider.getUserEmail(request.getRefreshToken());
+        String userEmail = jwtProvider.getUserEmail(refreshToken);
 
         // 이메일로 사용자 정보 DB 조회
         User user = authRepository.findByUserEmail(userEmail).orElseThrow(
@@ -72,12 +72,12 @@ public class TokenService {
         Optional<String> findTokenOpt = redisService.getToken(userEmail, user.getProvider(), TokenType.SERVER);
 
         // refresh token 검증
-        if (findTokenOpt.isEmpty() || !findTokenOpt.get().equals(request.getRefreshToken())) {
+        if (findTokenOpt.isEmpty() || !findTokenOpt.get().equals(refreshToken)) {
             throw new AuthException(AuthErrorCode.INVALID_TOKEN);
         }
 
-        // redis에서 만료된 RefreshToken 삭제
-        deleteRefreshToken(request.getRefreshToken(), user);
+        // redis에서 RefreshToken 삭제
+        deleteRefreshToken(refreshToken, user);
 
         // 새 토큰 생성
         CommonResponseDTO.TokenDTO tokens = createTokens(user);
