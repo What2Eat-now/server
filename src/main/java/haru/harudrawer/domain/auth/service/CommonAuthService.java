@@ -118,28 +118,25 @@ public class CommonAuthService {
         User user = authRepository.findByUserId(jwtProvider.extractUserId())
                 .orElseThrow(() -> new AuthException(AuthErrorCode.USER_NOT_FOUND));
 
-        //비밀번호 일치할 경우
-        if (passwordEncoder.matches(request.getCurrentPassword(), user.getPassword())) {
-
-            // 변경 비밀번호, 변경 비밀번호 확인 서로 다를경우
-            if (!request.getNewPassword().equals(request.getNewPasswordCheck())) {
-                throw new AuthException(AuthErrorCode.PASSWORD_MISMATCH);
-            }
-
-            // 비밀번호 서식 틀렸을 경우 예외처리
-            if (!request.getNewPassword().matches("^(?=.*[A-Z])(?=.*[@$!%*?&]).{8,16}$")
-                    || !request.getNewPasswordCheck().matches("^(?=.*[A-Z])(?=.*[@$!%*?&]).{8,16}$")) {
-                throw new AuthException(AuthErrorCode.INVALID_PASSWORD);
-            }
-
-            // 변경 전 비밀번호와 같을 경우 예외
-            if (passwordEncoder.matches(request.getNewPassword(), user.getPassword())) {
-                throw new AuthException(AuthErrorCode.DUPLICATE_PASSWORD);
-            }
-
-            // 비밀번호 업데이트
-            user.updatePassword(passwordEncoder.encode(request.getNewPassword()));
+        // 변경 비밀번호, 변경 비밀번호 확인 서로 다를경우
+        if (!request.getNewPassword().equals(request.getNewPasswordCheck())) {
+            throw new AuthException(AuthErrorCode.PASSWORD_MISMATCH);
         }
+
+        // 비밀번호 서식 틀렸을 경우 예외처리
+        if (!request.getNewPassword().matches("^(?=.*[A-Z])(?=.*[@$!%*?&]).{8,16}$")
+                || !request.getNewPasswordCheck().matches("^(?=.*[A-Z])(?=.*[@$!%*?&]).{8,16}$")) {
+            throw new AuthException(AuthErrorCode.INVALID_PASSWORD);
+        }
+
+        // 변경 전 비밀번호와 같을 경우 예외
+        if (passwordEncoder.matches(request.getNewPassword(), user.getPassword())) {
+            throw new AuthException(AuthErrorCode.DUPLICATE_PASSWORD);
+        }
+
+        // 비밀번호 업데이트
+        user.updatePassword(passwordEncoder.encode(request.getNewPassword()));
+
     }
 
     public void deleteUser() {

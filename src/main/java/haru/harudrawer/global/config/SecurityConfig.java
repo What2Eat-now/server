@@ -98,7 +98,8 @@ public class SecurityConfig {
                 antMatcher(HttpMethod.DELETE, "/api/v1/auth"),
                 antMatcher("/api/v1/auth/kakao"),
                 antMatcher("/api/v1/auth/apple"),
-                antMatcher("/api/v1/auth/local")
+                antMatcher("/api/v1/auth/local"),
+                antMatcher("api/v1/auth/check-email/recovery")
 
         );
 
@@ -113,7 +114,10 @@ public class SecurityConfig {
                 antMatcher("/v3/api-docs/**"),
                 antMatcher("/api/v1/auth/login/**"),
                 antMatcher("/api/v1/auth/signup/**"),
-                antMatcher("/api/v1/auth/reissue")
+                antMatcher("/api/v1/auth/reissue"),
+                antMatcher("/api/v1/auth/send-verification"),
+                antMatcher("/api/v1/auth/verification-code"),
+                antMatcher("api/v1/auth/check-email/signup")
         );
 
         return requestMatchers.toArray(RequestMatcher[]::new);
