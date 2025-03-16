@@ -1,5 +1,6 @@
 package haru.harudrawer.global.security.jwt;
 
+import haru.harudrawer.global.exception.CustomException;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
