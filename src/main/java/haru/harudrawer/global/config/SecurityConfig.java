@@ -40,7 +40,7 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChainAdmin(HttpSecurity http) throws Exception {
         configureCommonSecuritySettings(http);
 
-        http.securityMatchers(matchers -> matchers.requestMatchers("/**"))
+        http.securityMatchers(matchers -> matchers.requestMatchers("/api/v1/**"))
                 .authorizeHttpRequests(auth -> auth
                         .anyRequest().hasRole("ADMIN"));
         return http.build();
