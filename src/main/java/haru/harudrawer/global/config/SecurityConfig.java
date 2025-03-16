@@ -34,22 +34,15 @@ public class SecurityConfig {
     private final JwtProvider jwtProvider;
     private final CustomUserDetailsService userDetailsService;
 
-    /**
-     * permitAll 권한을 가진 엔드포인트에 적용되는 Security FilterChain
-     * @param http
-     * @return
-     * @throws Exception
-     */
+
     @Bean
-    @Order(1)
-    public SecurityFilterChain securityFilterChainPermitAll(HttpSecurity http) throws Exception {
+    @Order(3)
+    public SecurityFilterChain securityFilterChainAdmin(HttpSecurity http) throws Exception {
         configureCommonSecuritySettings(http);
 
-        http.securityMatchers(matchers -> matchers.requestMatchers(requestPermitAll()))
+        http.securityMatchers(matchers -> matchers.requestMatchers("/**"))
                 .authorizeHttpRequests(auth -> auth
-                        .anyRequest()
-                        .permitAll());
-
+                        .anyRequest().hasRole("ADMIN"));
         return http.build();
     }
 
@@ -74,6 +67,27 @@ public class SecurityConfig {
         return http.build();
     }
 
+
+    /**
+     * permitAll 권한을 가진 엔드포인트에 적용되는 Security FilterChain
+     *
+     * @param http
+     * @return
+     * @throws Exception
+     */
+    @Bean
+    @Order(1)
+    public SecurityFilterChain securityFilterChainPermitAll(HttpSecurity http) throws Exception {
+        configureCommonSecuritySettings(http);
+
+        http.securityMatchers(matchers -> matchers.requestMatchers(requestPermitAll()))
+                .authorizeHttpRequests(auth -> auth
+                        .anyRequest()
+                        .permitAll());
+
+        return http.build();
+    }
+
     // 인증 및 인가가 필요한 엔드포인트에 적용되는 RequestMatcher
     private RequestMatcher[] requestHasRoleUser() {
         List<RequestMatcher> requestMatchers = List.of(
@@ -84,7 +98,8 @@ public class SecurityConfig {
                 antMatcher(HttpMethod.DELETE, "/api/v1/auth"),
                 antMatcher("/api/v1/auth/kakao"),
                 antMatcher("/api/v1/auth/apple"),
-                antMatcher("/api/v1/auth/local")
+                antMatcher("/api/v1/auth/local"),
+                antMatcher("api/v1/auth/check-email/recovery")
 
         );
 
@@ -99,7 +114,10 @@ public class SecurityConfig {
                 antMatcher("/v3/api-docs/**"),
                 antMatcher("/api/v1/auth/login/**"),
                 antMatcher("/api/v1/auth/signup/**"),
-                antMatcher("/api/v1/auth/reissue")
+                antMatcher("/api/v1/auth/reissue"),
+                antMatcher("/api/v1/auth/send-verification"),
+                antMatcher("/api/v1/auth/verification-code"),
+                antMatcher("api/v1/auth/check-email/signup")
         );
 
         return requestMatchers.toArray(RequestMatcher[]::new);

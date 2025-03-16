@@ -30,9 +30,6 @@ public class CommonRequestDTO {
     @Builder
     public static class UpdatePasswordDTO {
 
-        @NotBlank(message = "기존 비밀번호는 필수 입력 항목입니다.")
-        private String currentPassword;
-
         @NotBlank(message = "변경 비밀번호는 필수 입력 항목입니다.")
         private String newPassword;
 
