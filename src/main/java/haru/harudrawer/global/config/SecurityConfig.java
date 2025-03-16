@@ -34,22 +34,15 @@ public class SecurityConfig {
     private final JwtProvider jwtProvider;
     private final CustomUserDetailsService userDetailsService;
 
-    /**
-     * permitAll 권한을 가진 엔드포인트에 적용되는 Security FilterChain
-     * @param http
-     * @return
-     * @throws Exception
-     */
+
     @Bean
-    @Order(1)
-    public SecurityFilterChain securityFilterChainPermitAll(HttpSecurity http) throws Exception {
+    @Order(3)
+    public SecurityFilterChain securityFilterChainAdmin(HttpSecurity http) throws Exception {
         configureCommonSecuritySettings(http);
 
-        http.securityMatchers(matchers -> matchers.requestMatchers(requestPermitAll()))
+        http.securityMatchers(matchers -> matchers.requestMatchers("/**"))
                 .authorizeHttpRequests(auth -> auth
-                        .anyRequest()
-                        .permitAll());
-
+                        .anyRequest().hasRole("ADMIN"));
         return http.build();
     }
 
@@ -70,6 +63,27 @@ public class SecurityConfig {
         //    UsernamePasswordAuthenticationFilter 앞에 JWT 필터를 두어, 토큰 검증이 먼저 수행되도록
         http.addFilterBefore(new JwtAuthenticationFilter(jwtProvider, userDetailsService)
                 , UsernamePasswordAuthenticationFilter.class);
+
+        return http.build();
+    }
+
+
+    /**
+     * permitAll 권한을 가진 엔드포인트에 적용되는 Security FilterChain
+     *
+     * @param http
+     * @return
+     * @throws Exception
+     */
+    @Bean
+    @Order(1)
+    public SecurityFilterChain securityFilterChainPermitAll(HttpSecurity http) throws Exception {
+        configureCommonSecuritySettings(http);
+
+        http.securityMatchers(matchers -> matchers.requestMatchers(requestPermitAll()))
+                .authorizeHttpRequests(auth -> auth
+                        .anyRequest()
+                        .permitAll());
 
         return http.build();
     }

@@ -68,7 +68,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             // 기타 예외는 500 처리
             handleOtherException(response, e);
         }
-
     }
 
     // Authorization 헤더에서 실제 JWT 토큰 문자열만 추출
@@ -102,3 +101,4 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         response.getWriter().write(objectMapper.writeValueAsString(errorResponse));
     }
 }
+
