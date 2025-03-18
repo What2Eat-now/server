@@ -34,18 +34,6 @@ public class SecurityConfig {
     private final JwtProvider jwtProvider;
     private final CustomUserDetailsService userDetailsService;
 
-
-    @Bean
-    @Order(3)
-    public SecurityFilterChain securityFilterChainAdmin(HttpSecurity http) throws Exception {
-        configureCommonSecuritySettings(http);
-
-        http.securityMatchers(matchers -> matchers.requestMatchers("/api/v1/**"))
-                .authorizeHttpRequests(auth -> auth
-                        .anyRequest().hasRole("ADMIN"));
-        return http.build();
-    }
-
     @Bean
     @Order(2)
     public SecurityFilterChain securityFilterChainAuthorized(HttpSecurity http) throws Exception {
@@ -99,8 +87,7 @@ public class SecurityConfig {
                 antMatcher("/api/v1/auth/kakao"),
                 antMatcher("/api/v1/auth/apple"),
                 antMatcher("/api/v1/auth/local"),
-                antMatcher("api/v1/auth/check-email/recovery")
-
+                antMatcher("/api/v1/auth/logout")
         );
 
         return requestMatchers.toArray(RequestMatcher[]::new);
@@ -117,7 +104,10 @@ public class SecurityConfig {
                 antMatcher("/api/v1/auth/reissue"),
                 antMatcher("/api/v1/auth/send-verification"),
                 antMatcher("/api/v1/auth/verification-code"),
-                antMatcher("api/v1/auth/check-email/signup")
+                antMatcher("/api/v1/auth/check-email/recovery"),
+                antMatcher("/api/v1/auth/check-email/signup"),
+                antMatcher("/api/v1/auth/local/reset-password"),
+                antMatcher("/api/v1/auth/local/find-email")
         );
 
         return requestMatchers.toArray(RequestMatcher[]::new);
