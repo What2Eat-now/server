@@ -1,5 +1,8 @@
 package haru.harudrawer.domain.diary.controller.dto;
 
+import com.fasterxml.jackson.annotation.JsonSetter;
+import com.fasterxml.jackson.annotation.Nulls;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -8,6 +11,7 @@ import lombok.Getter;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 public class DiaryRequestDTO {
@@ -43,6 +47,7 @@ public class DiaryRequestDTO {
         private List<MultipartFile> uploadImgList;
     }
 
+    @JsonDeserialize(builder = DiaryRequestDTO.DiaryUpdateDTO.DiaryUpdateDTOBuilder.class)
     @Builder
     @Getter
     public static class DiaryUpdateDTO {
@@ -71,9 +76,11 @@ public class DiaryRequestDTO {
 
         private Integer markerNumber;
 
-        private List<String> existingImgList;
+        @Builder.Default
+        private List<String> existingImgList = new ArrayList<>();
 
-        private List<MultipartFile> newImgList;
+        @Builder.Default
+        private List<MultipartFile> newImgList = new ArrayList<>();
     }
 
     @Getter

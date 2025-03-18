@@ -23,6 +23,7 @@ import haru.harudrawer.domain.diary.repository.DiaryRepository;
 import haru.harudrawer.global.s3.S3Service;
 import haru.harudrawer.global.security.jwt.JwtProvider;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -69,8 +70,6 @@ public class DiaryService {
     public void updateDiary(Long diaryId, DiaryRequestDTO.DiaryUpdateDTO request) {
         Long userId = jwtProvider.extractUserId();
 
-        log.info("diaryId = " + diaryId);
-
         Diary existingDiary = diaryRepository.findById(diaryId).orElseThrow(
                 () -> new DiaryException(DiaryErrorCode.DIARY_NOT_FOUND));
 
@@ -82,9 +81,14 @@ public class DiaryService {
                 .map(diaryImage -> diaryImage.getImageUrl())
                 .collect(Collectors.toList());
 
+        // 기존 사진 url 리스트 null 체크
+        List<String> existingImgList = request.getExistingImgList() != null ?
+                request.getExistingImgList()
+                : Collections.emptyList();
+
         // 삭제할 이미지 URL 리스트 추출
         List<String> deleteUrlList = existingUrlList.stream()
-                .filter(imgUrl -> !request.getExistingImgList().contains(imgUrl))
+                .filter(imgUrl -> !existingImgList.contains(imgUrl))
                 .collect(Collectors.toList());
 
         // 삭제할 이미지가 존재하는 경우
