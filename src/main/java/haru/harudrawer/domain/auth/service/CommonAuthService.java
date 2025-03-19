@@ -72,7 +72,6 @@ public class CommonAuthService {
         return CommonResponseDTO.GetUserInfoDTO.builder()
                 .nickName(findUser.getNickName())
                 .userEmail(findUser.getUserEmail())
-                .userName(findUser.getUserName())
                 .phoneNumber(findUser.getPhoneNumber())
                 .provider(findUser.getProvider())
                 .build();

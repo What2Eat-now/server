@@ -1,6 +1,7 @@
 package haru.harudrawer.domain.auth.service;
 
 import haru.harudrawer.global.redis.RedisService;
+import haru.harudrawer.global.security.service.EncryptService;
 import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -41,6 +42,7 @@ public class LocalAuthService {
     private final EmailRepository emailRepository;
     private final EmailService emailService;
     private final RedisService redisService;
+    private final EncryptService encryptService;
 
     /**
      * 로컬 회원 가입
@@ -58,12 +60,12 @@ public class LocalAuthService {
         authRepository.save(User.builder()
                 .userEmail(request.getUserEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
-                .phoneNumber(request.getPhoneNumber())
+                .phoneNumber(encryptService.encrypt(request.getPhoneNumber()))
+                .phoneHash(encryptService.sha256(request.getPhoneNumber()))
                 .nickName(request.getNickName())
                 .role(Role.USER)
                 .provider(Provider.LOCAL)
                 .build());
-
     }
 
     /**
@@ -121,7 +123,9 @@ public class LocalAuthService {
      * 아이디 찾기
      */
     public String findUserEmail(LocalRequestDTO.FindEmailDTO request) {
-        User user = authRepository.findByPhoneNumberAndNickName(request.getPhoneNumber(), request.getNickName())
+        String hash = encryptService.sha256(request.getPhoneNumber());
+
+        User user = authRepository.findByPhoneHashAndNickName(hash, request.getNickName())
                 .orElseThrow(() -> new AuthException(AuthErrorCode.USER_NOT_FOUND)
         );
 
