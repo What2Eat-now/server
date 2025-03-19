@@ -1,5 +1,6 @@
 package haru.harudrawer.domain.diary.service;
 
+import haru.harudrawer.global.security.service.EncryptService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.locationtech.jts.geom.Coordinate;
@@ -38,7 +39,7 @@ public class DiaryService {
     private final DiaryConverter diaryConverter;
     private final S3Service s3Service;
     private final GeometryFactory geometryFactory;
-
+    private final EncryptService encryptService;
 
     // 다이어리 작성
     public void writeDiary(DiaryRequestDTO.DiaryWriteDTO request){
@@ -74,7 +75,8 @@ public class DiaryService {
                 () -> new DiaryException(DiaryErrorCode.DIARY_NOT_FOUND));
 
         // 다이어리 업데이트
-        existingDiary.update(request, getPoint(request.getLatitude(), request.getLongitude()));
+        existingDiary.update(request,
+                getPoint(request.getLatitude(), request.getLongitude()), encryptService.encrypt(request.getContent()));
 
         // 기존 이미지 URL 리스트
         List<String> existingUrlList = existingDiary.getDiaryImageList().stream()
