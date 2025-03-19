@@ -1,5 +1,7 @@
 package haru.harudrawer.domain.diary.Converter;
 
+import haru.harudrawer.global.security.service.EncryptService;
+import lombok.RequiredArgsConstructor;
 import org.locationtech.jts.geom.Point;
 import org.springframework.stereotype.Component;
 import haru.harudrawer.domain.auth.entity.User;
@@ -12,12 +14,15 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Component
+@RequiredArgsConstructor
 public class DiaryConverter {
+
+    private final EncryptService encryptService;
 
     // 다이어리 엔티티로 변환
     public Diary todiary(DiaryRequestDTO.DiaryWriteDTO request, User user, Point point) {
         return Diary.builder().title(request.getTitle())
-                .content(request.getContent())
+                .content(encryptService.encrypt(request.getContent()))
                 .user(user)
                 .visitDate(request.getVisitDate())
                 .placeName(request.getPlaceName())
@@ -32,7 +37,7 @@ public class DiaryConverter {
         return DiaryResponseDTO.GetDiaryDTO.builder()
                 .diaryId(diary.getDiaryId())
                 .title(diary.getTitle())
-                .content(diary.getContent())
+                .content(encryptService.decrypt(diary.getContent()))
                 .placeName(diary.getPlaceName())
                 .rate(diary.getRate())
                 .latitude(diary.getLocation().getX())

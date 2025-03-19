@@ -30,7 +30,8 @@ public class Diary {
     @Column(name = "title", nullable = false, length = 30)
     private String title;
 
-    @Column(name = "content", nullable = false, length = 200)
+    @Lob
+    @Column(name = "content", nullable = false,  columnDefinition = "TEXT")
     private String content;
 
     @Column(name = "place_name", nullable = false, length = 50)
@@ -56,9 +57,9 @@ public class Diary {
     @JoinColumn(name = "user_id")
     private User user;
 
-    public void update(DiaryRequestDTO.DiaryUpdateDTO request, Point location) {
+    public void update(DiaryRequestDTO.DiaryUpdateDTO request, Point location, String encryptedContent) {
         this.title = request.getTitle();
-        this.content = request.getContent();
+        this.content = encryptedContent;
         this.placeName = request.getPlaceName();
         this.visitDate = request.getVisitDate();
         this.location = location;
