@@ -31,11 +31,11 @@ public class User extends BaseEntity {
     @Column(name = "nick_name", nullable = false, length = 20)
     private String nickName;
 
-    @Lob
-    @Column(name = "phone_number", length = 25, columnDefinition = "TEXT")
+    @Column(name = "phone_number", length = 25)
     private String phoneNumber;
 
-    @Column(name = "phone_hash", unique = true)
+    @Lob
+    @Column(name = "phone_hash", unique = true, columnDefinition = "TEXT")
     private String phoneHash;
 
     @Column(name = "password", length = 100)
