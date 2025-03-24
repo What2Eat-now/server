@@ -35,7 +35,7 @@ public class User extends BaseEntity {
     @Column(name = "phone_number", columnDefinition = "TEXT")
     private String phoneNumber;
 
-    @Column(name = "phone_hash", unique = true, length = 100)
+    @Column(name = "phone_hash",  length = 100)
     private String phoneHash;
 
     @Column(name = "password", length = 100)
