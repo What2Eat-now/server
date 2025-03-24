@@ -32,10 +32,10 @@ public class User extends BaseEntity {
     private String nickName;
 
     @Lob
-    @Column(name = "phone_number", length = 25, columnDefinition = "TEXT")
+    @Column(name = "phone_number", columnDefinition = "TEXT")
     private String phoneNumber;
 
-    @Column(name = "phone_hash", nullable = false, unique = true)
+    @Column(name = "phone_hash",  length = 100)
     private String phoneHash;
 
     @Column(name = "password", length = 100)
