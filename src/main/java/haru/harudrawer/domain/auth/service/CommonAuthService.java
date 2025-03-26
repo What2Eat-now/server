@@ -2,29 +2,22 @@ package haru.harudrawer.domain.auth.service;
 
 import haru.harudrawer.domain.auth.controller.dto.request.CommonRequestDTO;
 import haru.harudrawer.domain.auth.controller.dto.response.CommonResponseDTO;
-import haru.harudrawer.domain.auth.controller.dto.response.LocalResponseDTO;
 import haru.harudrawer.domain.auth.entity.Provider;
 import haru.harudrawer.domain.auth.entity.TokenType;
 import haru.harudrawer.domain.auth.entity.User;
 import haru.harudrawer.domain.auth.exception.AuthErrorCode;
 import haru.harudrawer.domain.auth.exception.AuthException;
 import haru.harudrawer.domain.auth.repository.AuthRepository;
-import haru.harudrawer.domain.diary.repository.DiaryRepository;
 import haru.harudrawer.global.redis.RedisService;
 import haru.harudrawer.global.s3.S3Service;
-import haru.harudrawer.global.security.domain.CustomUserDetails;
 import haru.harudrawer.global.security.jwt.JwtProvider;
+import haru.harudrawer.global.security.service.EncryptService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -38,7 +31,7 @@ public class CommonAuthService {
     private final RedisService redisService;
     private final TokenService tokenService;
     private final S3Service s3Service;
-
+    private final EncryptService encryptService;
 
     /**
      * 사용자 로그 아웃
@@ -72,8 +65,7 @@ public class CommonAuthService {
         return CommonResponseDTO.GetUserInfoDTO.builder()
                 .nickName(findUser.getNickName())
                 .userEmail(findUser.getUserEmail())
-                .userName(findUser.getUserName())
-                .phoneNumber(findUser.getPhoneNumber())
+                .phoneNumber(encryptService.decrypt(findUser.getPhoneNumber()))
                 .provider(findUser.getProvider())
                 .build();
     }

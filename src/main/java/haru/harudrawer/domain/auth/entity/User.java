@@ -31,11 +31,12 @@ public class User extends BaseEntity {
     @Column(name = "nick_name", nullable = false, length = 20)
     private String nickName;
 
-    @Column(name = "user_name", length = 10)
-    private String userName;
-
-    @Column(name = "phone_number", length = 25)
+    @Lob
+    @Column(name = "phone_number", columnDefinition = "TEXT")
     private String phoneNumber;
+
+    @Column(name = "phone_hash",  length = 100)
+    private String phoneHash;
 
     @Column(name = "password", length = 100)
     private String password;
@@ -43,7 +44,6 @@ public class User extends BaseEntity {
     @Column(name = "provider", nullable = false)
     @Enumerated(EnumType.STRING)
     private Provider provider;
-
 
     @Column(name = "role")
     @Enumerated(EnumType.STRING)
