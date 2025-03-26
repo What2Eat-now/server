@@ -49,6 +49,7 @@ aws:
     bucket: ${S3_BUCKET}
     region:
       static: ${S3_REGION}
+    cloud-front: ${S3_CLOUD_FRONT_URL}
     credentials:
       access-key: ${S3_ACCESS_KEY}
       secret-key: ${S3_SECRET_KEY}
