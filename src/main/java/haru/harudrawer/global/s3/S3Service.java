@@ -33,6 +33,9 @@ public class S3Service {
     @Value("${aws.s3.region.static}")
     private String region;
 
+    @Value("${aws.s3.cloud-front}")
+    private String cloudFrontUrl;
+
     private String awsUrlPrefix;
 
     @PostConstruct
@@ -130,7 +133,7 @@ public class S3Service {
     }
 
     private String getUploadFileUrl(String key) {
-        return awsUrlPrefix + key;
+        return cloudFrontUrl + key;
     }
 
     public String extractKey(String imgUrl) {
