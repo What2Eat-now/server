@@ -85,7 +85,6 @@ class LocalAuthServiceTest {
 
 
     @Test
-    @Commit
     @DisplayName("회원가입 테스트")
     public void signupTest() {
         //Given
@@ -112,11 +111,18 @@ class LocalAuthServiceTest {
     public void loginTest() throws Exception {
         //Given
 
+        // 회원가입 객체 생성
+        LocalRequestDTO.SignUpRequestDTO tester = LocalRequestDTO.SignUpRequestDTO.builder()
+                .userEmail(testEmail)
+                .password(testPassword)
+                .nickName(testNickname)
+                .phoneNumber(testPhoneNumber)
+                .build();
+
         // 로그인 객체 생성
         LocalRequestDTO.LoginRequestDTO loginRequestDTO = LocalRequestDTO.LoginRequestDTO.builder()
                 .userEmail(testEmail)
                 .password(testPassword).build();
-
 
         // 토큰 생성 및 검증
         String accessToken = "dummyAccessToken";
@@ -127,6 +133,9 @@ class LocalAuthServiceTest {
         when(jwtProvider.createRefreshToken(anyString())).thenReturn(refreshToken);
 
         //When
+
+        // 회원가입 진행
+        localAuthService.signUp(tester);
 
         // 로그인 진행
         CommonResponseDTO.LoginResponseDTO response = localAuthService.login(loginRequestDTO);
