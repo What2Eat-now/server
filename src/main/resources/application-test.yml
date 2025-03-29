@@ -6,9 +6,9 @@ spring:
       add-mappings: false
   datasource:
     url: ${TEST_DB_URL}
-    driver-class-name: ${DB_DRIVER}
-    username: ${DB_USER}
-    password: ${DB_PASSWORD}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: root
+    password:
   jpa:
     show-sql: true
     hibernate:
