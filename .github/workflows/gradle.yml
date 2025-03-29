@@ -19,7 +19,11 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-
+    env:
+      TEST_DB_URL: jdbc:mysql://mysql:3306/test
+      DB_USER: root
+      DB_PASSWORD: 0000
+      DB_DRIVER: com.mysql.cj.jdbc.Driver
     services:
       mysql:
         image: mysql:8.0
