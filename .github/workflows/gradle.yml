@@ -24,7 +24,7 @@ jobs:
       mysql:
         image: mysql:8.0
         env:
-          MYSQL_ROOT_PASSWORD: "0000"
+          MYSQL_ROOT_PASSWORD: 0000
           MYSQL_DATABASE: test
         ports:
           - 3306:3306
