@@ -82,6 +82,9 @@ public class TokenService {
         // 새 토큰 생성
         CommonResponseDTO.TokenDTO tokens = createTokens(user);
 
+        // 새로 발급받은 토큰 저장
+        redisService.saveToken(userEmail,tokens.getRefreshToken(), user.getProvider(), TokenType.SERVER);
+
         return CommonResponseDTO.LoginResponseDTO.builder()
                 .tokens(tokens)
                 .build();
