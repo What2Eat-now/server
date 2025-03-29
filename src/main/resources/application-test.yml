@@ -5,7 +5,7 @@ spring:
     resources:
       add-mappings: false
   datasource:
-    url: ${DB_URL}
+    url: ${TEST_DB_URL}
     driver-class-name: ${DB_DRIVER}
     username: ${DB_USER}
     password: ${DB_PASSWORD}
