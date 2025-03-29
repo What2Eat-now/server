@@ -30,18 +30,9 @@ public class S3Service {
     @Value("${aws.s3.bucket}")
     private String bucket;
 
-    @Value("${aws.s3.region.static}")
-    private String region;
-
     @Value("${aws.s3.cloud-front}")
     private String cloudFrontUrl;
 
-    private String awsUrlPrefix;
-
-    @PostConstruct
-    public void init() {
-        this.awsUrlPrefix = String.format("https://%s.s3.%s.amazonaws.com/", bucket, region);
-    }
 
     public List<String> uploadFiles(List<MultipartFile> files, String preFilePath) {
         return files.stream()
