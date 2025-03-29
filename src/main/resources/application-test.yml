@@ -8,7 +8,7 @@ spring:
     url: ${TEST_DB_URL}
     driver-class-name: ${DB_DRIVER}
     username: ${DB_USER:"root"}
-    password: ${DB_PASSWORD:"0000"}
+    password: ${DB_PASSWORD:""}
   jpa:
     show-sql: true
     hibernate:
