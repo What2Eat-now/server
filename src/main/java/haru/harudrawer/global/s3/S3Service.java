@@ -52,7 +52,9 @@ public class S3Service {
                         s3Client.putObject(
                                 PutObjectRequest.builder()
                                         .bucket(bucket) // S3 버킷 이름
-                                        .key(key)       // S3 파일 경로(Key)
+                                        .key(key)
+                                        .contentType(file.getContentType())
+                                        .contentDisposition("inline")// S3 파일 경로(Key)
                                         .build(),
                                 RequestBody.fromBytes(file.getBytes()) // 파일 데이터를 바이트 배열로 변환
                         );
@@ -119,7 +121,6 @@ public class S3Service {
             deleteFiles(imgList);
             log.info("탈퇴한 유저의 이미지 삭제 완료");
         }
-
     }
 
     /**
@@ -137,6 +138,6 @@ public class S3Service {
     }
 
     public String extractKey(String imgUrl) {
-        return imgUrl.replace(awsUrlPrefix, "");
+        return imgUrl.replace(cloudFrontUrl, "");
     }
 }

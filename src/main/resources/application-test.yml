@@ -5,14 +5,15 @@ spring:
     resources:
       add-mappings: false
   datasource:
-    url: jdbc:h2:tcp://localhost/~/jpashop;DB_CLOSE_DELAY=-1
-    driver-class-name: org.h2.Driver
-    username: sa
-    password:
+    url: ${DB_URL}
+    driver-class-name: ${DB_DRIVER}
+    username: ${DB_USER}
+    password: ${DB_PASSWORD}
   jpa:
     show-sql: true
     hibernate:
-      ddl-auto: create-drop
+      ddl-auto: update
+
   mail:
     host: smtp.gmail.com
     port: 587
@@ -44,6 +45,7 @@ aws:
     bucket: ${S3_BUCKET}
     region:
       static: ${S3_REGION}
+    cloud-front: ${S3_CLOUD_FRONT_URL}
     credentials:
       access-key: ${S3_ACCESS_KEY}
       secret-key: ${S3_SECRET_KEY}
