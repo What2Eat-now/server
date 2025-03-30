@@ -65,7 +65,7 @@ jobs:
           echo "DB_PASSWORD=$DB_PASSWORD"
 
       - name: Test network
-        run: ping -c 1 mysql
+        run: nc -z mysql 3306
 
       # Configure Gradle for optimal use in GitHub Actions, including caching of downloaded dependencies.
       # See: https://github.com/gradle/actions/blob/main/setup-gradle/README.md
