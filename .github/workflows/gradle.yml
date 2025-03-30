@@ -19,19 +19,15 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-    env:
-      TEST_DB_URL: ${{secrets.TEST_DB_URL}}
-      DB_USER: ${{secrets.DB_USER}}
-      DB_PASSWORD: ${{secrets.DB_PASSWORD}}
-      DB_DRIVER: ${{secrets.DB_DRIVER}}
+
     services:
       mysql:
         image: mysql:8.0
         env:
           MYSQL_ROOT_PASSWORD: ${{secrets.DB_ROOT_PASSWORD}}
           MYSQL_DATABASE: test
-          MYSQL_USER: ${{secrets.DB_USER}}
-          MYSQL_PASSWORD: ${{secrets.DB_PASSWORD}}
+          MYSQL_USER: son
+          MYSQL_PASSWORD: 0000
         ports:
           - 3306:3306
         options: >-

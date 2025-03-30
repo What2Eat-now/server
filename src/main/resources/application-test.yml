@@ -5,10 +5,10 @@ spring:
     resources:
       add-mappings: false
   datasource:
-    url: ${TEST_DB_URL}
-    driver-class-name: ${DB_DRIVER}
-    username: ${DB_USER}
-    password: ${DB_PASSWORD}
+    url: jdbc:mysql://mysql:3306/test
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: son
+    password: 0000
   jpa:
     show-sql: true
     hibernate:
