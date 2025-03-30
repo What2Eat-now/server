@@ -5,7 +5,7 @@ spring:
     resources:
       add-mappings: false
   datasource:
-    url: ${TEST_DB_URL:jdbc:mysql://mysql:3306/test}
+    url: ${TEST_DB_URL:jdbc:mysql://mydb:3306/test}
     driver-class-name: ${DB_DRIVER:com.mysql.cj.jdbc.Driver}
     username: ${DB_USER:son}
     password: ${DB_PASSWORD:0000}
