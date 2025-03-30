@@ -35,7 +35,6 @@ jobs:
         ports:
           - 3306:3306
         options: >-
-          --network-alias mydb
           --health-cmd="mysqladmin ping --silent"
           --health-interval=10s
           --health-timeout=5s
@@ -59,27 +58,6 @@ jobs:
           java-version: '21'
           distribution: 'temurin'
 
-      - name: Debug environment
-        run: |
-          echo "TEST_DB_URL=$TEST_DB_URL"
-          echo "DB_USER=$DB_USER"
-          echo "DB_PASSWORD=$DB_PASSWORD"
-
-      - name: Wait for MySQL DNS resolution
-        run: |
-          for i in {1..30}; do
-            if nslookup mydb; then
-              echo "mydb hostname resolved"
-              break
-            else
-              echo "Waiting for DNS resolution... ($i)"
-              sleep 2
-            fi
-          done
-
-      - name: Test network with netcat
-        run: nc -z mydb 3306
-
       # Configure Gradle for optimal use in GitHub Actions, including caching of downloaded dependencies.
       # See: https://github.com/gradle/actions/blob/main/setup-gradle/README.md
       - name: Setup Gradle
@@ -89,7 +67,7 @@ jobs:
         run: chmod +x gradlew
 
       - name: Build with Gradle Wrapper
-        run: ./gradlew build -Dspring.profiles.active=test
+        run: ./gradlew build -i
 
         # artifact(jar 파일) 업로드
       - name: Upload JAR artifact
