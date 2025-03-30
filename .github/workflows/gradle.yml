@@ -63,7 +63,7 @@ jobs:
         run: chmod +x gradlew
 
       - name: Build with Gradle Wrapper
-        run: ./gradlew build -i
+        run: ./gradlew build -Dspring.profiles.active=test
 
         # artifact(jar 파일) 업로드
       - name: Upload JAR artifact
