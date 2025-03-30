@@ -19,20 +19,47 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-
+    env:
+      DB_URL: ${{secrets.DB_URL}}
+      DB_DRIVER: ${{secrets.DB_DRIVER}}
+      DB_USER: ${{secrets.DB_USER}}
+      DB_PASSWORD: ${{secrets.DB_ROOT_PASSWORD}}
+      REDIS_HOST: ${{secrets.REDIS_HOST}}
+      REDIS_PORT: 6379
+      APPLE_CLIENT_ID: ${{secrets.APPLE_CLIENT_ID}}
+      APPLE_KEY_ID: ${{secrets.APPLE_KEY_ID}}
+      APPLE_PRIVATE_KEY_URL: ${{secrets.APPLE_PRIVATE_KEY_URL}}
+      APPLE_PUBLIC_KEY_URL: ${{secrets.APPLE_PUBLIC_KEY_URL}}
+      APPLE_TEAM_ID: ${{secrets.APPLE_TEAM_ID}}
+      EC2_HOST: ${{secrets.EC2_HOST}}
+      EC2_SSH_KEY: ${{secrets.EC2_SSH_KEY}}
+      EC2_USER: ${{secrets.EC2_USER}}
+      ENCRYPTION_KEY: ${{secrets.ENCRYPTION_KEY}}
+      JWT_ACCESS_EXPIRATION: ${{secrets.JWT_ACCESS_EXPIRATION}}
+      JWT_REFRESH_EXPIRATION: ${{secrets.JWT_REFRESH_EXPIRATION}}
+      JWT_SECRET: ${{secrets.JWT_SECRET}}
+      KAKAO_REDIRECT_URL: ${{secrets.KAKAO_REDIRECT_URL}}
+      KAKAO_REST_API_KEY: ${{secrets.KAKAO_REST_API_KEY}}
+      KAKAO_STORE_API_URL: ${{secrets.KAKAO_STORE_API_URL}}
+      S3_ACCESS_KEY: ${{secrets.S3_ACCESS_KEY}}
+      S3_BUCKET: ${{secrets.S3_BUCKET}}
+      S3_CLOUD_FRONT_URL: ${{secrets.S3_CLOUD_FRONT_URL}}
+      S3_REGION: ${{secrets.S3_REGION}}
+      S3_SECRET_KEY: ${{secrets.S3_SECRET_KEY}}
+      SMTP_ADDRESS: ${{secrets.SMTP_ADDRESS}}
+      SMTP_PASSWORD: ${{secrets.SMTP_PASSWORD}}
+      TEST_DB_URL: ${{secrets.TEST_DB_URL}}
     services:
-      mysql:
-        image: mysql:8.0
-        env:
-          MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
-          MYSQL_DATABASE: test
+
+      redis:
+        image: redis:7.2
         ports:
-          - 3306:3306
+          - 6379:6379
         options: >-
-          --health-cmd="mysqladmin ping --silent"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=3
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
 
     steps:
       - uses: actions/checkout@v4
@@ -44,6 +71,14 @@ jobs:
 
       # Configure Gradle for optimal use in GitHub Actions, including caching of downloaded dependencies.
       # See: https://github.com/gradle/actions/blob/main/setup-gradle/README.md
+      - name: setup MySQL
+        uses: mirromutth/mysql-action@v1.1
+        with:
+          host port: 3306
+          container port: 3306
+          mysql database: 'test'
+          mysql root password: ${{secrets.DB_ROOT_PASSWORD}}
+
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@af1da67850ed9a4cedd57bfd976089dd991e2582 # v4.0.0
 
@@ -51,7 +86,7 @@ jobs:
         run: chmod +x gradlew
 
       - name: Build with Gradle Wrapper
-        run: ./gradlew build
+        run: ./gradlew build -Dspring.profiles.active=test -i
 
         # artifact(jar 파일) 업로드
       - name: Upload JAR artifact
