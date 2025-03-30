@@ -64,7 +64,19 @@ jobs:
           echo "DB_USER=$DB_USER"
           echo "DB_PASSWORD=$DB_PASSWORD"
 
-      - name: Test network
+      - name: Wait for MySQL DNS resolution
+        run: |
+          for i in {1..30}; do
+            if nslookup mysql; then
+              echo "mysql hostname resolved"
+              break
+            else
+              echo "Waiting for DNS resolution... ($i)"
+              sleep 2
+            fi
+          done
+
+      - name: Test network with netcat
         run: nc -z mysql 3306
 
       # Configure Gradle for optimal use in GitHub Actions, including caching of downloaded dependencies.
