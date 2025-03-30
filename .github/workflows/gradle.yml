@@ -58,6 +58,15 @@ jobs:
           java-version: '21'
           distribution: 'temurin'
 
+      - name: Debug environment
+        run: |
+          echo "TEST_DB_URL=$TEST_DB_URL"
+          echo "DB_USER=$DB_USER"
+          echo "DB_PASSWORD=$DB_PASSWORD"
+
+      - name: Test network
+        run: ping -c 1 mysql
+
       # Configure Gradle for optimal use in GitHub Actions, including caching of downloaded dependencies.
       # See: https://github.com/gradle/actions/blob/main/setup-gradle/README.md
       - name: Setup Gradle
@@ -67,7 +76,7 @@ jobs:
         run: chmod +x gradlew
 
       - name: Build with Gradle Wrapper
-        run: ./gradlew build --scan
+        run: ./gradlew build -Dspring.profiles.active=test
 
         # artifact(jar 파일) 업로드
       - name: Upload JAR artifact
