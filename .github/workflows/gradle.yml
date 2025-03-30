@@ -26,6 +26,29 @@ jobs:
       DB_PASSWORD: ${{secrets.DB_ROOT_PASSWORD}}
       REDIS_HOST: ${{secrets.REDIS_HOST}}
       REDIS_PORT: 6379
+      APPLE_CLIENT_ID: ${{secrets.APPLE_CLIENT_ID}}
+      APPLE_KEY_ID: ${{secrets.APPLE_KEY_ID}}
+      APPLE_PRIVATE_KEY_URL: ${{secrets.APPLE_PRIVATE_KEY_URL}}
+      APPLE_PUBLIC_KEY_URL: ${{secrets.APPLE_PUBLIC_KEY_URL}}
+      APPLE_TEAM_ID: ${{secrets.APPLE_TEAM_ID}}
+      EC2_HOST: ${{secrets.EC2_HOST}}
+      EC2_SSH_KEY: ${{secrets.EC2_SSH_KEY}}
+      EC2_USER: ${{secrets.EC2_USER}}
+      ENCRYPTION_KEY: ${{secrets.ENCRYPTION_KEY}}
+      JWT_ACCESS_EXPIRATION: ${{secrets.JWT_ACCESS_EXPIRATION}}
+      JWT_REFRESH_EXPIRATION: ${{secrets.JWT_REFRESH_EXPIRATION}}
+      JWT_SECRET: ${{secrets.JWT_SECRET}}
+      KAKAO_REDIRECT_URL: ${{secrets.KAKAO_REDIRECT_URL}}
+      KAKAO_REST_API_KEY: ${{secrets.KAKAO_REST_API_KEY}}
+      KAKAO_STORE_API_URL: ${{secrets.KAKAO_STORE_API_URL}}
+      S3_ACCESS_KEY: ${{secrets.S3_ACCESS_KEY}}
+      S3_BUCKET: ${{secrets.S3_BUCKET}}
+      S3_CLOUD_FRONT_URL: ${{secrets.S3_CLOUD_FRONT_URL}}
+      S3_REGION: ${{secrets.S3_REGION}}
+      S3_SECRET_KEY: ${{secrets.S3_SECRET_KEY}}
+      SMTP_ADDRESS: ${{secrets.SMTP_ADDRESS}}
+      SMTP_PASSWORD: ${{secrets.SMTP_PASSWORD}}
+      TEST_DB_URL: ${{secrets.TEST_DB_URL}}
     services:
 
       redis:
