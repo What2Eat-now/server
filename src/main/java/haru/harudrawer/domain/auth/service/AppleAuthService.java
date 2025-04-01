@@ -133,7 +133,6 @@ public class AppleAuthService {
         CommonResponseDTO.TokenDTO tokens = tokenService.createTokens(user);
 
         return CommonResponseDTO.LoginResponseDTO.builder()
-                .requiresSignup(false)
                 .userEmail(user.getUserEmail())
                 .tokens(tokens)
                 .build();

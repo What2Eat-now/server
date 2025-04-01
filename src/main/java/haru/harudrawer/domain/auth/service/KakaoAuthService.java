@@ -1,25 +1,26 @@
 package haru.harudrawer.domain.auth.service;
 
 import haru.harudrawer.domain.auth.controller.dto.request.SocialRequestDTO;
-import haru.harudrawer.domain.auth.controller.dto.response.SocialResponseDTO;
-import haru.harudrawer.domain.auth.entity.TokenType;
-import haru.harudrawer.global.redis.RedisService;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.*;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.MultiValueMap;
-import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.RestTemplate;
 import haru.harudrawer.domain.auth.controller.dto.response.CommonResponseDTO;
+import haru.harudrawer.domain.auth.controller.dto.response.SocialResponseDTO;
 import haru.harudrawer.domain.auth.converter.AuthConverter;
 import haru.harudrawer.domain.auth.entity.Provider;
+import haru.harudrawer.domain.auth.entity.Role;
 import haru.harudrawer.domain.auth.entity.User;
 import haru.harudrawer.domain.auth.exception.AuthErrorCode;
 import haru.harudrawer.domain.auth.exception.AuthException;
 import haru.harudrawer.domain.auth.repository.AuthRepository;
 import haru.harudrawer.global.exception.CommonErrorCode;
+import haru.harudrawer.global.redis.RedisService;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.RestTemplate;
 
 import java.util.Optional;
 
@@ -33,14 +34,13 @@ public class KakaoAuthService{
     private final RestTemplate restTemplate;
     private final AuthConverter authConverter;
     private final AuthRepository authRepository;
-    private final RedisService redisService;
     private final TokenService tokenService;
     private final CommonAuthService commonAuthService;
 
     // 회원가입
-    public void signup(SocialRequestDTO.SocialSignupDTO request) {
+    public User signup(SocialResponseDTO.KakaoUserInfoDTO request) {
         //객체 변환후 저장
-        authRepository.save(authConverter.signupToKakaoUserEntity(request));
+        return authRepository.save(authConverter.signupToKakaoUserEntity(request));
 
     }
 
@@ -60,22 +60,15 @@ public class KakaoAuthService{
             throw new AuthException(AuthErrorCode.DUPLICATE_USER_EMAIL);
         }
 
-        // 사용자 존재하지 않을경우 회원 가입으로 리다이렉트 처리
-        if (userOpt.isEmpty()) {
-            return CommonResponseDTO.LoginResponseDTO.builder()
-                    .requiresSignup(true)
-                    .userEmail(userInfo.getKakaoAccount().getKakaoEmail())
-                    .tokens(null)
-                    .build();
-        }
+        // 사용자가 존재하지 않을 경우 회원가입 처리
+        User user;
+
+        user = userOpt.orElseGet(() -> signup(userInfo));
 
         // 로그인 성공
-        User user = userOpt.get();
-
         CommonResponseDTO.TokenDTO tokens = tokenService.createTokens(user);
 
         return CommonResponseDTO.LoginResponseDTO.builder()
-                .requiresSignup(false)
                 .userEmail(null)
                 .tokens(tokens)
                 .build();

@@ -28,18 +28,13 @@ public class KakaoAuthController {
     public ResponseEntity<ApiResponse<CommonResponseDTO.LoginResponseDTO>> login(@RequestParam String kakaoAccessToken) {
         CommonResponseDTO.LoginResponseDTO loginResult = kakaoAuthService.login(kakaoAccessToken);
 
-        if (loginResult.isRequiresSignup()) {
-            return ResponseEntity.status(HttpStatus.TEMPORARY_REDIRECT)
-                    .body(ApiResponse.of(ResponseCode.NEED_SIGNUP,loginResult));
-        }
-
         return ResponseEntity.ok(ApiResponse.of(loginResult));
     }
 
     @PostMapping("/signup/kakao")
     @Operation(summary = "카카오 회원가입", description = "카카오 소셜 회원가입을 처리합니다. 이메일, 닉네임을 제공해야 합니다.")
     public ResponseEntity<ApiResponse<ResponseCode>> signup(@RequestBody SocialRequestDTO.SocialSignupDTO request) {
-        kakaoAuthService.signup(request);
+//        kakaoAuthService.signup(request);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.of(ResponseCode.CREATED));
     }

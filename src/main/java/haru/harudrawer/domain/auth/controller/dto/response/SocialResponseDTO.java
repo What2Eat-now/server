@@ -87,6 +87,8 @@ public class SocialResponseDTO {
         //사용자 이메일 정보
         @JsonProperty("kakao_account")
         private SocialResponseDTO.KakaoAccount kakaoAccount;
+
+
     }
 
     @Getter
@@ -95,6 +97,9 @@ public class SocialResponseDTO {
 
         @JsonProperty("email")
         private String kakaoEmail;
+
+        @JsonProperty("profile")
+        private Profile profile;
     }
 
 
@@ -104,5 +109,12 @@ public class SocialResponseDTO {
         //고유 ID
         @JsonProperty("uuid")
         private String uuid;
+    }
+
+    @Getter
+    @Builder
+    public static class Profile {
+        @JsonProperty("nickname")
+        private String kakaoNickName;
     }
 }
