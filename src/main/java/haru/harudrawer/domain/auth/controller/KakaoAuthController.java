@@ -10,7 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import haru.harudrawer.domain.auth.controller.dto.response.CommonResponseDTO;
-import haru.harudrawer.domain.auth.service.KakaoAuthService;
+import haru.harudrawer.domain.auth.service.social.KakaoAuthService;
 import haru.harudrawer.global.response.ApiResponse;
 import haru.harudrawer.global.response.ResponseCode;
 
@@ -25,18 +25,10 @@ public class KakaoAuthController {
     // 카카오 로그인 후 토큰과 사용자 정보 반환받음
     @PostMapping("/login/kakao")
     @Operation(summary = "카카오 소셜 로그인", description = "카카오 소셜 로그인을 처리합니다. kakaoAccessToken을 제공해야 합니다.")
-    public ResponseEntity<ApiResponse<CommonResponseDTO.LoginResponseDTO>> login(@RequestParam String kakaoAccessToken) {
+    public ResponseEntity<ApiResponse<CommonResponseDTO.LoginResponseDTO>> login(@RequestParam String kakaoAccessToken) throws Exception {
         CommonResponseDTO.LoginResponseDTO loginResult = kakaoAuthService.login(kakaoAccessToken);
 
         return ResponseEntity.ok(ApiResponse.of(loginResult));
-    }
-
-    @PostMapping("/signup/kakao")
-    @Operation(summary = "카카오 회원가입", description = "카카오 소셜 회원가입을 처리합니다. 이메일, 닉네임을 제공해야 합니다.")
-    public ResponseEntity<ApiResponse<ResponseCode>> signup(@RequestBody SocialRequestDTO.SocialSignupDTO request) {
-//        kakaoAuthService.signup(request);
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ApiResponse.of(ResponseCode.CREATED));
     }
 
     @DeleteMapping("/kakao")

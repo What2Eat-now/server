@@ -4,11 +4,10 @@ import io.swagger.v3.oas.annotations.Operation;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import haru.harudrawer.domain.auth.controller.dto.response.CommonResponseDTO;
-import haru.harudrawer.domain.auth.service.AppleAuthService;
+import haru.harudrawer.domain.auth.service.social.AppleAuthService;
 import haru.harudrawer.global.response.ApiResponse;
 import haru.harudrawer.global.response.ResponseCode;
 

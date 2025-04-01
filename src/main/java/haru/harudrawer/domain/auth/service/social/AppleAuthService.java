@@ -1,24 +1,24 @@
-package haru.harudrawer.domain.auth.service;
+package haru.harudrawer.domain.auth.service.social;
 
 import com.nimbusds.jose.jwk.JWK;
 import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jwt.SignedJWT;
-import haru.harudrawer.domain.auth.controller.dto.response.CommonResponseDTO;
+import haru.harudrawer.domain.auth.controller.dto.request.SocialRequestDTO;
 import haru.harudrawer.domain.auth.controller.dto.response.SocialResponseDTO;
 import haru.harudrawer.domain.auth.converter.AuthConverter;
 import haru.harudrawer.domain.auth.entity.Provider;
 import haru.harudrawer.domain.auth.entity.TokenType;
-import haru.harudrawer.domain.auth.entity.User;
 import haru.harudrawer.domain.auth.exception.AuthErrorCode;
 import haru.harudrawer.domain.auth.exception.AuthException;
 import haru.harudrawer.domain.auth.repository.AuthRepository;
+import haru.harudrawer.domain.auth.service.CommonAuthService;
+import haru.harudrawer.domain.auth.service.TokenService;
 import haru.harudrawer.global.redis.RedisService;
 import haru.harudrawer.global.security.jwt.JwtProvider;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
-import jakarta.annotation.Nullable;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -52,10 +52,8 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-@RequiredArgsConstructor
 @Slf4j
-
-public class AppleAuthService {
+public class AppleAuthService extends AbstractSocialAuthService{
 
     @Value("${apple.key-id}")
     private String keyId;
@@ -72,71 +70,33 @@ public class AppleAuthService {
     @Value("${apple.private-key-url}")
     private String privateKeyFileUrl;
 
-    private final AuthRepository authRepository;
-    private final RestTemplate restTemplate;
-    private final RedisService redisService;
-    private final AuthConverter authConverter;
-    private final TokenService tokenService;
-    private final CommonAuthService commonAuthService;
-    private final JwtProvider jwtProvider;
-
-
-    /**
-     * 회원 가입
-     */
-    public User signup(String userEmail) {
-        User newUser = authConverter.userEmailToAppleUserEntity(userEmail);
-
-        authRepository.save(newUser);
-
-        return newUser;
+    public AppleAuthService(AuthRepository authRepository, TokenService tokenService, CommonAuthService commonAuthService, AuthConverter authConverter, RedisService redisService, RestTemplate restTemplate, JwtProvider jwtProvider) {
+        super(authRepository, tokenService, commonAuthService, authConverter, redisService, restTemplate, jwtProvider);
     }
 
-    /**
-     * 애플 로그인
-     */
-    public CommonResponseDTO.LoginResponseDTO login(String authorizationCode) throws Exception {
+
+    @Override
+    protected SocialRequestDTO.SocialUserInfoDTO getSocialUserInfo(String tokenOrCode) throws Exception {
 
         // 토큰 조회
-        SocialResponseDTO.AppleTokenInfoDTO loginResponse = requestAppleToken(authorizationCode);
+        SocialResponseDTO.AppleTokenInfoDTO loginResponse = requestAppleToken(tokenOrCode);
 
         // idToken에서 사용자 이메일 조회
         String userEmail = extractEmailFromIdToken(loginResponse.getIdToken());
 
-        // 사용자 존재 여부 확인
-        Optional<User> userOpt = authRepository.findByUserEmail(userEmail);
+        // apple에서 발급받은 refresh 토큰 저장
+        redisService.saveToken(userEmail, loginResponse.getRefreshToken(), Provider.APPLE, TokenType.REFRESH);
 
-        if (userOpt.isPresent()) {
-            User existingUser = userOpt.get();
-
-            // 로컬 또는 카카오로 가입된 사용자라면 예외 발생
-            if (existingUser.getProvider() == Provider.LOCAL || existingUser.getProvider() == Provider.KAKAO) {
-                throw new AuthException(AuthErrorCode.DUPLICATE_USER_EMAIL);
-            }
-
-            // 기존 애플 계정 사용자라면 로그인 진행
-            return createLoginResponse(existingUser);
-        }
-
-        // 사용자가 존재하지 않으면 회원가입 후 로그인 진행
-        User newUser = signup(userEmail);
-
-        return createLoginResponse(newUser);
-    }
-
-    /**
-     * 토큰 생성 및 로그인 응답 생성
-     */
-    private CommonResponseDTO.LoginResponseDTO createLoginResponse(User user) {
-
-        // 토큰 생성 후 Redis에 저장
-        CommonResponseDTO.TokenDTO tokens = tokenService.createTokens(user);
-
-        return CommonResponseDTO.LoginResponseDTO.builder()
-                .userEmail(user.getUserEmail())
-                .tokens(tokens)
+        return SocialRequestDTO.SocialUserInfoDTO.builder()
+                .userEmail(userEmail)
                 .build();
     }
+
+    @Override
+    protected Provider getProvider() {
+        return Provider.APPLE;
+    }
+
 
     /*
      * Apple 요청 메소드

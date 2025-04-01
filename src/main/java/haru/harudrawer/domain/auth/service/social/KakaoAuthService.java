@@ -1,4 +1,4 @@
-package haru.harudrawer.domain.auth.service;
+package haru.harudrawer.domain.auth.service.social;
 
 import haru.harudrawer.domain.auth.controller.dto.request.SocialRequestDTO;
 import haru.harudrawer.domain.auth.controller.dto.response.CommonResponseDTO;
@@ -10,8 +10,12 @@ import haru.harudrawer.domain.auth.entity.User;
 import haru.harudrawer.domain.auth.exception.AuthErrorCode;
 import haru.harudrawer.domain.auth.exception.AuthException;
 import haru.harudrawer.domain.auth.repository.AuthRepository;
+import haru.harudrawer.domain.auth.service.CommonAuthService;
+import haru.harudrawer.domain.auth.service.TokenService;
 import haru.harudrawer.global.exception.CommonErrorCode;
 import haru.harudrawer.global.redis.RedisService;
+import haru.harudrawer.global.security.jwt.JwtProvider;
+import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpEntity;
@@ -26,52 +30,28 @@ import java.util.Optional;
 
 
 @Service
-@RequiredArgsConstructor
 @Slf4j
 @Transactional
-public class KakaoAuthService{
+public class KakaoAuthService extends AbstractSocialAuthService{
 
-    private final RestTemplate restTemplate;
-    private final AuthConverter authConverter;
-    private final AuthRepository authRepository;
-    private final TokenService tokenService;
-    private final CommonAuthService commonAuthService;
-
-    // 회원가입
-    public User signup(SocialResponseDTO.KakaoUserInfoDTO request) {
-        //객체 변환후 저장
-        return authRepository.save(authConverter.signupToKakaoUserEntity(request));
-
+    public KakaoAuthService(AuthRepository authRepository, TokenService tokenService, CommonAuthService commonAuthService, AuthConverter authConverter, RedisService redisService, RestTemplate restTemplate, JwtProvider jwtProvider) {
+        super(authRepository, tokenService, commonAuthService, authConverter, redisService, restTemplate, jwtProvider);
     }
 
-    // 토큰으로 사용자 정보 조회
-    public CommonResponseDTO.LoginResponseDTO login(String kakaoAccessToken) {
-
+    @Override
+    protected SocialRequestDTO.SocialUserInfoDTO getSocialUserInfo(String tokenOrCode) throws Exception {
         // 사용자 정보 조회
-        SocialResponseDTO.KakaoUserInfoDTO userInfo = getKakaoUserInfo(kakaoAccessToken);
+        SocialResponseDTO.KakaoUserInfoDTO userInfo = getKakaoUserInfo(tokenOrCode);
 
-        // 사용자 존재 유무 확인
-        Optional<User> userOpt = authRepository.findByUserEmail(userInfo.getKakaoAccount().getKakaoEmail());
-
-        // 사용자가 존재하지만 로컬 or 애플로 가입된 회원인지 확인
-        if (userOpt.isPresent() &&
-                (userOpt.get().getProvider().equals(Provider.LOCAL) ||
-                        userOpt.get().getProvider().equals(Provider.APPLE))) {
-            throw new AuthException(AuthErrorCode.DUPLICATE_USER_EMAIL);
-        }
-
-        // 사용자가 존재하지 않을 경우 회원가입 처리
-        User user;
-
-        user = userOpt.orElseGet(() -> signup(userInfo));
-
-        // 로그인 성공
-        CommonResponseDTO.TokenDTO tokens = tokenService.createTokens(user);
-
-        return CommonResponseDTO.LoginResponseDTO.builder()
-                .userEmail(null)
-                .tokens(tokens)
+        return SocialRequestDTO.SocialUserInfoDTO.builder()
+                .userEmail(userInfo.getKakaoAccount().getKakaoEmail())
+                .nickName(userInfo.getKakaoAccount().getProfile().getKakaoNickName())
                 .build();
+    }
+
+    @Override
+    protected Provider getProvider() {
+        return Provider.KAKAO;
     }
 
     /**
