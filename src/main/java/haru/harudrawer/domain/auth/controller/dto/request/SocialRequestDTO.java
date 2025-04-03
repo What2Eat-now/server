@@ -10,7 +10,7 @@ public class SocialRequestDTO {
 
     @Builder
     @Getter
-    public static class SocialSignupDTO {
+    public static class SocialUserInfoDTO {
 
         @NotBlank(message = "이메일은 필수 입력 항목입니다.")
         @Email(message = "이메일 형식이 올바르지 않습니다.")
