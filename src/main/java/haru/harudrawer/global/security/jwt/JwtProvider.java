@@ -39,6 +39,7 @@ public class JwtProvider {
 
         return Jwts.builder()
                 .subject(userDetails.getUsername())
+                .claim("userEmail",userDetails.getEmail())
                 .claim("userId", userDetails.getUserId())
                 .claim("provider",userDetails.getProvider())
                 .issuedAt(Date.from(now))
@@ -79,6 +80,14 @@ public class JwtProvider {
     // 토큰에서 사용자 이메일 추출
     public String getUserEmail(String token) {
         return parseClaims(token).getSubject();
+    }
+
+    public String extractUserEmail() {
+        CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder
+                .getContext()
+                .getAuthentication()
+                .getPrincipal();
+        return userDetails.getUsername(); // 또는 userDetails.getEmail() 등, DTO에 따라 다름
     }
 
     // Spring Security Context에서 userId 추출

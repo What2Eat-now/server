@@ -1,13 +1,9 @@
 package haru.harudrawer.domain.auth.service.social;
 
 import haru.harudrawer.domain.auth.controller.dto.request.SocialRequestDTO;
-import haru.harudrawer.domain.auth.controller.dto.response.CommonResponseDTO;
 import haru.harudrawer.domain.auth.controller.dto.response.SocialResponseDTO;
 import haru.harudrawer.domain.auth.converter.AuthConverter;
 import haru.harudrawer.domain.auth.entity.Provider;
-import haru.harudrawer.domain.auth.entity.Role;
-import haru.harudrawer.domain.auth.entity.User;
-import haru.harudrawer.domain.auth.exception.AuthErrorCode;
 import haru.harudrawer.domain.auth.exception.AuthException;
 import haru.harudrawer.domain.auth.repository.AuthRepository;
 import haru.harudrawer.domain.auth.service.CommonAuthService;
@@ -15,9 +11,8 @@ import haru.harudrawer.domain.auth.service.TokenService;
 import haru.harudrawer.global.exception.CommonErrorCode;
 import haru.harudrawer.global.redis.RedisService;
 import haru.harudrawer.global.security.jwt.JwtProvider;
-import lombok.NoArgsConstructor;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
@@ -26,10 +21,8 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.Optional;
 
-
-@Service
+@Service("kakaoAuthService")
 @Slf4j
 @Transactional
 public class KakaoAuthService extends AbstractSocialAuthService{
@@ -57,7 +50,7 @@ public class KakaoAuthService extends AbstractSocialAuthService{
     /**
      * 카카오 회원 탈퇴
      */
-    public void delete() {
+    public void delete() throws Exception{
         // 카카오 연결 해제
 //        unlinkKakaoAccount(kakaoAccessToken);
 

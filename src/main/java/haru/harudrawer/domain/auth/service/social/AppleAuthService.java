@@ -26,6 +26,7 @@ import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.openssl.PEMParser;
 import org.bouncycastle.openssl.jcajce.JcaPEMKeyConverter;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -51,7 +52,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
-@Service
+@Service("appleAuthService")
 @Slf4j
 public class AppleAuthService extends AbstractSocialAuthService{
 
@@ -97,7 +98,7 @@ public class AppleAuthService extends AbstractSocialAuthService{
         return Provider.APPLE;
     }
 
-
+//DEVNOTEEVOL24
     /*
      * Apple 요청 메소드
      */
@@ -117,11 +118,6 @@ public class AppleAuthService extends AbstractSocialAuthService{
                     createAppleRequestEntity(Optional.of(authorizationCode), clientSecret, Optional.empty()),
                     SocialResponseDTO.AppleTokenInfoDTO.class).getBody();
 
-            String userEmail = extractEmailFromIdToken(response.getIdToken());
-
-            // APPLE Refresh token -> redis에 저장
-            redisService.saveToken(userEmail, response.getRefreshToken(), Provider.APPLE, TokenType.REFRESH);
-
             return response;
         } catch (HttpClientErrorException e){
             // 에러 발생 시 로그 출력 및 예외 처리
@@ -130,13 +126,21 @@ public class AppleAuthService extends AbstractSocialAuthService{
         }
     }
 
+    public void delete() throws Exception {
+
+        revokeAppleToken();
+
+        // user 삭제
+        commonAuthService.deleteUser();
+    }
+
     /**
      * 애플 연결 해제 (토큰 회수)
      */
-    public void revokeAppleToken(HttpServletRequest request) throws Exception {
+    public void revokeAppleToken() throws Exception {
         String clientSecret = createClientSecret();
 
-        String userEmail = jwtProvider.getUserEmail(tokenService.resolveToken(request));
+        String userEmail = jwtProvider.extractUserEmail();
 
         Optional<String> refreshToken = redisService.getToken(userEmail, Provider.APPLE, TokenType.REFRESH);
 
@@ -155,9 +159,6 @@ public class AppleAuthService extends AbstractSocialAuthService{
                     appleRequestEntity,
                     String.class
             );
-
-            // user 삭제
-            commonAuthService.deleteUser();
 
             log.info("apple 요청 성공");
 

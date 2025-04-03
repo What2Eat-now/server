@@ -30,7 +30,7 @@ public abstract class AbstractSocialAuthService implements SocialAuthService{
     protected final JwtProvider jwtProvider;
 
     @Override
-    public CommonResponseDTO.LoginResponseDTO login(String tokenOrCode) throws Exception {
+    public final CommonResponseDTO.LoginResponseDTO login(String tokenOrCode) throws Exception {
         // Provider 기준으로 사용자 정보 조회
         SocialRequestDTO.SocialUserInfoDTO userInfo = getSocialUserInfo(tokenOrCode);
 

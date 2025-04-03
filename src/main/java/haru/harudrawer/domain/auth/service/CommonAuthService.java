@@ -57,7 +57,7 @@ public class CommonAuthService {
         tokenService.validateToken(request);
 
         // 토큰을 통해 사용자 이메일 조회
-        String userEmail = jwtProvider.getUserEmail(tokenService.resolveToken(request));
+        String userEmail = jwtProvider.extractUserEmail();
 
         User findUser = authRepository.findByUserEmail(userEmail).orElseThrow(
                 () -> new AuthException(AuthErrorCode.USER_NOT_FOUND));

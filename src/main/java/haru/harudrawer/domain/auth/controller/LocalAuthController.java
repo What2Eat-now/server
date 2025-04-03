@@ -3,6 +3,7 @@ package haru.harudrawer.domain.auth.controller;
 import haru.harudrawer.domain.auth.controller.dto.request.LocalRequestDTO;
 import haru.harudrawer.domain.auth.controller.dto.response.CommonResponseDTO;
 import haru.harudrawer.domain.auth.service.CommonAuthService;
+import haru.harudrawer.domain.auth.service.EmailService;
 import haru.harudrawer.domain.auth.service.LocalAuthService;
 import haru.harudrawer.global.response.ApiResponse;
 import haru.harudrawer.global.response.ResponseCode;
@@ -17,6 +18,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.util.Map;
 
 @RestController
@@ -28,6 +30,7 @@ public class LocalAuthController {
 
     private final LocalAuthService localAuthService;
     private final CommonAuthService commonAuthService;
+    private final EmailService emailService;
 
     @PostMapping("/signup/local")
     @Operation(summary = "로컬 회원가입", description = "로컬 회원가입을 처리합니다. 이메일, 비밀번호, 닉네임을 제공해야 합니다. \n 응답코드에 따른 결과값은 포스트맨 API 명세서를 참고 부탁드립니다.")
@@ -72,8 +75,8 @@ public class LocalAuthController {
 
     @PostMapping("/send-verification")
     @Operation(summary = "인증 번호 이메일 전송", description = "이메일로 인증 번호 전송을 처리합니다. 이메일을 제공해야 합니다. \n 응답코드에 따른 결과값은 포스트맨 API 명세서를 참고 부탁드립니다.")
-    public ResponseEntity<ApiResponse<ResponseCode>> sendEmail(@RequestParam @Email String userEmail) throws MessagingException {
-        localAuthService.sendEmail(userEmail);
+    public ResponseEntity<ApiResponse<ResponseCode>> sendEmail(@RequestParam @Email String userEmail) throws MessagingException, IOException {
+        emailService.sendAndSaveEmail(userEmail);
 
         return ResponseEntity.ok(ApiResponse.of(ResponseCode.SUCCESS));
     }
@@ -81,7 +84,7 @@ public class LocalAuthController {
     @PostMapping("/verification-code")
     @Operation(summary = "인증번호 검증", description = "클라이언트로부터 전달받은 인증 번호 검증을 처리합니다. 이메일을 제공해야 합니다. \n 응답코드에 따른 결과값은 포스트맨 API 명세서를 참고 부탁드립니다.")
     public ResponseEntity<ApiResponse<ResponseCode>> verifyCode(@RequestBody LocalRequestDTO.VerifyCodeDTO request) {
-        localAuthService.verifyCode(request);
+        emailService.verifyCode(request);
 
         return ResponseEntity.ok(ApiResponse.of(ResponseCode.SUCCESS));
     }
