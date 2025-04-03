@@ -22,7 +22,7 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 
-@Service("kakaoAuthService")
+@Service
 @Slf4j
 @Transactional
 public class KakaoAuthService extends AbstractSocialAuthService{

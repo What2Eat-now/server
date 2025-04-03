@@ -52,7 +52,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
-@Service("appleAuthService")
+@Service
 @Slf4j
 public class AppleAuthService extends AbstractSocialAuthService{
 
@@ -98,7 +98,6 @@ public class AppleAuthService extends AbstractSocialAuthService{
         return Provider.APPLE;
     }
 
-//DEVNOTEEVOL24
     /*
      * Apple 요청 메소드
      */
