@@ -36,6 +36,8 @@ public class KakaoAuthService extends AbstractSocialAuthService{
         // 사용자 정보 조회
         SocialResponseDTO.KakaoUserInfoDTO userInfo = getKakaoUserInfo(tokenOrCode);
 
+        // 카카오 refresh token 저장 로직 필요
+
         return SocialRequestDTO.SocialUserInfoDTO.builder()
                 .userEmail(userInfo.getKakaoAccount().getKakaoEmail())
                 .nickName(userInfo.getKakaoAccount().getProfile().getKakaoNickName())
