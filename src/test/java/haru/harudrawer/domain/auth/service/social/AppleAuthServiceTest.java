@@ -151,7 +151,7 @@ class AppleAuthServiceTest {
 
             // 실제 가입할 사용자
         User user = User.builder()
-                .userEmail("thsgur1212@test.com")
+                .userEmail("test@apple.com")
                 .nickName("son")
                 .provider(Provider.APPLE)
                 .build();
@@ -161,7 +161,7 @@ class AppleAuthServiceTest {
                 .refreshToken("refresh")
                 .build();
 
-        when(authRepository.findByUserEmail(any(String.class))).thenReturn(Optional.empty());
+        when(authRepository.findByUserEmail("test@apple.com")).thenReturn(Optional.empty());
         when(authConverter.userEmailToSocialUserEntity(any(SocialRequestDTO.SocialUserInfoDTO.class), eq(Provider.APPLE))).thenReturn(user);
         when(authRepository.save(any(User.class))).thenReturn(user);
 

@@ -61,7 +61,7 @@ class KakaoAuthServiceTest {
 
         @Override
         protected SocialRequestDTO.SocialUserInfoDTO getSocialUserInfo(String tokenOrCode) {
-            redisService.saveToken("test@kakao.com", "dummyToeken", Provider.KAKAO, TokenType.REFRESH);
+            redisService.saveToken("test@kakao.com", "dummyToken", Provider.KAKAO, TokenType.REFRESH);
 
             return SocialRequestDTO.SocialUserInfoDTO.builder()
                     .userEmail("test@kakao.com")
@@ -121,7 +121,7 @@ class KakaoAuthServiceTest {
                 .build();
 
         when(authRepository.findByUserEmail("test@kakao.com")).thenReturn(Optional.empty());
-        when(authConverter.userEmailToSocialUserEntity(any(), eq(Provider.KAKAO))).thenReturn(newUser);
+        when(authConverter.userEmailToSocialUserEntity(any(SocialRequestDTO.SocialUserInfoDTO.class), eq(Provider.KAKAO))).thenReturn(newUser);
         when(tokenService.createTokens(newUser)).thenReturn(tokens);
         when(authRepository.save(any(User.class))).thenReturn(newUser);
 
@@ -137,7 +137,7 @@ class KakaoAuthServiceTest {
         verify(authRepository).findByUserEmail("test@kakao.com");
         verify(authRepository).save(any(User.class));
         verify(tokenService).createTokens(newUser);
-        verify(redisService).saveToken(eq(newUser.getUserEmail()),"dummyToken", eq(Provider.KAKAO), eq(TokenType.REFRESH));
+        verify(redisService).saveToken(eq(newUser.getUserEmail()),eq("dummyToken"), eq(Provider.KAKAO), eq(TokenType.REFRESH));
     }
 
     @Test
