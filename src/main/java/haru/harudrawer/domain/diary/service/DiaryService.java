@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Point;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -65,7 +66,6 @@ public class DiaryService {
 
         log.info("다이어리 작성 완료");
     }
-
 
     // 다이어리 수정
     public void updateDiary(Long diaryId, DiaryRequestDTO.DiaryUpdateDTO request) {
@@ -140,8 +140,9 @@ public class DiaryService {
     }
 
     // 다이어리 목록 조회
-    public List<DiaryResponseDTO.GetDiaryDTO> getDiary() {
-        List<Diary> diary = diaryRepository.findAllByUserUserId(jwtProvider.extractUserId())
+    @Cacheable(value = "diaryList", key = "'getDiary_' + #userId")
+    public List<DiaryResponseDTO.GetDiaryDTO> getDiary(Long userId) {
+        List<Diary> diary = diaryRepository.findAllByUserUserId(userId)
                 .orElseThrow(() -> new DiaryException(DiaryErrorCode.DIARY_NOT_FOUND));
 
         List<DiaryResponseDTO.GetDiaryDTO> diaryDTOList = diary.stream()

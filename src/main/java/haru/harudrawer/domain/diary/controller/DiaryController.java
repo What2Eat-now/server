@@ -1,9 +1,12 @@
 package haru.harudrawer.domain.diary.controller;
 
+import haru.harudrawer.global.security.jwt.JwtProvider;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.CacheManager;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
@@ -23,6 +26,7 @@ import java.util.List;
 public class DiaryController {
 
     private final DiaryService diaryService;
+    private final JwtProvider jwtProvider;
 
     // 다이어리 작성
     @PostMapping("")
@@ -37,7 +41,8 @@ public class DiaryController {
     @GetMapping("")
     @Operation(summary = "다이어리 목록 조회", description = "다이어리 목록 조회를 처리하는 API 입니다.")
     public ResponseEntity<ApiResponse<List<DiaryResponseDTO.GetDiaryDTO>>> getAllDiaryThumbnail() {
-        List<DiaryResponseDTO.GetDiaryDTO> allDiaryThumbnails = diaryService.getDiary();
+
+        List<DiaryResponseDTO.GetDiaryDTO> allDiaryThumbnails = diaryService.getDiary(jwtProvider.extractUserId());
 
         return ResponseEntity.ok(ApiResponse.of(ResponseCode.SUCCESS, allDiaryThumbnails));
     }
@@ -59,4 +64,6 @@ public class DiaryController {
 
         return ResponseEntity.ok(ApiResponse.of(ResponseCode.SUCCESS));
     }
+
+
 }
